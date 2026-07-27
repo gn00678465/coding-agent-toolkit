@@ -161,9 +161,9 @@ gh pr create \
   # Step A：用 ASCII 占位標題建立草稿 PR，取得 PR 編號
   gh pr create --draft --body-file pr-body.md --title "chore: draft (title pending)"
 
-  # Step B：立即以 gh api PATCH 的 @file 模式覆寫真實標題
+  # Step B：立即以 gh api PATCH 的 @file 模式覆寫真實標題（@file 必須用 -F，見「編碼規範」）
   printf '%s' "<type>(<scope>): <summary>" > pr-title.txt
-  gh api -X PATCH "repos/:owner/:repo/pulls/<新建立的 PR number>" -f title=@pr-title.txt
+  gh api -X PATCH "repos/:owner/:repo/pulls/<新建立的 PR number>" -F title=@pr-title.txt
   rm -f pr-title.txt
   ```
   git-bash / WSL / macOS / Linux 終端機預設 UTF-8，可直接傳標題；Windows 使用者也可於同 session 先執行 `chcp 65001` 後再單段建立。
@@ -199,29 +199,36 @@ gh pr view --json number,title,body,labels,assignees
 ### Step 3：執行修改
 
 > **重要**：所有含中文的欄位 (title / body) **必須**以 gh 的 `@filename` 語法讀檔，由 gh 以 UTF-8 位元組直接送出；不可用 `-f body="$(cat file)"` 讓 shell 展開，否則在 Windows cmd / PowerShell 下會因 cp950 轉碼產生亂碼。檔案必須為 UTF-8 無 BOM（見下方「編碼規範」）。
+>
+> **陷阱**：`@filename` 讀檔**只有 `-F`（`--field`）支援**；`-f`（`--raw-field`）是純字串，`-f body=@pr-body.md` 會把字面值 `@pr-body.md` 寫進 PR 描述而非檔案內容。口訣：**檔案用大 F，字面值用小 f**。
 
 - **僅更新描述**：先把內容寫入 `pr-body.md`，再：
   ```bash
-  gh api -X PATCH "repos/:owner/:repo/pulls/<number>" -f body=@pr-body.md
+  gh api -X PATCH "repos/:owner/:repo/pulls/<number>" -F body=@pr-body.md
   rm -f pr-body.md
   ```
 - **僅更新標題**：
   ```bash
-  # 標題短可直接傳；若終端機非 UTF-8 且標題含中文，改用檔案模式
+  # 標題短可直接傳（字面值 → 小 f）；若終端機非 UTF-8 且標題含中文，改用檔案模式
   gh api -X PATCH "repos/:owner/:repo/pulls/<number>" -f title='<新標題>'
 
-  # 檔案模式（避免 cp950 亂碼）
+  # 檔案模式（避免 cp950 亂碼；@file → 大 F）
   printf '%s' '<新標題>' > pr-title.txt
-  gh api -X PATCH "repos/:owner/:repo/pulls/<number>" -f title=@pr-title.txt
+  gh api -X PATCH "repos/:owner/:repo/pulls/<number>" -F title=@pr-title.txt
   rm -f pr-title.txt
   ```
 - **標題 + 描述一次更新**：
   ```bash
   printf '%s' '<新標題>' > pr-title.txt
   gh api -X PATCH "repos/:owner/:repo/pulls/<number>" \
-    -f title=@pr-title.txt \
-    -f body=@pr-body.md
+    -F title=@pr-title.txt \
+    -F body=@pr-body.md
   rm -f pr-body.md pr-title.txt
+  ```
+- **更新後驗證**（必做）：確認寫入的是檔案內容而非字面值：
+  ```bash
+  gh pr view <number> --json body --jq '.body' | head -5
+  # 若輸出為 "@pr-body.md" 之類的字面值，代表誤用了 -f，改用 -F 重送
   ```
 - **標籤**：`gh pr edit <number> --add-label "<label>" --remove-label "<label>"`
 - **審核者**：`gh pr edit <number> --add-reviewer "<username>"`
@@ -242,7 +249,7 @@ gh pr view --json number,title,body,labels,assignees
 | 檢查狀態 | `gh pr status` |
 | 查看內容 | `gh pr view --json number,title,body` |
 | 建立草稿 | `gh pr create --draft --body-file pr-body.md` |
-| 更新標題/描述 | `gh api -X PATCH "repos/:owner/:repo/pulls/<n>" -f title=... -f body=...` |
+| 更新標題/描述 | `gh api -X PATCH "repos/:owner/:repo/pulls/<n>" -F title=@pr-title.txt -F body=@pr-body.md` |
 | 修改標籤 | `gh pr edit <number> --add-label "bug,release"` |
 | 查看 Diff | `gh pr diff <number>` |
 
@@ -254,11 +261,12 @@ gh pr view --json number,title,body,labels,assignees
 
 ### 防堵規則
 
-1. **描述一律走檔案輸入**：使用 `--body-file pr-body.md`（建立）或 `-f body=@pr-body.md`（修改），讓 gh 以 UTF-8 位元組直接讀檔，繞過 shell。
+1. **描述一律走檔案輸入**：使用 `--body-file pr-body.md`（建立）或 `-F body=@pr-body.md`（修改），讓 gh 以 UTF-8 位元組直接讀檔，繞過 shell。
 2. **嚴禁 shell 展開中文字串**：禁止使用 `--body "$(cat file)"`、`-f body="$(cat file)"` 或 heredoc 內嵌中文傳給 `gh`。
-3. **檔案必須是 UTF-8 無 BOM**：透過本 skill 的 Write 工具產生的檔案已符合；若由其他工具產生，需驗證（見下方）。
-4. **含中文標題**：若執行環境為 Windows 非 UTF-8 終端機，標題也走檔案（`-f title=@pr-title.txt`）。
-5. **可選環境強化**（使用者端）：Windows cmd / PowerShell 可先 `chcp 65001` 切 UTF-8；git-bash / WSL / macOS / Linux 預設即為 UTF-8。
+3. **`gh api` 讀檔必用大寫 `-F`**：`@filename` 展開只有 `-F`（`--field`）支援；`-f`（`--raw-field`）會把 `@pr-body.md` 當字面值送出，PR 描述變成一行檔名。
+4. **檔案必須是 UTF-8 無 BOM**：透過本 skill 的 Write 工具產生的檔案已符合；若由其他工具產生，需驗證（見下方）。
+5. **含中文標題**：若執行環境為 Windows 非 UTF-8 終端機，標題也走檔案（`-F title=@pr-title.txt`）。
+6. **可選環境強化**（使用者端）：Windows cmd / PowerShell 可先 `chcp 65001` 切 UTF-8；git-bash / WSL / macOS / Linux 預設即為 UTF-8。
 
 ### 驗證步驟
 

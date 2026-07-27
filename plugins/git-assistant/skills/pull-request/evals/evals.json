@@ -17,7 +17,7 @@
       "id": 3,
       "name": "edit-existing-pr-title-body",
       "prompt": "PR #789 已存在。請幫我把標題改為 `refactor: 優化訂單查詢邏輯`，並同時改描述說明改動範圍。",
-      "expected_output": "應使用 `gh api -X PATCH repos/:owner/:repo/pulls/789` 搭配 `-f title=<新標題>` 與 `-f body=@pr-body.md`（檔案模式，避免 shell 展開中文）；若標題含中文且終端機非 UTF-8，標題亦走 `-f title=@pr-title.txt`。不應使用 `gh pr edit --title/--body`。執行後刪除 pr-body.md / pr-title.txt。"
+      "expected_output": "應使用 `gh api -X PATCH repos/:owner/:repo/pulls/789` 搭配 `-F body=@pr-body.md`（檔案模式必用大寫 -F；小寫 -f 不展開 @file，會把字面值 @pr-body.md 寫進 PR）；若標題含中文且終端機非 UTF-8，標題亦走 `-F title=@pr-title.txt`，否則可用 `-f title='<新標題>'` 傳字面值。不應使用 `gh pr edit --title/--body`，也不應對 @file 使用小寫 -f。更新後應以 `gh pr view 789 --json body` 驗證非字面值。執行後刪除 pr-body.md / pr-title.txt。"
     },
     {
       "id": 4,
@@ -71,7 +71,7 @@
       "id": 12,
       "name": "zhtw-edit-uses-at-file",
       "prompt": "PR #42 已存在，請把描述改成一段繁體中文的變更說明（約 20 行）。",
-      "expected_output": "必須使用 `gh api -X PATCH repos/:owner/:repo/pulls/42 -f body=@pr-body.md`；不得使用 `-f body=\"$(cat pr-body.md)\"` 或在指令列直接內嵌中文字串。完成後刪除 pr-body.md。"
+      "expected_output": "必須使用 `gh api -X PATCH repos/:owner/:repo/pulls/42 -F body=@pr-body.md`（大寫 -F 才會展開 @file；小寫 -f 會把字面值 @pr-body.md 寫進 PR 描述）；不得使用 `-f body=@pr-body.md`、`-f body=\"$(cat pr-body.md)\"` 或在指令列直接內嵌中文字串。更新後應驗證 body 非字面值。完成後刪除 pr-body.md。"
     }
   ]
 }
