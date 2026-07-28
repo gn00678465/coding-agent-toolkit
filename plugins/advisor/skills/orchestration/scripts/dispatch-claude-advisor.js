@@ -7,12 +7,12 @@
 //
 // <briefFile> holds the full consult contract (Decision, Constraints, Options,
 // Stakes, Pointers) — the caller writes it, this script only reads it.
-// [model] / [fallbackModel] default to claude-fable-5 / claude-opus-4-8.
+// [model] / [fallbackModel] default to claude-fable-5 / opus.
 //
 // Prints exactly one line of JSON to stdout and always exits 0 — the caller
 // reads the "status" field rather than the process exit code:
 //   {"status":"complete","outputFile":"...","modelUsed":"claude-fable-5","degraded":false}
-//   {"status":"complete","outputFile":"...","modelUsed":"claude-opus-4-8","degraded":true}
+//   {"status":"complete","outputFile":"...","modelUsed":"claude-opus-5","degraded":true}
 //   {"status":"timeout","outputFile":null}                        // this script's own deadline
 //   {"status":"invocation_error","reason":"claude exited 1: ..."} // claude ran and failed
 //   {"status":"unavailable","reason":"claude CLI not found on PATH"}
@@ -35,8 +35,12 @@ function emit(obj) {
 }
 
 const briefFile = process.argv[2];
+// The primary must be a full model name, not an alias: `degraded` below compares
+// it against modelUsage's key, which is always the resolved canonical id — an
+// alias here would report every successful run as degraded. The fallback has no
+// such constraint, so it uses the `opus` alias to track the newest Opus tier.
 const model = process.argv[3] || "claude-fable-5";
-const fallbackModel = process.argv[4] || "claude-opus-4-8";
+const fallbackModel = process.argv[4] || "opus";
 
 if (!briefFile) {
   emit({ status: "unavailable", reason: "no brief file path given" });

@@ -10,7 +10,7 @@ Claude Code lets every subagent run on a different model — and lets the sessio
 |---|---|---|---|
 | Routine | **Grok 4.5** | `grok-implementer` agent (default) | The spec fully determines the outcome — Grok does the typing via the [Grok CLI](https://x.ai/cli) |
 | Cross-vendor | GPT-5.6 Sol (high reasoning) | `codex-implementer` agent | Correctness-critical, or you want a second independent implementation to compare |
-| Judgment | Fable 5 (→ Opus 4.8 if unavailable) | `claude-advisor` agent | Commitment boundaries — see below |
+| Judgment | Fable 5 (→ Opus if unavailable) | `claude-advisor` agent | Commitment boundaries — see below |
 
 Tokens route by volume: the expensive model emits the fewest tokens (judgment and specs), cheap lanes emit the most (code). Implementation mechanics are ~90% of a session's tokens and Grok 4.5 handles them at near-parity — so this runs far cheaper than Fable-for-everything, and every implementation comes from a *different model family* than the architect that reviews it: cross-vendor review is built into the routing, not bolted on. For high-stakes work, race `grok-implementer` and `codex-implementer` on the same spec — each lane in its own `git worktree`, never the shared tree — and let the architect pick the stronger diff.
 
@@ -41,7 +41,7 @@ Then start your session as the architect:
 ## Requirements
 
 - **Claude Code ≥ 2.1.170** with a subscription that includes Fable 5 (Pro, Max, Team, or Enterprise — all current consumer plans qualify).
-- **No Fable access at all** (e.g. API-key billing)? Use `/model opus` for the session and change `model: fable` → `model: opus` in the advisor file. Same pattern, model tiers shift down one. (This is different from Fable being merely *unavailable* — the Judgment lane already degrades to Opus 4.8 automatically in that case, no edit needed.)
+- **No Fable access at all** (e.g. API-key billing)? Use `/model opus` for the session and change `model: fable` → `model: opus` in the advisor file. Same pattern, model tiers shift down one. (This is different from Fable being merely *unavailable* — the Judgment lane already degrades to Opus automatically in that case, no edit needed. The degrade target is pinned by the `opus` **alias**, which always resolves to the newest Opus tier, so it never goes stale when a new Opus ships.)
 - **Grok lane (the default implementer):** the `grok-implementer` agent needs the [xAI Grok CLI](https://x.ai/cli) installed and authenticated (install from [x.ai/cli](https://x.ai/cli), then `grok login`). It drives **Grok 4.5** headlessly (`grok --prompt-file … -m grok-4.5`). Without it the agent reports `STATUS: unavailable` — it never silently falls back to a Claude model.
 - **Codex lane (optional):** the `codex-implementer` agent needs the [OpenAI Codex CLI](https://github.com/openai/codex) installed and authenticated (`npm i -g @openai/codex`, then `codex login`). It invokes **GPT-5.6 Sol** as `gpt-5.6-sol` with `model_reasoning_effort=high`. GPT-5.6 access may be limited during preview; without model access, an installed/authenticated CLI, or successful authentication, the agent reports `STATUS: unavailable` and the other lanes remain unaffected.
 - Heads-up: if a pinned Claude model isn't available on your account, Claude Code silently falls back to your session model — the pattern degrades quietly rather than erroring. If results feel unremarkable, check your plan. (This quiet fallback applies only to Claude model pins — the grok and codex lanes always fail loudly with a structured error.)

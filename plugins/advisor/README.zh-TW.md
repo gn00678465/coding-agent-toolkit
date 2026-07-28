@@ -10,7 +10,7 @@ Claude Code 讓每個 subagent 都能跑在不同模型上——而且 session �
 |---|---|---|---|
 | Routine | **Grok 4.5** | `grok-implementer` agent(預設) | spec 已經完全決定結果——Grok 透過 [Grok CLI](https://x.ai/cli) 負責打字 |
 | Cross-vendor | GPT-5.6 Sol(高推理) | `codex-implementer` agent | 正確性要求高,或想要一份獨立實作來比對 |
-| Judgment | Fable 5(→ 不可用時降級為 Opus 4.8) | `claude-advisor` agent | 承諾邊界(commitment boundaries)——見下方 |
+| Judgment | Fable 5(→ 不可用時降級為 Opus) | `claude-advisor` agent | 承諾邊界(commitment boundaries)——見下方 |
 
 Token 依照用量分配:貴的模型只出最少的 token(判斷跟 spec),便宜的 lane 出最多(程式碼)。實作機制佔一個 session 約 90% 的 token,而 Grok 4.5 能以接近同等的品質處理——所以這樣跑遠比全程用 Fable 便宜,而且每一次實作都來自跟架構師**不同的模型家族**:跨供應商審查是內建在路由裡的,不是事後補上去的。對高風險工作,可以讓 `grok-implementer` 跟 `codex-implementer` 對同一份 spec 賽跑——每個 lane 各自在獨立的 `git worktree` 裡跑,絕不共用同一棵工作樹——architect 再挑出比較強的 diff。
 
@@ -41,7 +41,7 @@ claude plugin update advisor@advisor
 ## 需求
 
 - **Claude Code ≥ 2.1.170**,訂閱方案要包含 Fable 5(Pro、Max、Team 或 Enterprise——目前所有消費者方案都符合)。
-- **完全沒有 Fable 權限**(例如用 API key 計費)?把 session 改用 `/model opus`,並把 advisor 檔案裡的 `model: fable` 改成 `model: opus`。同樣的模式,模型層級整體降一階。(這跟 Fable **暫時性不可用**是兩回事——那種情況 Judgment lane 已經會自動降級到 Opus 4.8,不需要手動改。)
+- **完全沒有 Fable 權限**(例如用 API key 計費)?把 session 改用 `/model opus`,並把 advisor 檔案裡的 `model: fable` 改成 `model: opus`。同樣的模式,模型層級整體降一階。(這跟 Fable **暫時性不可用**是兩回事——那種情況 Judgment lane 已經會自動降級到 Opus,不需要手動改。降級目標是用 `opus` **alias** 釘的,永遠指向最新一代 Opus,不會因為新版發佈而過時。)
 - **Grok lane(預設的實作者):** `grok-implementer` agent 需要裝好並登入 [xAI Grok CLI](https://x.ai/cli)(從 [x.ai/cli](https://x.ai/cli) 安裝,然後 `grok login`)。它會以無介面模式驅動 **Grok 4.5**(`grok --prompt-file … -m grok-4.5`)。沒裝的話,agent 會回報 `STATUS: unavailable`——它絕對不會靜默退回成 Claude 模型。
 - **Codex lane(選用):** `codex-implementer` agent 需要裝好並登入 [OpenAI Codex CLI](https://github.com/openai/codex)(`npm i -g @openai/codex`,然後 `codex login`)。它會以 `gpt-5.6-sol`、`model_reasoning_effort=high` 呼叫 **GPT-5.6 Sol**。GPT-5.6 的存取權在預覽期間可能受限;沒有模型存取權、沒裝/沒登入 CLI,或認證失敗時,agent 會回報 `STATUS: unavailable`,其他 lane 不受影響。
 - 提醒:如果你帳號裡沒有某個釘選的 Claude 模型,Claude Code 會靜默退回到你的 session 模型——這個模式會悄悄降級,不會報錯。如果結果感覺沒那麼厲害,檢查一下你的方案。(這種靜默退回只適用於 Claude 模型的釘選;grok 跟 codex 這兩個 lane 永遠會用結構化錯誤大聲回報失敗。)

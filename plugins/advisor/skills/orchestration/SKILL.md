@@ -26,7 +26,7 @@ What stays with the architect regardless of cost: decomposition, interface desig
 |---|---|---|---|
 | Routine | Grok 4.5 | `grok-implementer` agent | The spec fully determines the outcome: boilerplate, wiring, CRUD, mechanical edits, straightforward features. **Default lane.** Requires the [Grok CLI](https://x.ai/cli). |
 | Cross-vendor | GPT-5.6 Sol (high reasoning) | `codex-implementer` agent | Correctness/completeness is critical enough to want a second implementation, or as the alternative family when the grok lane is unavailable. Requires the codex CLI. |
-| Judgment | Fable 5 (→ Opus 4.8 if unavailable) | `claude-advisor` agent | Not an implementation lane. See "Commitment boundaries" below. |
+| Judgment | Fable 5 (→ Opus if unavailable) | `claude-advisor` agent | Not an implementation lane. See "Commitment boundaries" below. |
 
 Deciding rule: how much does the outcome depend on judgment the spec can't capture? Little → the default grok lane; you will verify anyway. A lot, and mistakes are costly → race both lanes on the same spec and pick the stronger diff, or keep that piece with the architect.
 
@@ -50,7 +50,7 @@ For `grok-implementer`, there is no dispatch script — `grok --prompt-file` rea
 
 `claude-advisor` resolves to a read-only agent (Read/Grep/Glob only) fed the consult brief below. In Claude Code, dispatch it via the Agent tool (subagent). On a host without subagent dispatch, use `dispatch-claude-advisor.js` above — it reads `agents/claude-advisor.md` itself at runtime and passes its body as the CLI's `--system-prompt`, so the persona can't drift out of sync with the Agent-tool path. Either way, do not substitute a host's generic full-transcript advisor tool (e.g. Claude Code's `advisor()`) for this lane — it forwards the whole conversation and returns an anchored opinion, not the independent, pointers-only read this lane requires.
 
-If Fable 5 is unavailable, degrade to Opus 4.8 and say so explicitly in the report and disposition — e.g. `fable unavailable → degraded to opus`. Under the Agent tool that means retrying the dispatch with `model: opus`; `dispatch-claude-advisor.js` does this natively in one call (`--model claude-fable-5 --fallback-model claude-opus-4-8`) and reports which model actually answered via `modelUsed`/`degraded` — read those fields rather than assuming success meant Fable ran. A degraded verdict is still usable, but it must never pass as an unqualified Fable judgment.
+If Fable 5 is unavailable, degrade to Opus and say so explicitly in the report and disposition — e.g. `fable unavailable → degraded to opus`. Under the Agent tool that means retrying the dispatch with `model: opus`; `dispatch-claude-advisor.js` does this natively in one call (`--model claude-fable-5 --fallback-model opus`) and reports which model actually answered via `modelUsed`/`degraded` — read those fields rather than assuming success meant Fable ran. Both paths pin the degrade target by the `opus` **alias**, which always resolves to the newest Opus tier, so no model id needs updating when a new Opus ships; `modelUsed` still reports the resolved canonical id (e.g. `claude-opus-5`), never the alias. A degraded verdict is still usable, but it must never pass as an unqualified Fable judgment.
 
 ### Overriding the advisor model
 
@@ -64,9 +64,9 @@ Invoke this skill with `--advisor <fable|opus>` to pin which model runs `claude-
 | `advisorModel` value | Effect |
 |---|---|
 | `fable` | Pin `claude-advisor` to Fable 5 — the default; only useful to state explicitly. |
-| `opus` | Pin `claude-advisor` to Opus 4.8 for this invocation, without waiting for a Fable failure to trigger the degrade rule. |
+| `opus` | Pin `claude-advisor` to Opus for this invocation, without waiting for a Fable failure to trigger the degrade rule. Passed through as the alias, so it tracks the newest Opus tier. |
 
-Pass the value as the per-invocation `model` parameter on the Agent tool dispatch to `claude-advisor` (or as the `[model]` argument to `dispatch-claude-advisor.js`, outside Claude Code). When `advisorModel` is empty (no `--advisor` given), the Judgment lane defaults to Fable 5, degrading to Opus 4.8 on failure as usual.
+Pass the value as the per-invocation `model` parameter on the Agent tool dispatch to `claude-advisor` (or as the `[model]` argument to `dispatch-claude-advisor.js`, outside Claude Code). When `advisorModel` is empty (no `--advisor` given), the Judgment lane defaults to Fable 5, degrading to Opus on failure as usual.
 
 `--advisor` has no equivalent for the Routine/Cross-vendor implementation lanes: `grok-implementer` and `codex-implementer` are producers, never advisors, so forcing one of them isn't a producer choice for the *advisor* — it's the Deciding rule's job (spec-dependent judgment, or an explicit race). To force a specific implementer for one invocation, say so directly in the task text (e.g. "use grok-implementer for this" or "race both lanes on this spec") — the architect reads that as part of the request, the same way it would read any other constraint in a task description.
 
