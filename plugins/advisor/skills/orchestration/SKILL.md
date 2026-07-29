@@ -73,7 +73,7 @@ The **spec contract** packages context-free *implementation*; the **consult cont
 
 `claude-advisor` is a read-only agent (Read/Grep/Glob only); in Claude Code, dispatch it via the Agent tool. Keep this lane rather than a host's generic full-transcript advisor tool (e.g. Claude Code's `advisor()`), which forwards the whole conversation and returns an anchored opinion instead of the independent, pointers-only read this lane requires.
 
-Fable 5 runs the lane, degrading to Opus when Fable is unavailable — a stand-in, so name it (`fable unavailable → degraded to opus`). Both dispatch paths pin the degrade target by the `opus` **alias**, which always resolves to the newest Opus tier, so no model id needs updating when a new Opus ships. Outside Claude Code, `dispatch-claude-advisor.js` reports which model actually answered in `modelUsed` and why in `degradeReason` — read those fields rather than assuming success meant Fable ran.
+Fable 5 runs the lane, degrading to Opus when Fable is unavailable — a stand-in, so name it (`fable unavailable → degraded to opus`). Under the Agent tool the degrade is yours to perform: re-dispatch the same brief with `model: opus`. Both dispatch paths pin the degrade target by the `opus` **alias**, which always resolves to the newest Opus tier, so no model id needs updating when a new Opus ships. Outside Claude Code, `dispatch-claude-advisor.js` reports which model actually answered in `modelUsed` and why in `degradeReason` — read those fields rather than assuming success meant Fable ran.
 
 ### The consult contract
 

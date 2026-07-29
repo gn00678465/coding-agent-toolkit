@@ -14,7 +14,7 @@ Claude Code 讓每個 subagent 都能跑在不同模型上——而且 session �
 
 Token 依照用量分配:貴的模型只出最少的 token(判斷跟 spec),便宜的 lane 出最多(程式碼)。實作機制佔一個 session 約 90% 的 token,而 Grok 4.5 能以接近同等的品質處理——所以這樣跑遠比全程用 Fable 便宜,而且每一次實作都來自跟架構師**不同的模型家族**:跨供應商審查是內建在路由裡的,不是事後補上去的。對高風險工作,可以讓 `grok-implementer` 跟 `codex-implementer` 對同一份 spec 賽跑——每個 lane 各自在獨立的 `git worktree` 裡跑,絕不共用同一棵工作樹——architect 再挑出比較強的 diff。
 
-這個 plugin 隨附 **orchestration skill**——教 session 什麼時候用哪個 lane 的路由 doctrine、讓貴模型自己的 token 用量降到最低的成本紀律(輸出判斷而非輸出量、保持 context 精簡、想一次就交出去)、讓 context-free 委派安全的五段式 spec contract(外加一條 data-governance 規則,確保機密跟憑證不會被送進第三方的 `grok`/`codex` CLI),以及讓便宜 lane 保持誠實的驗證規則。
+這個 plugin 隨附 **orchestration skill**——教 session 什麼時候用哪個 lane 的路由 doctrine、讓貴模型自己的 token 用量降到最低的成本紀律(輸出判斷而非輸出量、保持 context 精簡、想一次就交出去)、讓 context-free 委派安全的 spec contract(外加一條 data-governance 規則,確保機密跟憑證不會被送進第三方的 `grok`/`codex` CLI),以及讓便宜 lane 保持誠實的驗證規則。
 
 ## 安裝
 

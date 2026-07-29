@@ -71,7 +71,9 @@ const agentFile = path.join(__dirname, "..", "..", "..", "agents", "claude-advis
 let systemPrompt;
 try {
   const raw = fs.readFileSync(agentFile, "utf8");
-  systemPrompt = raw.replace(/^---\n[\s\S]*?\n---\n/, "").trim();
+  // \r? on every break: a CRLF checkout (the default on Windows) otherwise fails
+  // to match, leaving the whole YAML header inside the persona prompt.
+  systemPrompt = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "").trim();
 } catch (err) {
   emit({ status: "unavailable", reason: `cannot read agent persona file: ${err.message}` });
   process.exit(0);

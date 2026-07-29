@@ -14,7 +14,7 @@ Claude Code lets every subagent run on a different model — and lets the sessio
 
 Tokens route by volume: the expensive model emits the fewest tokens (judgment and specs), cheap lanes emit the most (code). Implementation mechanics are ~90% of a session's tokens and Grok 4.5 handles them at near-parity — so this runs far cheaper than Fable-for-everything, and every implementation comes from a *different model family* than the architect that reviews it: cross-vendor review is built into the routing, not bolted on. For high-stakes work, race `grok-implementer` and `codex-implementer` on the same spec — each lane in its own `git worktree`, never the shared tree — and let the architect pick the stronger diff.
 
-The plugin ships the **orchestration skill** — the routing doctrine that teaches the session when to use each lane, the cost discipline that keeps the expensive model's own token volume minimal (emit judgment not volume, keep context lean, reason once then hand off), the five-part spec contract that makes context-free delegation safe (plus a data-governance rule that keeps secrets and credentials out of what gets sent to the third-party `grok`/`codex` CLIs), and the verification rules that keep cheap lanes honest.
+The plugin ships the **orchestration skill** — the routing doctrine that teaches the session when to use each lane, the cost discipline that keeps the expensive model's own token volume minimal (emit judgment not volume, keep context lean, reason once then hand off), the spec contract that makes context-free delegation safe (plus a data-governance rule that keeps secrets and credentials out of what gets sent to the third-party `grok`/`codex` CLIs), and the verification rules that keep cheap lanes honest.
 
 ## Install
 
