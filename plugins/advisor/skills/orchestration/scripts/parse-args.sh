@@ -33,6 +33,10 @@ userPrompt=""
 found_flag=0
 skip_next=0
 
+# Globbing off before the split: `set -- $raw` performs pathname expansion as
+# well as field splitting, so an unquoted *, ? or [...] anywhere in the task
+# text would be silently replaced by matching filenames from the caller's cwd.
+set -f
 # shellcheck disable=SC2086
 set -- $raw
 
