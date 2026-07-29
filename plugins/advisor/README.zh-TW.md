@@ -46,7 +46,7 @@ claude plugin update advisor@advisor
 - **Codex lane(選用):** `codex-implementer` agent 需要裝好並登入 [OpenAI Codex CLI](https://github.com/openai/codex)(`npm i -g @openai/codex`,然後 `codex login`)。它會以 `gpt-5.6-sol`、`model_reasoning_effort=high` 呼叫 **GPT-5.6 Sol**。GPT-5.6 的存取權在預覽期間可能受限;沒有模型存取權、沒裝/沒登入 CLI,或認證失敗時,agent 會回報 `STATUS: unavailable`,其他 lane 不受影響。
 - 提醒:如果你帳號裡沒有某個釘選的 Claude 模型,Claude Code 會靜默退回到你的 session 模型——這個模式會悄悄降級,不會報錯。如果結果感覺沒那麼厲害,檢查一下你的方案。(這種靜默退回只適用於 Claude 模型的釘選;grok 跟 codex 這兩個 lane 永遠會用結構化錯誤大聲回報失敗。)
 
-Claude Code 的模型解析順序:`CLAUDE_CODE_SUBAGENT_MODEL` 環境變數 → 每次呼叫的 `model` 參數 → agent frontmatter → session 模型。
+> **`CLAUDE_CODE_SUBAGENT_MODEL` 的優先權高於模型釘選。** 解析順序是:環境變數 → 每次呼叫的 `model` 參數 → agent frontmatter → session 模型,所以只要你的設定給了這個變數 `inherit` 以外的值,`claude-advisor` 就會跑在該變數上,永遠不會讀到 `model: fable`。skill 會把這種情況視為替身(stand-in)並在報告中指名;要恢復釘選,把變數設為 `inherit`(Claude Code ≥ 2.1.196)或直接移除——而且要改在 `settings.json` 裡,那裡的值會蓋過你在 shell 匯出的同名變數。
 
 ## 開始使用
 

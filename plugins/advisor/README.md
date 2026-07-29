@@ -46,7 +46,7 @@ Then start your session as the architect:
 - **Codex lane (optional):** the `codex-implementer` agent needs the [OpenAI Codex CLI](https://github.com/openai/codex) installed and authenticated (`npm i -g @openai/codex`, then `codex login`). It invokes **GPT-5.6 Sol** as `gpt-5.6-sol` with `model_reasoning_effort=high`. GPT-5.6 access may be limited during preview; without model access, an installed/authenticated CLI, or successful authentication, the agent reports `STATUS: unavailable` and the other lanes remain unaffected.
 - Heads-up: if a pinned Claude model isn't available on your account, Claude Code silently falls back to your session model — the pattern degrades quietly rather than erroring. If results feel unremarkable, check your plan. (This quiet fallback applies only to Claude model pins — the grok and codex lanes always fail loudly with a structured error.)
 
-Model resolution order in Claude Code: `CLAUDE_CODE_SUBAGENT_MODEL` env var → per-invocation `model` parameter → agent frontmatter → session model.
+> **`CLAUDE_CODE_SUBAGENT_MODEL` outranks the pin.** Model resolution runs env var → per-invocation `model` parameter → agent frontmatter → session model, so if your settings give that variable anything but `inherit`, `claude-advisor` runs on it and never reads `model: fable`. The skill treats that as a stand-in and names it in its reports; to restore the pin, set the variable to `inherit` (Claude Code ≥ 2.1.196) or remove it — in `settings.json`, whose value wins over the same variable exported in your shell.
 
 ## Use it
 
