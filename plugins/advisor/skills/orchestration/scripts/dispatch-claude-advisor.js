@@ -41,10 +41,9 @@ function emit(obj) {
 }
 
 const briefFile = process.argv[2];
-// The primary must be a full model name, not an alias: `degraded` below compares
-// it against modelUsage's key, which is always the resolved canonical id — an
-// alias here would report every successful run as degraded. The fallback has no
-// such constraint, so it uses the `opus` alias to track the newest Opus tier.
+// Either position takes an alias (`opus`) or a full id — `degraded` below matches
+// an alias against the canonical id it resolves to. The fallback default stays an
+// alias so it tracks the newest Opus tier without a code change.
 const model = process.argv[3] || "claude-fable-5";
 const fallbackModel = process.argv[4] || "opus";
 
@@ -196,7 +195,12 @@ if (!outcome.ok) {
 
 const modelUsage = outcome.parsed.modelUsage || {};
 const modelUsed = Object.keys(modelUsage)[0] || model;
-const degraded = modelUsed !== model;
+// modelUsage keys are always the resolved canonical id, while the caller may have
+// asked by alias. Comparing the two strings directly would report every run
+// pinned with `--advisor opus` as a degrade that never happened.
+const requested = model.toLowerCase();
+const answered = modelUsed.toLowerCase();
+const degraded = answered !== requested && !answered.includes(`-${requested}-`);
 
 fs.writeFileSync(outputFile, outcome.parsed.result || "");
 
