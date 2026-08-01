@@ -1,6 +1,6 @@
 {
   "name": "advisor",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Run your session on Claude's most capable model as a full-time architect while Grok and Codex handle implementation.",
   "author": {
     "name": "Madao",
