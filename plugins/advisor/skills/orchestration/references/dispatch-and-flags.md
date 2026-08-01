@@ -16,12 +16,15 @@ Takes the already-written consult brief as its first argument. It reads `agents/
 
 Judgment on `outputFile`'s contents stays with the architect, exactly as after an Agent-tool dispatch.
 
-`degradeReason` separates two failures that look alike:
+`degradeReason` separates causes that look alike from the outside:
 
-- `model_unavailable` — the CLI's own `--fallback-model` fired because the primary was overloaded or missing.
-- `credits_exhausted` — the primary's balance ran out. That arrives as HTTP 429, which the CLI's fallback does **not** cover, so the script retries on the fallback model itself.
+- `credits_exhausted` — the primary's balance ran out. That arrives as HTTP 429, which the CLI's `--fallback-model` does **not** cover, so the script retries on the fallback model itself.
+- `safety_fallback` — a safety classifier flagged the consult and Claude Code re-ran it somewhere the script never named. Only detectable when that target differs from both models passed in; with the default `opus` fallback alias every target is also "an opus", so this case usually surfaces as `undetermined`.
+- `undetermined` — the answer came from the model passed as `--fallback-model`. Both the CLI's availability fallback and a safety re-route produce exactly that, and nothing in the output tells them apart. Report it as undetermined; a guessed cause reads as evidence and isn't.
 
 The credit retry exists only here. Under the Agent tool, credit exhaustion belongs to Claude Code, so the two dispatch paths fail differently.
+
+Two traps on this path. A flagged request in non-interactive mode ends in a refusal instead of a re-route when `switchModelsOnFlag` is `false` in settings — the run completes and the refusal text lands in `outputFile`, so read the verdict before acting on `status`. And to find out whether local customizations are what trips the classifier, run the consult under `claude --safe-mode`, which drops CLAUDE.md, skills, MCP servers, and hooks while keeping git status and directory names.
 
 **codex-implementer**, and any read-only codex review — `node "${CLAUDE_SKILL_DIR}/scripts/dispatch-codex.js" <specFile> [--mode implement|review] [--model <slug>] [--timeout <seconds>] [--cd <dir>] [--pidfile <path>]`
 

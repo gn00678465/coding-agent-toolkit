@@ -17,10 +17,15 @@
 //   {"status":"invocation_error","reason":"claude exited 1: ..."} // claude ran and failed
 //   {"status":"unavailable","reason":"claude CLI not found on PATH"}
 //
-// On a degraded run, "degradeReason" says WHY the fallback answered:
-// "credits_exhausted" (the primary's balance ran out) or "model_unavailable"
-// (the CLI's own fallback fired on overload). Report it — the two mean
-// different things to whoever reads the verdict.
+// On a degraded run, "degradeReason" says WHY another model answered:
+//   "credits_exhausted" — the primary's balance ran out and this script retried.
+//   "safety_fallback"   — Claude Code's own content classifier re-ran the request
+//                         somewhere we never named (see the note below).
+//   "undetermined"      — the answer came from the model we passed as
+//                         --fallback-model, which both the CLI's availability
+//                         fallback and the safety classifier can produce.
+// Report the value as given. "undetermined" is a real answer: naming a cause
+// this script cannot observe would be worse than leaving it open.
 //
 // This script only dispatches and captures — it does not read the diff, does
 // not re-run verification, and does not write a narrative report. That
@@ -195,21 +200,46 @@ if (!outcome.ok) {
   process.exit(0);
 }
 
+// modelUsage routinely carries more than one model: Claude Code bills small
+// auxiliary calls (a haiku entry shows up on ordinary runs) alongside the model
+// that answered. Taking the first key reports whichever the object happened to
+// list first, so pick by output volume instead — the model that wrote the
+// verdict is the one that emitted it, while auxiliary calls and an attempt cut
+// short by a classifier both emit almost nothing. Cost breaks a tie.
 const modelUsage = outcome.parsed.modelUsage || {};
-const modelUsed = Object.keys(modelUsage)[0] || model;
+const modelUsed =
+  Object.entries(modelUsage).sort(
+    (a, b) => (b[1].outputTokens || 0) - (a[1].outputTokens || 0) || (b[1].costUSD || 0) - (a[1].costUSD || 0),
+  )[0]?.[0] || model;
+
 // modelUsage keys are always the resolved canonical id, while the caller may have
 // asked by alias. Comparing the two strings directly would report every run
 // pinned with `--advisor opus` as a degrade that never happened.
-const requested = model.toLowerCase();
-const answered = modelUsed.toLowerCase();
-const degraded = answered !== requested && !answered.includes(`-${requested}-`);
+function isSameModel(requestedName, answeredId) {
+  if (!requestedName) return false;
+  const a = requestedName.toLowerCase();
+  const b = answeredId.toLowerCase();
+  return b === a || b.includes(`-${a}-`);
+}
+
+const degraded = !isSameModel(model, modelUsed);
+
+// Fable 5 and Opus 5 run safety classifiers for cybersecurity and biology
+// content; a flagged consult is re-run on a model Claude Code picks, not one we
+// passed. Reading security-adjacent code is exactly what this lane does, so the
+// architect has to be told which model actually formed the verdict.
+//
+// An answer from a model we named neither as primary nor as fallback can only be
+// that re-route. The reverse does not hold: with `opus` given as the fallback
+// alias, every safety target is also "an opus", so the common case stays
+// undetermined rather than being labelled with a cause we did not observe.
+let reason = null;
+if (degraded) {
+  if (degradeReason) reason = degradeReason;
+  else if (!isSameModel(fallbackModel, modelUsed)) reason = "safety_fallback";
+  else reason = "undetermined";
+}
 
 fs.writeFileSync(outputFile, outcome.parsed.result || "");
 
-emit({
-  status: "complete",
-  outputFile,
-  modelUsed,
-  degraded,
-  degradeReason: degraded ? degradeReason || "model_unavailable" : null,
-});
+emit({ status: "complete", outputFile, modelUsed, degraded, degradeReason: reason });
