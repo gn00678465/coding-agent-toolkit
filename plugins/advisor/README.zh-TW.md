@@ -10,11 +10,11 @@ Claude Code 讓每個 subagent 都能跑在不同模型上——而且 session �
 |---|---|---|---|
 | Routine | **Grok 4.5** | `grok-implementer` agent(預設) | spec 已經完全決定結果——Grok 透過 [Grok CLI](https://x.ai/cli) 負責打字 |
 | Cross-vendor | GPT-5.6 Sol(高推理) | `codex-implementer` agent | 正確性要求高,或想要一份獨立實作來比對 |
-| Judgment | Fable 5(→ 不可用時降級為 Opus 4.8) | `claude-advisor` agent | 承諾邊界(commitment boundaries)——見下方 |
+| Judgment | Fable 5(→ 不可用時降級為 Opus) | `claude-advisor` agent | 承諾邊界(commitment boundaries)——見下方 |
 
-Token 依照用量分配:貴的模型只出最少的 token(判斷跟 spec),便宜的 lane 出最多(程式碼)。實作機制佔一個 session 約 90% 的 token,而 Grok 4.5 能以接近同等的品質處理——所以這樣跑遠比全程用 Fable 便宜,而且每一次實作都來自跟架構師**不同的模型家族**:跨供應商審查是內建在路由裡的,不是事後補上去的。對高風險工作,可以讓 `grok-implementer` 跟 `codex-implementer` 對同一份 spec 賽跑,architect 再挑出比較強的 diff。
+Token 依照用量分配:貴的模型只出最少的 token(判斷跟 spec),便宜的 lane 出最多(程式碼)。實作機制佔一個 session 約 90% 的 token,而 Grok 4.5 能以接近同等的品質處理——所以這樣跑遠比全程用 Fable 便宜,而且每一次實作都來自跟架構師**不同的模型家族**:跨供應商審查是內建在路由裡的,不是事後補上去的。對高風險工作,可以讓 `grok-implementer` 跟 `codex-implementer` 對同一份 spec 賽跑——每個 lane 各自在獨立的 `git worktree` 裡跑,絕不共用同一棵工作樹——architect 再挑出比較強的 diff。
 
-這個 plugin 隨附 **orchestration skill**——教 session 什麼時候用哪個 lane 的路由 doctrine、讓貴模型自己的 token 用量降到最低的成本紀律(輸出判斷而非輸出量、保持 context 精簡、想一次就交出去)、讓 context-free 委派安全的五段式 spec contract(外加一條 data-governance 規則,確保機密跟憑證不會被送進第三方的 `grok`/`codex` CLI),以及讓便宜 lane 保持誠實的驗證規則。
+這個 plugin 隨附 **orchestration skill**——教 session 什麼時候用哪個 lane 的路由 doctrine、讓貴模型自己的 token 用量降到最低的成本紀律(輸出判斷而非輸出量、保持 context 精簡、想一次就交出去)、讓 context-free 委派安全的 spec contract(外加一條 data-governance 規則,確保機密跟憑證不會被送進第三方的 `grok`/`codex` CLI),以及讓便宜 lane 保持誠實的驗證規則。
 
 ## 安裝
 
@@ -41,12 +41,13 @@ claude plugin update advisor@advisor
 ## 需求
 
 - **Claude Code ≥ 2.1.170**,訂閱方案要包含 Fable 5(Pro、Max、Team 或 Enterprise——目前所有消費者方案都符合)。
-- **完全沒有 Fable 權限**(例如用 API key 計費)?把 session 改用 `/model opus`,並把 advisor 檔案裡的 `model: fable` 改成 `model: opus`。同樣的模式,模型層級整體降一階。(這跟 Fable **暫時性不可用**是兩回事——那種情況 Judgment lane 已經會自動降級到 Opus 4.8,不需要手動改。)
+- **完全沒有 Fable 權限**(例如用 API key 計費)?把 session 改用 `/model opus`,並把 advisor 檔案裡的 `model: fable` 改成 `model: opus`。同樣的模式,模型層級整體降一階。(這跟 Fable **暫時性不可用**是兩回事——那種情況 Judgment lane 已經會自動降級到 Opus,不需要手動改。降級目標是用 `opus` **alias** 釘的,永遠指向最新一代 Opus,不會因為新版發佈而過時。)
 - **Grok lane(預設的實作者):** `grok-implementer` agent 需要裝好並登入 [xAI Grok CLI](https://x.ai/cli)(從 [x.ai/cli](https://x.ai/cli) 安裝,然後 `grok login`)。它會以無介面模式驅動 **Grok 4.5**(`grok --prompt-file … -m grok-4.5`)。沒裝的話,agent 會回報 `STATUS: unavailable`——它絕對不會靜默退回成 Claude 模型。
 - **Codex lane(選用):** `codex-implementer` agent 需要裝好並登入 [OpenAI Codex CLI](https://github.com/openai/codex)(`npm i -g @openai/codex`,然後 `codex login`)。它會以 `gpt-5.6-sol`、`model_reasoning_effort=high` 呼叫 **GPT-5.6 Sol**。GPT-5.6 的存取權在預覽期間可能受限;沒有模型存取權、沒裝/沒登入 CLI,或認證失敗時,agent 會回報 `STATUS: unavailable`,其他 lane 不受影響。
+- **安全分類器會改道 Judgment lane。** Fable 5 與 Opus 5 會對 cybersecurity 與 biology 內容做安全檢查,而這層防護依 Anthropic 自己的說法是刻意放寬的,有時會誤判正當的開發工作。被標記的 consult 會自動改由另一個模型重跑——從 Fable 出發,biology 標記落到 Opus 5,cybersecurity 標記落到 Opus 4.8——所以針對認證、加密或輸入驗證程式碼的判決,可能不是出自你釘選的那個模型。這在這類領域是預期中的路由,不是帳號有問題。skill 會把它視為替身(stand-in)並指名實際作答的模型;想確認是不是自己的 CLAUDE.md、skills 或 hooks 觸發的,用 `claude --safe-mode` 跑一次。
 - 提醒:如果你帳號裡沒有某個釘選的 Claude 模型,Claude Code 會靜默退回到你的 session 模型——這個模式會悄悄降級,不會報錯。如果結果感覺沒那麼厲害,檢查一下你的方案。(這種靜默退回只適用於 Claude 模型的釘選;grok 跟 codex 這兩個 lane 永遠會用結構化錯誤大聲回報失敗。)
 
-Claude Code 的模型解析順序:`CLAUDE_CODE_SUBAGENT_MODEL` 環境變數 → 每次呼叫的 `model` 參數 → agent frontmatter → session 模型。
+> **`CLAUDE_CODE_SUBAGENT_MODEL` 的優先權高於模型釘選。** 解析順序是:環境變數 → 每次呼叫的 `model` 參數 → agent frontmatter → session 模型,所以只要你的設定給了這個變數 `inherit` 以外的值,`claude-advisor` 就會跑在該變數上,永遠不會讀到 `model: fable`。skill 會把這種情況視為替身(stand-in)並在報告中指名;要恢復釘選,把變數設為 `inherit`(Claude Code ≥ 2.1.196)或直接移除——而且要改在 `settings.json` 裡,那裡的值會蓋過你在 shell 匯出的同名變數。
 
 ## 開始使用
 
@@ -81,8 +82,9 @@ accepting any lane's report.
 
 `agents/*.md` 是 Claude Code 專屬的 subagent 定義檔——只有 Claude Code 的 Agent 工具能載入。如果你的 session 本身是跑在別的 CLI 裡(Codex、Grok,或任何非 Claude Code 的 shell):
 
-- `claude-advisor` 用內附的腳本:`node scripts/dispatch-claude-advisor.js <briefFile> [model] [fallbackModel]`。把 advisor 的 persona 灌進一個裸的 `claude -p` 子行程,是一個真正棘手的機制問題(system prompt 注入、model-fallback 偵測),值得寫一支專門的腳本,而不是每次呼叫都重新兜一次。它會印出單行 JSON 狀態(`{"status": "complete"|"timeout"|"unavailable", "outputFile": ..., "modelUsed": ..., "degraded": ...}`),不會讀 diff、不會重跑驗證、也不會寫報告——這些判斷工作留給架構師,跟透過 Agent 工具派工時一樣。
-- `grok-implementer`/`codex-implementer` 沒有對應腳本——spec 全文就是完整的 prompt,直接照 `agents/grok-implementer.md`/`agents/codex-implementer.md` 裡記載的方式組出 CLI 呼叫就好。
+- `claude-advisor` 用內附的腳本:`node scripts/dispatch-claude-advisor.js <briefFile> [model] [fallbackModel]`。把 advisor 的 persona 灌進一個裸的 `claude -p` 子行程,是一個真正棘手的機制問題(system prompt 注入、model-fallback 偵測),值得寫一支專門的腳本,而不是每次呼叫都重新兜一次。它會印出單行 JSON 狀態(`{"status": "complete"|"timeout"|"invocation_error"|"unavailable", "outputFile": ..., "modelUsed": ..., "degraded": ...}`),不會讀 diff、不會重跑驗證、也不會寫報告——這些判斷工作留給架構師,跟透過 Agent 工具派工時一樣。
+- `codex-implementer`——以及任何唯讀的 codex 審查 pass——用內附的 dispatcher:`node scripts/dispatch-codex.js <specFile> [--mode implement|review] [--timeout <秒>] [--pidfile <path>]`。spec 全文確實就是完整的 prompt,但行程生命週期並不簡單:腳本會在寫入 spec 後關閉 codex 的 stdin(繼承到開著的 pipe 會讓 `codex exec` 永久等待 EOF)、在行程內強制執行逾時上限、逾時或取消時擊殺整棵行程樹,並在啟動當下記錄子行程 PID 供安全重派查核。在任何 host 上都禁止手組 `codex exec` 指令。
+- `grok-implementer` 沒有對應腳本——`grok --prompt-file` 從檔案讀 spec(沒有 stdin 風險),直接照 `agents/grok-implementer.md` 裡記載的方式組出 CLI 呼叫就好。
 
 ## 承諾邊界(Commitment boundaries)
 
