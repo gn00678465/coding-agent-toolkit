@@ -1,0 +1,6 @@
+{
+  "name": "trim-instruction-bloat",
+  "version": "0.1.0",
+  "description": "Curate and slim bloated AGENTS.md / CLAUDE.md files with progressive disclosure: minimal root, on-demand category docs, contradiction and redundancy cleanup",
+  "skills": "./skills/"
+}

@@ -2,7 +2,7 @@
     "name": "coding-agent-toolkit",
     "metadata": {
         "description": "Marketplace registry for Claude Code, GitHub Copilot & Codex workflow plugins",
-        "version": "0.4.1"
+        "version": "0.5.0"
     },
     "owner": {
         "name": "gn00678465",
@@ -23,6 +23,11 @@
             "name": "review-forge",
             "source": "./plugins/review-forge",
             "description": "Multi-model code review workflow: independent reviews, synthesis, cross-voting, confidence-ranked final reports, approved fixes, and independent verification"
+        },
+        {
+            "name": "trim-instruction-bloat",
+            "source": "./plugins/trim-instruction-bloat",
+            "description": "Curate and slim bloated AGENTS.md / CLAUDE.md files with progressive disclosure: minimal root, on-demand category docs, contradiction and redundancy cleanup"
         }
     ]
 }
