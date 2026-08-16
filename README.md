@@ -9,6 +9,7 @@
 | `git-assistant` | 0.1.4 | Claude Code / Codex | Commit / PR 工作流插件，包含 `commit-message`、`pull-request` 等技能 |
 | `advisor` | 0.1.4 | Claude Code / Codex | 架構師模式 model-routing：session 跑在 Claude 最強模型上負責規格與驗證，實作路由給 Grok 4.5（Grok CLI）與 GPT-5.6 Sol（Codex），並提供承諾邊界 advisor |
 | `review-forge` | 0.1.0 | Claude Code / Codex / OpenCode | 多模型程式碼審查工作流：獨立審查 → 彙總去重 → 交叉投票 → 信心排序最終報告 → 核准修復 → 獨立驗證 |
+| `trim-instruction-bloat` | 0.1.0 | Claude Code / Codex | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
 
 ## Claude Code 安裝方式
 
@@ -25,6 +26,7 @@
 /plugin install git-assistant@coding-agent-toolkit
 /plugin install advisor@coding-agent-toolkit
 /plugin install review-forge@coding-agent-toolkit
+/plugin install trim-instruction-bloat@coding-agent-toolkit
 /reload-plugins
 ```
 
@@ -35,7 +37,8 @@
   "enabledPlugins": {
     "git-assistant@coding-agent-toolkit": true,
     "advisor@coding-agent-toolkit": true,
-    "review-forge@coding-agent-toolkit": true
+    "review-forge@coding-agent-toolkit": true,
+    "trim-instruction-bloat@coding-agent-toolkit": true
   }
 }
 ```
@@ -45,6 +48,7 @@
 - `git-assistant`: `commit-message`、`pull-request`
 - `advisor`: `orchestration` skill 與 `claude-advisor`、`grok-implementer`、`codex-implementer` agents
 - `review-forge`: `review-forge` skill（`review` / `synthesize` / `vote` / `report` / `fix` / `verify` 六階段命令）
+- `trim-instruction-bloat`: `trim-instruction-bloat` skill（AGENTS.md / CLAUDE.md 等 agent 指令文件的精簡與重構）
 
 > `advisor` 另需先安裝 [Grok CLI](https://x.ai/cli) 與 Codex CLI，並確認 `grok`、`codex` 可於 `PATH` 中執行。
 
@@ -62,6 +66,7 @@ codex plugin marketplace add gn00678465/coding-agent-toolkit
 codex plugin add git-assistant@coding-agent-toolkit
 codex plugin add advisor@coding-agent-toolkit
 codex plugin add review-forge@coding-agent-toolkit
+codex plugin add trim-instruction-bloat@coding-agent-toolkit
 ```
 
 每個 skill 目錄內含 `agents/openai.yaml` 提供 Codex UI 顯示名稱與預設 prompt。
@@ -94,6 +99,7 @@ cp -r plugins/review-forge/skills/review-forge .opencode/skills/
 - [`plugins/advisor`](./plugins/advisor)
 - [`plugins/git-assistant`](./plugins/git-assistant)
 - [`plugins/review-forge`](./plugins/review-forge)
+- [`plugins/trim-instruction-bloat`](./plugins/trim-instruction-bloat)
 
 ## 參考
 
