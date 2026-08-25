@@ -1,8 +1,11 @@
 # Gate entry point
 
 Persist one command that runs every layer in sequence and fails on the first
-broken one (e.g. `tools/gate.sh`: tests+coverage → types → lint → mutation →
-real execution). Start the script by deleting stale artifacts from previous
+broken one (e.g. `tools/gate.sh`: tests → types → lint → suite health →
+coverage → mutation → real execution). That order is not cosmetic: suite health
+comes before coverage and mutation because both derive their numbers from suite
+behaviour, so running them first yields a number that looks like evidence and
+is not (SKILL.md, "Layer dependencies"). Start the script by deleting stale artifacts from previous
 runs (old coverage data, report files) so no layer can accidentally read a
 prior run's output — freshness by mechanism, not discipline. (Keep tool
 databases that accumulate value, e.g. hypothesis's example store.) The "final

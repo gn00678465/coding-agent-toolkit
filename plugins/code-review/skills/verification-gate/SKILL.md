@@ -185,6 +185,24 @@ Run every applicable layer. Scale to the task (see "Calibration"), but never
 skip a layer silently — if a layer doesn't apply or a tool is unavailable,
 record that in the evidence report with the reason.
 
+**Layer dependencies — some layers are only meaningful after another one
+passes.** The layer list is not a flat set, and running a dependent layer first
+produces a number that looks like evidence and is not:
+
+- **Mutation and changed-line coverage both rest on suite determinism.** A
+  flaky suite inflates the mutation kill score (see the attribution note below)
+  and makes coverage of a given line vary between runs. **Order suite health
+  before both**, and treat the dependency as real: if suite health is
+  `SUBSTITUTED` or `UNAVAILABLE`, neither dependent layer may report a bare
+  number — each must state that its result rests on determinism that was never
+  demonstrated, and what that leaves unproven.
+- **Under a fail-first entry point this ordering has teeth**: a failing suite
+  health layer leaves mutation and coverage `NOT REACHED`. That is the correct
+  outcome, not a gap to work around by reordering.
+- The general rule: when layer B's verdict is derived from layer A's subject
+  rather than from its own inspection, B runs after A and inherits A's status.
+  Say so in EVIDENCE where it applies.
+
 | Layer | What it catches | How |
 |---|---|---|
 | Full test suite | regressions | project's test command, zero NEW failures (baseline note below) |
@@ -237,10 +255,45 @@ properties verify anything; survivors there mean the invariants have blind
 spots (a common one: a one-sided invariant like "never exceeds limit" cannot
 catch fail-closed bugs — pair it with the opposite bound).
 
+Attribution note — **a mutation tool's maturity does not transfer to its
+verdict, so mutation tools do not get the off-the-shelf exemption.** Every other
+checker's verdict is a direct function of what it inspected: `tsc` reports zero
+errors because it type-checked the code. A mutation tool's `caught` is
+second-order — it means *the suite failed while this mutant was applied*, and
+the tool then attributes that failure to the mutant. The tool is behaving
+correctly when it does this. If the suite failed for any other reason — a flaky
+test, contention between the tool's parallel jobs, a stale build artifact, a
+timeout — `caught` is still reported and the attribution is still wrong. No
+amount of tool maturity fixes that, because the unsound component is the
+inference, not the tool.
+
+The error runs one way only: a spurious failure turns a survivor into a kill,
+never a kill into a survivor. So it inflates the score and **can never surface
+as a red gate — the layer stays green precisely because it is broken**, exactly
+the property `references/mutation.md` names for hand-rolled runners. Two
+controls, both recorded in EVIDENCE:
+
+1. **Baseline under load** (the one that matters). The unmutated baseline must
+   pass repeatedly **under the same concurrency the mutation run uses** — not
+   the sequential single-process run the suite-health layer does. One baseline
+   failure invalidates the whole round's score; report it as such rather than
+   reporting the score. This is cheap and it targets the actual mechanism.
+2. **Sample re-verification of kills.** Re-apply a sample of the `caught`
+   mutants one at a time and confirm a test actually fails for each. State the
+   sample size and be honest about its power: at a misattribution rate of a few
+   percent a sample of five finds nothing most of the time, so this control
+   supports the first one and does not replace it.
+
+If the mutation layer is run twice for any reason, compare the `caught` and
+`missed` sets. **Sets that differ between runs mean the layer is
+nondeterministic and its score is not evidence** — that comparison is the most
+sensitive check available, and worth doing once when the layer is first built.
+
 Checker note — the gate is only as trustworthy as its checkers, and the
 dangerous checker failure is fail-open: nothing crashes, the layer prints pass.
-Off-the-shelf tools (pytest, mypy, tsc…) have earned their failure behavior;
-home-grown checks — grep gates, custom scripts, the manual mutation runner —
+Off-the-shelf tools (pytest, mypy, tsc…) have earned their failure behavior —
+**with one exception, mutation tools, for the reason in the attribution note
+below**; home-grown checks — grep gates, custom scripts, the manual mutation runner —
 have not, so two rules apply to them: (1) **fail closed** — a crash, an
 unreadable input, an unexpected exit code, or an item silently skipped inside
 gate code is a hard failure of the layer, never a pass; no `|| true`, no

@@ -87,18 +87,24 @@ table: Baseline and RED reconstruction are runs against the base ref and cannot
 come from it. Diagnostics from earlier runs belong in Honest notes, marked as
 not from the final run — never in a cell here.
 
-| Layer | Command | Result |
-|---|---|---|
-| Tests | <cmd> | <N> passed, 0 failed (baseline: <N> pre-existing) |
-| Types | <cmd> | 0 errors |
-| Lint | <cmd> | 0 warnings |
-| Changed-line coverage | <producer cmd> + <gate cmd> | <covered>/<executable> changed executable lines; <n> not executable; **<n> executable with no coverage mapping** (list any misses; an unmapped count above zero caps what this layer can claim) |
-| Mutation | <tool or "manual"> | <killed>/<total> killed; execution proved by <check> |
-| Property-based | <cmd> | <N> properties, <examples/property> examples each |
-| Complexity budget | <how checked> | <observed> |
-| Real execution | <cmd> | <observed output> |
-| Supply chain | <cmd> | 0 known vulns; new deps: none (or list, each ↔ justification) |
-| Suite health | <cmd> | randomized order (seed <n>), all passed |
+Every row carries the threshold that decides it. A row may read `PASS` **only**
+when its Result satisfies its own Threshold cell, and a Threshold you cannot
+state is a sign the layer is a report rather than a gate layer — fix the layer,
+do not leave the cell empty. Order the rows so any layer that depends on
+another (see SKILL.md's layer dependencies) comes after it.
+
+| Layer | Command | Threshold (what makes this pass) | Result |
+|---|---|---|---|
+| Tests | <cmd> | 0 new failures vs baseline | <N> passed, 0 failed (baseline: <N> pre-existing) |
+| Types | <cmd> | 0 new errors | 0 errors |
+| Lint | <cmd> | 0 new warnings | 0 warnings |
+| Suite health | <cmd> | randomized order, 0 flakes — **runs before mutation and coverage** | randomized order (seed <n>), all passed |
+| Changed-line coverage | <producer cmd> + <gate cmd> | every changed executable line covered; 0 unmapped | <covered>/<executable> changed executable lines; <n> not executable; **<n> executable with no coverage mapping** (list any misses; an unmapped count above zero caps what this layer can claim) |
+| Mutation | <tool or "manual"> | 0 surviving mutants that are not classified equivalent | <killed>/<total> killed; <n> survivors, each classified; baseline-under-load and kill-sample controls in Negative controls |
+| Property-based | <cmd> | all properties hold | <N> properties, <examples/property> examples each |
+| Complexity budget | <how checked> | <stated budget> | <observed> |
+| Real execution | <cmd> | <expected observable behaviour> | <observed output> |
+| Supply chain | <cmd> | 0 known vulns; every new dep justified | 0 known vulns; new deps: none (or list, each ↔ justification) |
 
 ## Negative controls
 
@@ -106,6 +112,11 @@ Home-grown checks are only trusted after being seen to fail. One line each.
 
 - <check> — fed <known-bad input>, failed as expected with <observed failure>
 - <check> — proved non-vacuous by removing <defence> and watching the control go red
+- Mutation baseline under load — unmutated baseline run <n> times at the
+  mutation tool's own concurrency, <n>/<n> passed (any failure invalidates the
+  round's score rather than lowering it)
+- Mutation kill sample — <n> of <total> `caught` mutants re-applied individually,
+  <n>/<n> confirmed a failing test; sample power stated, not implied
 - (or "none — no home-grown checks in this gate")
 
 ## Layers not run as specified
@@ -117,6 +128,9 @@ Split by status, because they mean different things to a reader:
 - **SUBSTITUTED:** <layer — what ran instead, and what that cannot detect>
 - **NOT REACHED (gate stopped at an earlier failing layer):** <layers — and
   which layer stopped the run>
+- **DEPENDENCY UNMET (ran, but the layer it rests on did not pass):** <layer —
+  which prerequisite was `SUBSTITUTED`/`UNAVAILABLE`/failed, and what that
+  leaves unproven about this layer's number>
 - (or "none")
 
 `SUBSTITUTED` may never be written as a pass. Neither may `NOT REACHED`: a

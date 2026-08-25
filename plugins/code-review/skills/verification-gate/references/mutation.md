@@ -2,11 +2,30 @@
 
 **Reach for the project's mutation tool first.** A real tool generates mutants
 from the syntax tree, so it cannot apply a mutant to code that has moved and it
-cannot report a mutant it did not run. A hand-written mutant list matched
-against source text is a second copy of the code: it goes stale on every
-refactor of the thing it guards, and it fails in the one direction no gate
-can catch. Use the procedure below when no tool exists for the language, not as
-a default.
+cannot report a mutant it did not run.
+
+That is not the same as being trustworthy about *kills*. A tool reports `caught`
+when the suite failed while the mutant was applied, and attributes the failure
+to the mutant; a flaky test, contention between the tool's own parallel jobs, or
+a stale artifact produces the same `caught` with a wrong attribution. The error
+inflates the score and never deflates it, so it can never make the gate red.
+**Tool-based runs therefore need the controls in SKILL.md's attribution note
+too** — the unmutated baseline run repeatedly at the tool's own concurrency, and
+a stated-size sample of kills re-verified one at a time. Both are cheap relative
+to the mutation run itself.
+
+Two notes on re-verifying a kill by hand, because getting this wrong produces a
+false accusation rather than a finding: apply the mutant to the same source
+state the tool used, and **run the same test command the tool ran**. Mutants are
+frequently killed by tests in a *different* crate or package from the one they
+mutate, so a re-check scoped to the mutated unit will show a survivor that the
+full command kills. A disagreement between a tool run and a hand check is not
+evidence about the tool until the scope of both is known to match.
+
+A hand-written mutant list matched against source text is a second copy of the
+code: it goes stale on every refactor of the thing it guards, and it fails in
+the one direction no gate can catch. Use the procedure below when no tool exists
+for the language, not as a default.
 
 **A hand-rolled runner must prove it executed each mutant.** This is the sharp
 edge, and the upstream project's own demo found it: two same-size mutants
