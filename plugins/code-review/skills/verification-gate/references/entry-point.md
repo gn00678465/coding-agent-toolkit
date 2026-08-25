@@ -240,6 +240,18 @@ reports — into `artifact_root` before running it. Instrumented binaries and
 coverage runners in particular drop raw profile files next to whatever they
 load, which lands them in product paths.
 
+**Redirect output; never redirect a directory the tool isolates per job.** A
+build or target directory is not incidental output — it is working state, and
+some tools keep one per parallel worker on purpose. Pointing them all at one
+path under `artifact_root` looks tidy and silently removes the isolation. The
+observed case: a mutation runner given a single shared `CARGO_TARGET_DIR` while
+running four parallel jobs, so mutants executed binaries other mutants had just
+built. 412 of its 414 logs recorded contention on that one build directory, and
+three comparison-operator mutants were recorded as killed by an arithmetic
+overflow that only a *different* mutant could produce. Before redirecting
+anything, ask whether the tool runs jobs concurrently against that path; if it
+does, give each job its own, and redirect only the reports.
+
 Check the source state **twice**: once before the layers and once after the
 final layer. A provenance check that runs only at the start certifies a tree
 that the run itself may have changed by the time the report is written.

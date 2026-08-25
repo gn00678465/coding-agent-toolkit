@@ -267,22 +267,44 @@ timeout — `caught` is still reported and the attribution is still wrong. No
 amount of tool maturity fixes that, because the unsound component is the
 inference, not the tool.
 
-The error runs one way only: a spurious failure turns a survivor into a kill,
-never a kill into a survivor. So it inflates the score and **can never surface
-as a red gate — the layer stays green precisely because it is broken**, exactly
-the property `references/mutation.md` names for hand-rolled runners. Two
-controls, both recorded in EVIDENCE:
+Two mechanisms produce this, and they fail differently. A **flaky suite** runs
+one way only — a spurious failure turns a survivor into a kill, never the
+reverse — so it inflates the score and can never surface as a red gate; the
+layer stays green precisely because it is broken. **Shared build or working
+state between the tool's parallel jobs** is worse: a job can test a binary
+another job built, which manufactures kills *and* misses, so the entire
+classification stops meaning anything rather than merely reading high. Give each
+job its own build directory (see `references/entry-point.md`) — and note that a
+well-meaning "send tool output to `artifact_root`" is a common way to destroy
+that isolation.
+
+**Before accepting a kill, check that the mutation could plausibly have caused
+the failure you are looking at.** "A test failed" and "this mutation made the
+test fail" are different claims, and the second is the one the score rests on.
+Read the failure: an arithmetic overflow reported in a file containing no
+arithmetic of that kind, an assertion failure whose line number is a struct
+literal, a panic in code the mutant cannot reach — each is a causal
+impossibility and marks the run as contaminated, not the mutant as caught. This
+check catches what scope-matching cannot, and it is the easier one to skip
+because a contaminated failure looks specific and convincing.
+
+Three controls, all recorded in EVIDENCE:
 
 1. **Baseline under load** (the one that matters). The unmutated baseline must
    pass repeatedly **under the same concurrency the mutation run uses** — not
    the sequential single-process run the suite-health layer does. One baseline
    failure invalidates the whole round's score; report it as such rather than
    reporting the score. This is cheap and it targets the actual mechanism.
-2. **Sample re-verification of kills.** Re-apply a sample of the `caught`
-   mutants one at a time and confirm a test actually fails for each. State the
-   sample size and be honest about its power: at a misattribution rate of a few
-   percent a sample of five finds nothing most of the time, so this control
-   supports the first one and does not replace it.
+2. **Per-job isolation, asserted rather than assumed.** Confirm the tool is not
+   sharing a build directory across concurrent jobs, and record how you
+   confirmed it. Contention messages in the tool's own logs are the cheapest
+   evidence that it is.
+3. **Sample re-verification of kills.** Re-apply a sample of the `caught`
+   mutants one at a time, at the same source state and with the same test
+   command, and confirm a test fails *for a reason the mutation can explain*.
+   State the sample size and be honest about its power: at a misattribution rate
+   of a few percent a sample of five finds nothing most of the time, so this
+   control supports the first two and does not replace them.
 
 If the mutation layer is run twice for any reason, compare the `caught` and
 `missed` sets. **Sets that differ between runs mean the layer is

@@ -7,8 +7,11 @@ cannot report a mutant it did not run.
 That is not the same as being trustworthy about *kills*. A tool reports `caught`
 when the suite failed while the mutant was applied, and attributes the failure
 to the mutant; a flaky test, contention between the tool's own parallel jobs, or
-a stale artifact produces the same `caught` with a wrong attribution. The error
-inflates the score and never deflates it, so it can never make the gate red.
+a stale artifact produces the same `caught` with a wrong attribution. A flaky
+test only inflates the score, so it can never make the gate red. Shared build
+state between parallel jobs is worse — a job may test a binary another job
+built, manufacturing both false kills and false misses, which leaves the whole
+classification meaningless rather than merely optimistic.
 **Tool-based runs therefore need the controls in SKILL.md's attribution note
 too** — the unmutated baseline run repeatedly at the tool's own concurrency, and
 a stated-size sample of kills re-verified one at a time. Both are cheap relative
