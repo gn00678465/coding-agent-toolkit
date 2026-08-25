@@ -107,6 +107,16 @@ drop a layer), a duplicate is rc 2, a layer is recorded only after its command
 succeeds, a failure preserves the original return code and names the layer, and
 `finish_gate` refuses to print success while any expected layer is missing.
 
+`GATE_EXPECTED_LAYERS` above is one project's manifest, not a required set —
+yours lists the layers *you* run, and `must-not-scans` is only in it because
+that project had negative constraints expressible as a forbidden pattern (a
+credential shape that must not appear in config, a debug flag that must not
+ship). A project with no such constraint has no such layer, and drops it from
+the manifest rather than shipping a scan of nothing. If you keep the layer,
+give it real patterns and real paths — a `must_not_match` helper that exists
+only to be self-tested guards nothing, and its green self-test reads in EVIDENCE
+like a constraint was enforced.
+
 ## Reference pattern — must-find-nothing grep
 
 ```sh
@@ -116,6 +126,14 @@ succeeds, a failure preserves the original return code and names the layer, and
 # failure modes apart). Any nonzero return fails the gate under set -e.
 must_not_match() {
   pattern=$1; shift
+  # An empty path list is the fail-open trap: with no file operands grep reads
+  # stdin, finds nothing in an empty or closed stream, and returns 1 — the pass
+  # code. A caller whose file list came out empty (a glob that matched nothing,
+  # a `git diff --name-only` with no hits) would score a silent pass on a scan
+  # that inspected nothing. Refuse instead, with the broken-checker code.
+  if [ "$#" -eq 0 ]; then
+    echo "FAIL: no paths given to scan (fail closed): $pattern"; return 2
+  fi
   if grep -rniE "$pattern" "$@"; then
     echo "FAIL: forbidden pattern present: $pattern"; return 1
   elif [ $? -ne 1 ]; then
@@ -124,10 +142,23 @@ must_not_match() {
 }
 ```
 
+The empty-path guard is the general shape of the trap, not a quirk of grep:
+**any checker that takes a work list can be handed an empty one, and "inspected
+nothing" must never share an exit code with "found nothing".** Apply the same
+guard to every home-grown check that iterates over files, mutants, or units.
+
 ## Self-tests to run before the real layers
 
 These are negative controls for the entry point itself, and they belong at the
-top of the script so a broken harness fails before it can print anything green:
+top of the script so a broken harness fails before it can print anything green.
+
+**This list is a floor, not an inventory.** It covers the failure modes seen so
+far; it does not enumerate the ways your harness can fail open. For each
+home-grown check you write, ask what input makes it report a pass while
+inspecting nothing — empty work list, absent input file, a filter that matched
+zero items, a loop that never entered — and add a control for that. Copying
+these three and stopping is how a known-good reference propagates an unknown
+gap.
 
 - **Orchestration self-test**: omitting a layer must be named and must not
   print green; a failing command must preserve its return code and stop the
@@ -136,11 +167,76 @@ top of the script so a broken harness fails before it can print anything green:
   so the self-test cannot be a script that only ever fails.
 - **Checker self-test**: a forbidden pattern present must fail; a clean tree
   must pass (otherwise the gate is one that can never pass); a nonexistent path
-  must fail with the distinguishable rc 2.
+  must fail with the distinguishable rc 2; **an empty path list must fail with
+  rc 2** — the scan that inspected nothing must not be able to report the same
+  result as the scan that found nothing.
 - **Source-state self-test**: the provenance computation must refuse to emit a
   state when the working tree is dirty or history is truncated, rather than
-  emitting a degraded one.
+  emitting a degraded one. Control all three directions: a tree with an untracked
+  product file must be refused; a tree whose only untracked content is the
+  whitelisted paths must still emit a state (otherwise the check is one that can
+  never pass on its first run); and a prefix that fails the admission
+  test must be refused **even though it is listed** — control this with a
+  throwaway untracked file inside a tracked source directory, which is the case
+  a weaker "untracked and not in the diff" rule lets through. That control is
+  what proves the admission test runs rather than the list being trusted.
 
 CI must exercise the real path, not the degraded one — if the source-state
 check needs full history, configure the checkout to fetch it rather than
 letting CI run a weakened variant of the gate.
+
+## The verifier's own footprint
+
+The gate writes files the gate then has to account for. On the first run the
+entry point, its helpers, and `artifact_root` are all untracked, and the
+source-state check above is required to refuse exactly that. Do not loosen the
+check to escape this. Instead:
+
+- The source-state script carries an **explicitly enumerated whitelist** of
+  path prefixes. Do not treat the enumeration as fixed by this document —
+  enumerate it from **the tree you are actually in**, and admit a prefix only
+  when it satisfies the test below.
+- **The admission test, which is the actual rule:** an excused prefix must
+  contain **no tracked files at all** — `git ls-files -- <prefix>` returns
+  nothing — and must not appear in the change set's diff. Check both per prefix
+  inside the script; do not assert them in prose.
+  The tracked-file clause is the load-bearing one, and "untracked and not in
+  the diff" is **not** a sufficient substitute for it: a stray untracked file
+  dropped into a product source directory satisfies both of those and is still
+  product code the build will compile. A directory that holds even one tracked
+  file is part of the subject, so nothing under it is excusable — which is
+  exactly what separates `crates/<pkg>/src/` from `.gate/` without anyone
+  having to enumerate either by hand.
+- Prefixes that commonly qualify, as **examples and not a closed set**: the
+  entry-point directory; `artifact_root`; agent and tool configuration
+  directories the repository does not track (`.agents/`, `.claude/`, `.codex/`,
+  editor and local-tooling directories). The set differs per machine and per
+  repo — a list copied from here rather than derived from the tree will refuse
+  a legitimate run or excuse an illegitimate one, and the first failure mode is
+  the one you will hit: the gate blocking on its own installation.
+- EVIDENCE prints the whitelist verbatim beside `source_state`, one line per
+  prefix with the reason it passed the admission test. An excusal a reader
+  cannot see is an excusal they cannot price.
+- Never substitute a blanket "ignore untracked files", never excuse a product
+  path, and never extend a prefix to reach a path the change itself touches.
+- Committing the verifier before the run is the other acceptable resolution,
+  and the cleaner one when the repo will keep the gate.
+
+One worked instance, for shape rather than as a universal recipe — a Rust
+cdylib loaded by Node under napi-rs, where the host-default coverage report
+fails with missing objects: `cargo llvm-cov show-env --sh --target <triple>
+--coverage-target-only` to export the instrumentation environment, rebuild the
+native callee inside it, run the caller's test suite in that same environment,
+then merge the raw profiles into one report. The target-triple pinning is the
+part that is easy to miss and the part that makes the objects resolve. Your
+toolchain will differ; what transfers is that the callee is rebuilt under the
+profile environment and the caller's suite runs inside it, not beside it.
+
+Point every tool's incidental output — coverage profiles, caches, intermediate
+reports — into `artifact_root` before running it. Instrumented binaries and
+coverage runners in particular drop raw profile files next to whatever they
+load, which lands them in product paths.
+
+Check the source state **twice**: once before the layers and once after the
+final layer. A provenance check that runs only at the start certifies a tree
+that the run itself may have changed by the time the report is written.

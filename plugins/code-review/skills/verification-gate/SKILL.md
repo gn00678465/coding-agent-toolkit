@@ -30,6 +30,16 @@ gate destroys the only basis of trust.
 This skill **does not review code**. It does not look for defects, does not
 rank findings, and does not propose fixes. It runs checks and reports results.
 
+One named exception: the **capability diff** in the supply-chain layer. It is
+scoped mechanically so it cannot drift into review — read the *declared*
+surface only (import/require/use statements, dependency manifests, build
+scripts, CI permissions, declared platform capabilities), diff it against the
+base ref, and report what the change started declaring. Do not read function
+bodies, do not judge whether a capability is used correctly, and do not rank
+what you find. An undeclared capability reached through reflection or dynamic
+loading is outside this layer — say so in the structural blind spot rather than
+going looking for it.
+
 When a review workflow is also in play (a human reviewer, a PR review bot), the
 division is fixed: the review workflow owns
 finding defects and deciding what to fix; this skill owns demonstrating that
@@ -180,13 +190,40 @@ record that in the evidence report with the reason.
 | Full test suite | regressions | project's test command, zero NEW failures (baseline note below) |
 | Static types | whole classes of bugs | tsc / mypy / etc., zero new errors |
 | Lint + format | latent bugs, drift | project's linter, zero new warnings |
-| Coverage on changed lines | untested code paths | every changed/added line executed by a test; branch coverage where the tool supports it. Global % is vanity — changed-line coverage is the constraint. **This layer must exit nonzero when its threshold is missed** (`--cov-fail-under`, `diff-cover --fail-under`, equivalent): a layer that prints a percentage and exits 0 is a report, not a gate layer, and it will sit there green while coverage falls |
+| Coverage on changed lines | untested code paths | every changed/added **executable** line executed by a test; branch coverage where the tool supports it. Global % is vanity — changed-line coverage is the constraint. Define the fraction explicitly (see below) and **make the layer exit nonzero when its threshold is missed** — a layer that prints a percentage and exits 0 is a report, not a gate layer, and it will sit there green while coverage falls. Most ecosystems ship no command that does this; see `references/layers.md` |
 | Mutation testing | tests that assert nothing | **prefer the project's mutation tool** (mutmut, cosmic-ray, Stryker, PIT…), which generates mutants from the syntax tree and cannot silently skip one. No tool available? Manual mutation, per `references/mutation.md` — introduce 3–5 plausible bugs one at a time; the suite must kill every one; restore after. A hand-rolled runner must **prove it executed each mutant**: a runner that can report a kill it never ran inflates the score and no red gate will ever surface it |
 | Property-based tests | edge cases you didn't imagine | for parsing, math, serialization, anything with invariants (round-trip, idempotence, ordering) — add hypothesis/fast-check properties |
 | Complexity budget | unmaintainable output | new functions small and single-purpose; if a function needs a paragraph to explain, split it |
 | Real execution | "passes tests, doesn't run" | actually run the app/CLI/endpoint once on a realistic input, not only the test harness |
 | Supply chain & secrets | vulnerable/unnecessary deps, leaked credentials | when the dependency set changed: audit it (pip-audit / npm audit / govulncheck / cargo-audit) and check licenses; scan the diff for secrets; every new dependency must trace back to a justification in the intent record. Also eyeball the capability diff: did the change start using network / subprocess / filesystem / env it didn't before? |
 | Suite health | flaky or order-dependent tests | run the suite in randomized order (pytest-randomly etc.); repeat suspected flakes. Every EVIDENCE number rests on the suite being deterministic — a flaky suite quietly invalidates the report |
+
+Changed-line accounting — "changed lines" is three sets, not one, and
+collapsing them hides the dangerous case:
+
+1. **executable and instrumented** — the diff's added lines that the coverage
+   tool reports on. This is the denominator of the reported fraction.
+2. **not executable** — comments, blank lines, declarations, type-only
+   constructs, attributes. Excluded, and their count recorded.
+3. **executable but carrying no coverage mapping** — added lines the tool
+   emitted nothing for. **These must be listed separately and must never be
+   folded into set 2.** Set 2 is a property of the language; set 3 is a hole in
+   the instrument, and it looks identical in the final percentage. A
+   cross-language boundary is the usual cause (see `references/layers.md`).
+
+Report all three counts. A non-empty set 3 caps what the layer can claim, and
+the report says so.
+
+You will need a classifier to split sets 1 and 2, and no ecosystem ships one
+that is both correct and available — macro continuations, attributes,
+multi-line signatures, generated code and derive expansions are all ambiguous
+from the source text alone. **Resolve every ambiguity into set 3, never into
+set 2.** Exclude only what is plainly non-executable (comments, blanks,
+imports, bare delimiters); anything else that carries no coverage mapping stays
+in set 3 and fails the layer. That direction is deliberate: guessing "not
+executable" hides a hole in the instrument, while guessing "unmapped" costs you
+a line to explain. State the classifier's rule in EVIDENCE — it is a home-grown
+check, so the checker note applies and it needs its negative control.
 
 Baseline note — on a repo with pre-existing failures, record the baseline
 first (which tests already fail, verbatim) and hold the line at zero NEW
@@ -259,6 +296,27 @@ Caveats, recorded when they apply:
   cannot run there until dependencies are rebuilt. Two outcomes are acceptable
   — rebuild and run there, or record why reconstruction was not possible.
   Never report green from a tree that never ran the suite.
+- **RED stops being evidence when every new test fails for the same structural
+  reason.** When a change introduces a platform the base does not have — a new
+  language, a new package, a new build system, a first module — the new tests
+  fail at collection because the *project* is absent, not because the behaviour
+  is. A wall of red then demonstrates nothing about whether a single one of
+  those tests can fail when the behaviour breaks. Record the whole section as
+  `NOT EVIDENCE (base lacks the platform under test)` rather than a table of
+  passes; a mostly-collection-error table is the same finding in weaker form,
+  so state the proportion.
+  The substitute, when RED is unavailable this way: prove assertion power
+  against **HEAD** instead — a one-off throwaway mutant per new test, watch the
+  test fail, restore. That is a weaker claim (it shows the test can fail, not
+  that it failed before the code existed) and EVIDENCE must label it as such.
+  **Run it in an isolated copy, and say so.** A verification engagement almost
+  always forbids modifying product code, and a mutant applied to the working
+  tree violates that even when restored — a crash or an interrupt leaves the
+  tree mutated. Applying mutants inside a worktree, a scratch clone, or the
+  temporary copies a mutation tool manages for itself is **not** modifying
+  product code, and is the only sanctioned form of this substitute. If you have
+  no isolated copy available, the substitute is unavailable too: say so rather
+  than touching the tree.
 
 ## Entry Point
 
@@ -290,6 +348,24 @@ artifact folder, and it is deliberate: a report citing a script that lives only
 in a scratch directory or in the conversation is not reproducible. Confirm
 these writes with the user.
 
+**The gate's own files must not fail the gate's own provenance check.** The
+first run necessarily creates untracked files — the entry point, its helpers,
+and `artifact_root` — while the source-state computation is required to refuse
+a tree with non-ignored untracked content. Resolve it explicitly, never by
+loosening the check: the source-state script carries a **fixed, enumerated
+whitelist of verifier paths** (the entry-point directory and `artifact_root`,
+by exact prefix), and everything outside it still fails. The whitelist is part
+of the gate's contract, so EVIDENCE prints it verbatim next to `source_state`;
+a reader who cannot see which paths were excused cannot price the claim. Never
+widen it to a product path, and never substitute a blanket "ignore untracked".
+Committing the verifier first is the other acceptable resolution.
+
+Verifier tooling must also not leave droppings in product paths *during* the
+run — point tool output (profiles, caches, intermediate reports) into
+`artifact_root`, and check the source state again **after** the final run, not
+only before it. A provenance check that runs only at the start certifies a tree
+that no longer exists by the time the report is written.
+
 Contract details, the manifest pattern, and fail-closed shell idioms are in
 `references/entry-point.md`.
 
@@ -303,8 +379,14 @@ End with a report the human can trust without opening a single source file
 - Each gate layer: the command run, and its actual result (pasted numbers,
   not adjectives). "All 47 tests pass, changed-line coverage 100% (31/31
   lines), 5/5 manual mutants killed" — never "tests look good".
-- All numbers must come from one final fresh run executed after the last code
-  edit — results from mid-task runs are stale and must not be reported.
+- **Every number in the Gate table** must come from one final fresh run of the
+  entry point, executed after the last code edit — results from mid-task runs
+  are stale and must not be reported there. This rule scopes to the Gate table
+  only: the baseline and the RED reconstruction are runs against the **base
+  ref** by definition and can never come from it. Label them as the
+  prerequisite runs they are. Diagnostics from earlier runs may appear in
+  Honest notes if each is marked as not from the final run; they may never
+  appear as a layer result.
 - The report must be reproducible from the repo alone: every command it cites
   (including the mutation script) must exist as a persisted file in the repo,
   not in a scratch directory or only in the conversation. Reproducible means:
@@ -319,8 +401,16 @@ End with a report the human can trust without opening a single source file
 ### The two mapping tables
 
 **Table 1 — Changed unit → Test.** Rows are derived from the diff, not chosen.
-Record the command that produced the changed-unit list; without it, the table
-degrades into a narrative and loses the only property that makes it strong.
+Record the command that produced the changed-unit list **and the granularity it
+achieved** — `symbol`, `path`, or `module`. Without the command the table
+degrades into a narrative and loses the only property that makes it strong;
+without the granularity the command can satisfy the field while quietly
+delivering something far coarser than a changed *unit*. A path-level command is
+an acceptable answer when no symbol-level extractor exists for the ecosystem —
+it is not an acceptable answer to leave unlabelled, because `git diff
+--name-status` and a real symbol extraction look identical in the header and
+mean very different things about what the table covers. At `path` or `module`
+granularity, say in the table what that leaves unmapped.
 Include **deletions**: a removed function needs a row saying what shows nothing
 depended on it. Pure renames, moves, and formatting are not units — collapse
 them into one row marked `n-a`. Fillable at every intent status, `absent`
@@ -343,18 +433,33 @@ Split by status, because they mean different things to a reader:
 - **N-A (this project has no such surface)**
 - **UNAVAILABLE (tool missing, nothing run in its place)**
 - **SUBSTITUTED (something else ran — and what it cannot detect)**
+- **NOT REACHED (the entry point stopped at an earlier failing layer)**
 
-One "skipped" list collapses three states a reader has to tell apart: there is
+One "skipped" list collapses four states a reader has to tell apart: there is
 no such surface in this project, versus the surface exists but the tool was
 missing and nothing ran, versus something else ran and here is what it cannot
-detect. Those are very different confidence claims and they read identically as
-"skipped". The third is the dangerous one: **`SUBSTITUTED` may never be written
-as a pass.** Two repeat runs in place of randomized order is not "suite health:
+detect, versus the layer was configured and available and the gate simply never
+got to it. Those are very different confidence claims and they read identically
+as "skipped". The dangerous one is the third: **`SUBSTITUTED` may never be
+written as a pass.** Two repeat runs in place of randomized order is not "suite health:
 stable" — it is `SUBSTITUTED (2 repeat runs — cannot detect whole-suite order
 dependence)`. A reader who cannot tell a substitute from the real layer reads
 "found nothing" where the truth is "did not look with that instrument". `N-A`
 is not a degraded run at all: three `N-A` layers describe the project, and
 EVIDENCE should say so rather than leaving a reader to count absences.
+
+**`NOT REACHED` and the failing gate.** The entry point stops at the first
+broken layer (`references/entry-point.md`), so any gate that does its job
+leaves later layers unrun. That is correct behaviour, not an incomplete report:
+mark each one `NOT REACHED`, name the layer that stopped the run, and do not
+reorder the entry point to get more layers in before the failure. A blocked
+gate is a finished run with a failing outcome — it is complete when every
+unreached layer is accounted for.
+
+You **may** run later layers separately for information while fixing, and it is
+often useful. Those numbers are not final-run numbers: they belong in Honest
+notes, marked as such, and may never be written into the Gate table or used to
+promote a `NOT REACHED` row. The Gate table stays a record of one run.
 
 ### Dismissals and the blind spot
 
@@ -435,7 +540,7 @@ values stay English even inside a localized report.
 A verification gate run is complete only when:
 
 - every applicable layer ran, or is recorded as `N-A` / `UNAVAILABLE` /
-  `SUBSTITUTED` with a reason;
+  `SUBSTITUTED` / `NOT REACHED` with a reason;
 - every number came from one fresh run of a persisted entry point;
 - intent status is recorded and was not silently promoted;
 - Table 1 covers the changed-unit list, deletions included;
