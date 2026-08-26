@@ -7,6 +7,3 @@ __pycache__/
 
 # APM (Agent Package Manager) modules
 apm_modules/
-
-# 驗證交接文件（本機保留，不納入版控）
-docs/verification-gate-validation.md
