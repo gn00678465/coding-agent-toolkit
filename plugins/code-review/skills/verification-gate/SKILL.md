@@ -88,7 +88,7 @@ conversation.** This mirrors a rule the upstream skill already applies to its
 verifier, which receives an exact source state and an approved spec as inputs
 and is told: never your conversation.
 
-### From git — facts, always available in a repository
+### From git — facts, as far as the repository can supply them
 
 Settle all of this before asking the human anything:
 
@@ -103,7 +103,46 @@ Settle all of this before asking the human anything:
 | Spec provenance | `git log --diff-filter=A -- <path>` for any spec-like file, to see when it entered history |
 
 None of this requires the original session. Compaction, subagent boundaries,
-and session changes do not affect it.
+and session changes do not affect it. What *does* affect it is the repository
+itself, so check that before leaning on it rather than after: `base` must
+resolve to a commit that exists locally (`git cat-file -e <base>^{commit}`), and
+history must not be truncated (`git rev-parse --is-shallow-repository`, and no
+grafts). A shallow CI checkout, an unfetched base branch, or a repository with
+no commits yet each silently removes the baseline, the ordering fact, and RED
+reconstruction — the three facts the report leans on hardest. Fetch what is
+missing (`git fetch --unshallow`, `git fetch origin <base>`) before downgrading
+anything; a fetchable fact is not a missing one.
+
+### Git facts status
+
+Record one of these in the report header. Never promote one silently:
+
+- `complete` — every fact in the table above was established from this
+  repository.
+- `partial` — the repository exists but could not supply some of them, and
+  fetching did not fix it. Name each missing fact and its consequence:
+  - no **baseline** → the suite layer cannot claim "zero NEW failures". It may
+    report its own absolute pass/fail count and nothing more, and the Gate table
+    says so; a pre-existing failure and one this change introduced are
+    indistinguishable without the base run.
+  - no **ordering** → whether the tests preceded the implementation is unknown,
+    which is not the same as "no".
+  - no reachable **base** → RED reconstruction is `not performed`, and Table 1's
+    changed-unit list falls back to whatever diff is available (typically the
+    working tree), a narrower claim than `<base>...HEAD`.
+- `unavailable` — not a git repository. See Setup: stop before claiming any
+  provenance.
+
+Like intent status, `partial` does not block the gate: the executable layers ask
+whether the code is self-consistent, and that needs no history. What degrades is
+every claim measured **against the base**, and the report names which ones.
+
+The statuses interact, and truncated history is the case where it bites: the
+source-state computation is required to refuse a truncated repository rather
+than emit a weakened state (`references/entry-point.md`), so a shallow checkout
+is normally `git_facts: partial` **and** `reproducibility: not reproducible` at
+once — and the second of those may not be presented as a passed gate. That is
+the reason fetching is the first move here and not the last resort.
 
 ### From the human — intent and authority
 
@@ -473,6 +512,39 @@ End with a report the human can trust without opening a single source file
   the first try and a gate you fixed your way through are equally fine; a gate
   you quietly weakened is the only failure.
 
+### Reproducibility status
+
+The report's entire claim is that a reader can rerun it. That claim has states,
+and like intent status it is recorded rather than assumed:
+
+- `reproducible` — all three hold: every cited command exists as a persisted
+  file in the repo, dev-tool versions are pinned or recorded, and the source
+  state was identified and **identical** before and after the final run.
+- `degraded` — the run can be repeated, but not to the same numbers. Name which
+  of the three failed and what it costs:
+  - **versions not pinnable** — no lockfile, a tool with no version flag, or the
+    user forbade adding a pin file. Record the observed `--version` output
+    verbatim for every tool in the gate. A recorded version is weaker than a
+    pinned one: it documents what ran, it does not make the next run match.
+  - **entry point not persisted** — the user forbade writing to product paths.
+    Reproduce the script verbatim in the report and say the reader must recreate
+    it before rerunning. A gate that exists only inside one report is not a gate.
+- `not reproducible` — a cited command exists only in a scratch directory or in
+  the conversation, or the source state could not be established at all. The
+  Gate table then records what one machine observed once, which is not something
+  another reader can obtain.
+
+**A `not reproducible` report may not be presented as a passed gate.** Same rule
+as `SUBSTITUTED`, for the same reason: the reader cannot tell it apart from a
+claim. It is a finished run whose outcome is that the gate could not be made
+rerunnable.
+
+**A source state that changed across the run voids the run.** The check runs
+before *and* after the final run precisely so this is detectable; when the two
+differ, every number describes a tree that no longer exists. Do not annotate it
+and do not downgrade it — find what wrote to the tree, fix that, and rerun.
+This is the one failure this section deliberately offers no state for.
+
 ### The two mapping tables
 
 **Table 1 — Changed unit → Test.** Rows are derived from the diff, not chosen.
@@ -587,7 +659,9 @@ mutation, manual execution) and record the reduced confidence honestly.
 If the directory is not a git repository, say so and stop before claiming any
 provenance: acquisition, the baseline, and RED reconstruction all rest on git.
 Offer `git init` and identify the source state with a tree hash instead of a
-SHA.
+SHA. Record it as `git_facts: unavailable`; a tree hash restores reproducibility
+but nothing restores the base-relative facts, so the baseline, ordering, and RED
+reconstruction stay unavailable rather than quietly absent.
 
 ## Artifacts
 
@@ -617,7 +691,9 @@ A verification gate run is complete only when:
 - every applicable layer ran, or is recorded as `N-A` / `UNAVAILABLE` /
   `SUBSTITUTED` / `NOT REACHED` with a reason;
 - every number came from one fresh run of a persisted entry point;
-- intent status is recorded and was not silently promoted;
+- intent status, git facts status, and reproducibility status are each recorded
+  and none was silently promoted;
+- the source state was identical before and after that run;
 - Table 1 covers the changed-unit list, deletions included;
 - no row mapped to a skip is marked `pass`;
 - the structural blind spot is named;

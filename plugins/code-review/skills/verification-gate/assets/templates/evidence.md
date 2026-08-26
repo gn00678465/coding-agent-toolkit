@@ -8,17 +8,30 @@
 - `intent_status`: <!-- confirmed | unconfirmed | absent -->
 - `intent_source`: <!-- human reply (verbatim) | spec file path | issue/PR ref |
   commit messages only -->
+- `git_facts`: <!-- complete | partial | unavailable — when partial, list each
+  fact the repository could not supply (baseline / ordering / reachable base)
+  and say what it cost. Fetch first: a fetchable fact is not a missing one -->
 - `source_state`: <!-- commit SHA | no git: sha256 tree hash --> — persist the
   computation as a script (e.g. `tools/source_state.sh`); a hash recipe written
   in prose is working-directory-sensitive and will fail to reproduce. When Git
   exists, derive the tree hash from version-controlled inputs, fail on relevant
   staged, unstaged, deleted, or non-ignored untracked files, and never hash
-  ambient ignored build artifacts. Checked before **and after** the final run
+  ambient ignored build artifacts. Checked before **and after** the final run,
+  and the two must be **identical** — a difference voids the run; rerun rather
+  than reporting it
 - `source_state_exclusions`: <!-- the verbatim whitelist of verifier paths the
   source-state check excuses (entry-point dir, artifact_root), or "none — the
   verifier is committed". Never a product path, never a blanket rule -->
-- `toolchain`: <!-- pinned versions file, e.g. requirements-dev.txt -->
+- `toolchain`: <!-- pinned versions file, e.g. requirements-dev.txt; when no
+  pin file is possible, the verbatim `--version` output of every tool in the
+  gate, and `reproducibility: degraded` -->
 - `entry_point`: <!-- single command that reruns every layer -->
+- `reproducibility`: <!-- reproducible | degraded | not reproducible. Degraded
+  covers versions that could not be pinned or an entry point that could not be
+  persisted — name which, and what it costs. A source state that could not be
+  established at all is `not reproducible`, which may never be presented as a
+  passed gate; a source state that *changed* across the run is neither, it
+  voids the run -->
 - `changed_unit_command`: <!-- the command that produced the changed-unit list -->
 - `changed_unit_granularity`: <!-- symbol | path | module — what that command
   actually resolved to. `path` is acceptable when no symbol-level extractor
@@ -30,7 +43,10 @@
 Tests already failing at `base`, recorded verbatim before this change was
 measured. The suite layer holds the line at zero NEW failures against this list.
 
-<!-- verbatim list, or "none — base was green" -->
+<!-- verbatim list, or "none — base was green", or "unavailable — <reason>":
+     with no baseline the suite layer may report only its own absolute
+     pass/fail count, because a pre-existing failure and one this change
+     introduced are indistinguishable. Say that in the Gate table too -->
 
 ## Changed unit → Test
 
