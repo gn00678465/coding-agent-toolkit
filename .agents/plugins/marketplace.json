@@ -33,11 +33,11 @@
             "category": "Productivity"
         },
         {
-            "name": "review-forge",
+            "name": "code-review",
             "source": {
                 "source": "git-subdir",
                 "url": "https://github.com/gn00678465/coding-agent-toolkit.git",
-                "path": "./plugins/review-forge",
+                "path": "./plugins/code-review",
                 "ref": "main"
             },
             "policy": {
