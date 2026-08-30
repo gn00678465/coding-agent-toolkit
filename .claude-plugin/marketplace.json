@@ -32,6 +32,51 @@
       "version": "0.1.0",
       "category": "Productivity",
       "source": "./plugins/slim-agents-md"
+    },
+    {
+      "name": "web-quality-skills",
+      "category": "Productivity",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/addyosmani/web-quality-skills",
+        "ref": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+        "sha": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+        "tag_pattern": "v{version}"
+      }
+    },
+    {
+      "name": "impeccable",
+      "version": "4.1.2",
+      "category": "Productivity",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/pbakaus/impeccable",
+        "ref": "63b04e2530f5c7b41ea83c133daab24f34912456",
+        "sha": "63b04e2530f5c7b41ea83c133daab24f34912456",
+        "tag_pattern": "skill-v{version}"
+      }
+    },
+    {
+      "name": "taste-skill",
+      "category": "design",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "ref": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
+        "sha": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
+        "tag_pattern": "v{version}"
+      }
+    },
+    {
+      "name": "beautify-github-readme",
+      "category": "design",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/oil-oil/beautify-github-readme",
+        "ref": "55bdb1c05414cd7a0cf911d02e55ece79777206e",
+        "sha": "55bdb1c05414cd7a0cf911d02e55ece79777206e",
+        "tag_pattern": "v{version}"
+      }
     }
   ]
 }
