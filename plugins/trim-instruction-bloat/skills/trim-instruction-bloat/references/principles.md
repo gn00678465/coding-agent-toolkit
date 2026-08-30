@@ -64,7 +64,7 @@ Monorepo 情境下，多個 AGENTS.md 可在不同層級並存：
 
 agents.md 官方站印證此機制：agent 會自動讀取目錄樹中**最近**的 AGENTS.md（nearest file in the directory tree）。
 
-## 五步驟順序的第一性原理
+## 步驟順序的第一性原理
 
 原始提示詞的順序遵守「**先解決錯誤（矛盾）→ 再解決結構（本質、分組、落地）→ 最後解決效率（刪減）**」：
 
