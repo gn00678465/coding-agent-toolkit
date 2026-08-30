@@ -2,7 +2,7 @@
     "name": "coding-agent-toolkit",
     "metadata": {
         "description": "Marketplace registry for Claude Code, GitHub Copilot & Codex workflow plugins",
-        "version": "0.5.0"
+        "version": "0.6.0"
     },
     "owner": {
         "name": "gn00678465",
@@ -20,9 +20,9 @@
             "description": "Architect-as-orchestrator: your session runs Claude's most capable model, routing implementation to Grok 4.5 (Grok CLI) and GPT-5.6 Sol at high reasoning (Codex) — with a commitment-boundary advisor"
         },
         {
-            "name": "review-forge",
-            "source": "./plugins/review-forge",
-            "description": "Multi-model code review workflow: independent reviews, synthesis, cross-voting, confidence-ranked final reports, approved fixes, and independent verification"
+            "name": "code-review",
+            "source": "./plugins/code-review",
+            "description": "Code review and verification: multi-model review with cross-voting and confidence-ranked reports, plus a fail-closed verification gate that turns a finished change into an evidence report"
         },
         {
             "name": "trim-instruction-bloat",
