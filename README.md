@@ -11,6 +11,20 @@
 | `code-review` | 0.2.0 | Claude Code / Codex / OpenCode | 程式碼審查與驗證：`review-forge` 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`verification-gate` 完工後的驗證關卡與 evidence 報告 |
 | `slim-agents-md` | 0.1.0 | Claude Code / Codex | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
 
+## 外部套件
+
+以下為透過 marketplace 轉發的第三方 skill 套件，皆以 commit sha 鎖定版本：
+
+| 套件 | GitHub | 分類 |
+|------|--------|------|
+| `web-quality-skills` | https://github.com/addyosmani/web-quality-skills | Productivity |
+| `impeccable` | https://github.com/pbakaus/impeccable | design |
+| `taste-skill` | https://github.com/Leonxlnx/taste-skill | design |
+| `beautify-github-readme` | https://github.com/oil-oil/beautify-github-readme | design |
+| `show-me` | https://github.com/humanlayer/skills/tree/main/plugins/show-me | Productivity |
+
+安裝方式與本專案插件相同，例如：`/plugin install impeccable@coding-agent-toolkit`。
+
 ## Claude Code 安裝方式
 
 先加入 Marketplace 來源：
