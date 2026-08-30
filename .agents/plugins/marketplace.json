@@ -1,50 +1,56 @@
 {
-    "name": "coding-agent-toolkit",
-    "interface": {
-        "displayName": "Coding Agent Toolkit"
+  "name": "coding-agent-toolkit",
+  "interface": {
+    "displayName": "coding-agent-toolkit"
+  },
+  "plugins": [
+    {
+      "name": "git-assistant",
+      "source": {
+        "source": "local",
+        "path": "./plugins/git-assistant"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     },
-    "plugins": [
-        {
-            "name": "git-assistant",
-            "source": {
-                "source": "git-subdir",
-                "url": "https://github.com/gn00678465/coding-agent-toolkit.git",
-                "path": "./plugins/git-assistant",
-                "ref": "main"
-            },
-            "policy": {
-                "installation": "AVAILABLE",
-                "authentication": "ON_INSTALL"
-            },
-            "category": "Productivity"
-        },
-        {
-            "name": "advisor",
-            "source": {
-                "source": "git-subdir",
-                "url": "https://github.com/gn00678465/coding-agent-toolkit.git",
-                "path": "./plugins/advisor",
-                "ref": "main"
-            },
-            "policy": {
-                "installation": "AVAILABLE",
-                "authentication": "ON_INSTALL"
-            },
-            "category": "Productivity"
-        },
-        {
-            "name": "code-review",
-            "source": {
-                "source": "git-subdir",
-                "url": "https://github.com/gn00678465/coding-agent-toolkit.git",
-                "path": "./plugins/code-review",
-                "ref": "main"
-            },
-            "policy": {
-                "installation": "AVAILABLE",
-                "authentication": "ON_INSTALL"
-            },
-            "category": "Productivity"
-        }
-    ]
+    {
+      "name": "advisor",
+      "source": {
+        "source": "local",
+        "path": "./plugins/advisor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "code-review",
+      "source": {
+        "source": "local",
+        "path": "./plugins/code-review"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "slim-agents-md",
+      "source": {
+        "source": "local",
+        "path": "./plugins/slim-agents-md"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
 }

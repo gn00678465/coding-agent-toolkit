@@ -1,0 +1,63 @@
+name: coding-agent-toolkit
+version: 0.6.0
+description: Marketplace registry for Claude Code, GitHub Copilot & Codex workflow plugins
+marketplace:
+  owner:
+    name: Madao
+    url: https://github.com/gn00678465/coding-agent-toolkit
+
+  # Default tag pattern used to resolve version ranges for each package.
+  build:
+    tagPattern: "v{version}"
+
+  # Output targets (map form). 'claude' is enabled by default;
+  # uncomment 'codex' below to publish the Codex artifact too.
+  # Each output writes to its profile default path; add 'path:'
+  # under a key to override.
+  outputs:
+    claude: {}
+    codex: {}
+    #
+    # Note: enabling codex requires every package below to declare
+    # 'category:' (e.g. category: Productivity).
+
+  # CI tip: build one or all formats with a machine-readable manifest:
+  #   apm-go pack --marketplace=claude,codex --json | jq -r '.marketplace.outputs[].path'
+
+  packages:
+    # - name: example-package
+    #   description: Human-readable description of the package
+    #   source: acme-org/example-package
+    #   version: "^1.0.0"
+      # Required when outputs includes codex:
+      # category: Productivity
+      # Optional overrides:
+      # subdir: path/inside/repo
+      # Per-package version tag (recommended for monorepos so each
+      # package can be released independently). Leave commented for
+      # repo-wide lockstep tagging.
+      # tag_pattern: "{name}-v{version}"
+      # include_prerelease: false
+      # ref: v1.0.0  # pin to an explicit ref instead of a version range
+
+    # Local-path entry: ship a package shipped alongside this repo.
+    - name: git-assistant
+      source: ./plugins/git-assistant
+      description: Claude Code, GitHub Copilot & Codex plugin bundle for commit and pull request workflows
+      version: 0.1.4
+      category: Productivity
+    - name: advisor
+      source: ./plugins/advisor
+      description: "Architect-as-orchestrator: your session runs Claude's most capable model, routing implementation to Grok 4.5 (Grok CLI) and GPT-5.6 Sol at high reasoning (Codex) — with a commitment-boundary advisor"
+      version: 0.1.4
+      category: Productivity
+    - name: code-review
+      source: ./plugins/code-review
+      description: "Code review and verification: multi-model review with cross-voting and confidence-ranked reports, plus a fail-closed verification gate that turns a finished change into an evidence report"
+      version: 0.2.0
+      category: Productivity
+    - name: slim-agents-md
+      source: ./plugins/slim-agents-md
+      description: "Curate and slim bloated AGENTS.md / CLAUDE.md files with progressive disclosure: minimal root, on-demand category docs, contradiction and redundancy cleanup"
+      version: 0.1.0
+      category: Productivity

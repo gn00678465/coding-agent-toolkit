@@ -1,5 +1,5 @@
 ---
-name: trim-instruction-bloat
+name: slim-agents-md
 description: 精簡與重構肥大的 AGENTS.md / CLAUDE.md 等 agent 指令文件——以 progressive disclosure 拆成精簡 root + 按需載入的分類檔，並裁決矛盾、修剪冗餘與過時規則。觸發情境：(1) 指令文件過長，agent 常不遵守其中規則或照文件找錯檔案位置；(2) 文件內規則互相矛盾，或引用已不存在的路徑／命令；(3) AGENTS.md 與 CLAUDE.md 並存且內容漂移不同步；(4) 使用者要求「重構／精簡／整理 AGENTS.md 或 CLAUDE.md」「refactor AGENTS.md」「slim down CLAUDE.md」。
 ---
 
