@@ -1,0 +1,47 @@
+{
+  "skill_name": "slim-agents-md",
+  "evals": [
+    {
+      "id": 0,
+      "name": "basic-bloated-claude-md",
+      "prompt": "我的 CLAUDE.md 已經超過 300 行，agent 越來越不聽話，幫我重構。",
+      "expected_output": "應先讀取 CLAUDE.md 並逐條編號盤點（Step 1），接著檢查矛盾；若有矛盾必須以 AskUserQuestion 逐組詢問使用者裁決，而非自行決定保留哪條。最終提案應包含精簡 root、分類檔案、待刪清單，且在使用者確認前不得覆寫原檔。"
+    },
+    {
+      "id": 1,
+      "name": "contradiction-detection",
+      "prompt": "（AGENTS.md 中同時存在「測試一律用 npm run test」與「執行測試請用 vitest run --watch=false」）請幫我精簡這份 AGENTS.md。",
+      "expected_output": "應在 Step 2 偵測到兩條測試指令互斥，並以 AskUserQuestion 提供至少「保留 A / 保留 B / 合併改寫 / 兩者皆刪」的選項讓使用者裁決，不得自行挑選其中一條後繼續。"
+    },
+    {
+      "id": 2,
+      "name": "root-essentials-test",
+      "prompt": "（AGENTS.md 含有：專案描述、pnpm 標註、50 條 TypeScript 風格規則、10 條 API 設計規範）重構這份文件。",
+      "expected_output": "新 root 應只保留一句話專案描述與 pnpm 標註等通過「與每一個任務都相關」測試的內容；TypeScript 規則與 API 規範應分別抽成獨立分類檔，由 root 以 markdown 連結指向，連結文字需說明何時該讀取。"
+    },
+    {
+      "id": 3,
+      "name": "flag-not-delete",
+      "prompt": "（AGENTS.md 含有「write clean code」「be helpful」與一條指向已不存在檔案 src/auth/handlers.ts 的說明）整理這份文件。",
+      "expected_output": "「write clean code」「be helpful」應被標記為 Overly obvious / Too vague 待刪項並附理由；不存在的路徑應在盤點時對照 repo 驗證後標記為 Stale。所有刪除都只是標記，需經使用者確認後才實際移除。"
+    },
+    {
+      "id": 4,
+      "name": "extra-documents",
+      "prompt": "重構我的 AGENTS.md，另外把 .cursorrules 跟 docs/conventions.md 也一起納入整理。",
+      "expected_output": "盤點階段應讀取全部三份檔案並統一編號，矛盾檢查需跨檔案比對（例如 .cursorrules 與 AGENTS.md 之間的衝突），最終提案涵蓋三份文件內容的整合去向。"
+    },
+    {
+      "id": 5,
+      "name": "claude-md-as-pointer",
+      "prompt": "（AGENTS.md 為主要內容，CLAUDE.md 內容僅有一行 @AGENTS.md）幫我精簡指令文件。",
+      "expected_output": "應辨識 CLAUDE.md 為指標檔：以 AGENTS.md 為唯一盤點目標，CLAUDE.md 保持原樣、不納入編號、不被改寫；落地後確認指標仍指向有效檔案。"
+    },
+    {
+      "id": 6,
+      "name": "dual-file-drift",
+      "prompt": "（AGENTS.md 與 CLAUDE.md 都有實質內容，但部分規則不相符，例如測試指令與 package manager 各說各話）整理我的指令文件。",
+      "expected_output": "應將兩檔一起盤點並統一編號，跨檔比對出「同一件事兩檔說法不同」的矛盾組並以 AskUserQuestion 逐組裁決；提案應合併為單一事實來源（主內容 AGENTS.md + CLAUDE.md 改為 @AGENTS.md 指標），合併方向由使用者決定。"
+    }
+  ]
+}

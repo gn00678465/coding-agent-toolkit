@@ -1,0 +1,9 @@
+{
+    "name": "slim-agents-md",
+    "version": "0.1.0",
+    "description": "Curate and slim bloated AGENTS.md / CLAUDE.md files with progressive disclosure: minimal root, on-demand category docs, contradiction and redundancy cleanup",
+    "author": {
+        "name": "gn00678465",
+        "email": "gn00678465@gmail.com"
+    }
+}

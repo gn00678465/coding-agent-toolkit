@@ -1,28 +1,37 @@
 {
-    "name": "coding-agent-toolkit",
-    "metadata": {
-        "description": "Marketplace registry for Claude Code, GitHub Copilot & Codex workflow plugins",
-        "version": "0.5.0"
+  "name": "coding-agent-toolkit",
+  "owner": {
+    "name": "Madao",
+    "url": "https://github.com/gn00678465/coding-agent-toolkit"
+  },
+  "plugins": [
+    {
+      "name": "git-assistant",
+      "description": "Claude Code, GitHub Copilot & Codex plugin bundle for commit and pull request workflows",
+      "version": "0.1.4",
+      "category": "Productivity",
+      "source": "./plugins/git-assistant"
     },
-    "owner": {
-        "name": "gn00678465",
-        "email": "gn00678465@gmail.com"
+    {
+      "name": "advisor",
+      "description": "Architect-as-orchestrator: your session runs Claude's most capable model, routing implementation to Grok 4.5 (Grok CLI) and GPT-5.6 Sol at high reasoning (Codex) — with a commitment-boundary advisor",
+      "version": "0.1.4",
+      "category": "Productivity",
+      "source": "./plugins/advisor"
     },
-    "plugins": [
-        {
-            "name": "git-assistant",
-            "source": "./plugins/git-assistant",
-            "description": "Claude Code, GitHub Copilot & Codex plugin bundle for commit and pull request workflows"
-        },
-        {
-            "name": "advisor",
-            "source": "./plugins/advisor",
-            "description": "Architect-as-orchestrator: your session runs Claude's most capable model, routing implementation to Grok 4.5 (Grok CLI) and GPT-5.6 Sol at high reasoning (Codex) — with a commitment-boundary advisor"
-        },
-        {
-            "name": "code-review",
-            "source": "./plugins/code-review",
-            "description": "Code review and verification: multi-model review with cross-voting and confidence-ranked reports, plus a fail-closed verification gate that turns a finished change into an evidence report"
-        }
-    ]
+    {
+      "name": "code-review",
+      "description": "Code review and verification: multi-model review with cross-voting and confidence-ranked reports, plus a fail-closed verification gate that turns a finished change into an evidence report",
+      "version": "0.2.0",
+      "category": "Productivity",
+      "source": "./plugins/code-review"
+    },
+    {
+      "name": "slim-agents-md",
+      "description": "Curate and slim bloated AGENTS.md / CLAUDE.md files with progressive disclosure: minimal root, on-demand category docs, contradiction and redundancy cleanup",
+      "version": "0.1.0",
+      "category": "Productivity",
+      "source": "./plugins/slim-agents-md"
+    }
+  ]
 }
