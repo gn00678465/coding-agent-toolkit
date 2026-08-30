@@ -80,7 +80,7 @@
         "installation": "AVAILABLE",
         "authentication": "ON_INSTALL"
       },
-      "category": "Productivity"
+      "category": "design"
     },
     {
       "name": "taste-skill",
@@ -111,6 +111,22 @@
         "authentication": "ON_INSTALL"
       },
       "category": "design"
+    },
+    {
+      "name": "show-me",
+      "source": {
+        "source": "git-subdir",
+        "url": "humanlayer/skills",
+        "path": "plugins/show-me",
+        "ref": "3c2629142c5d437428269b1b722b08c0b87f574d",
+        "sha": "3c2629142c5d437428269b1b722b08c0b87f574d",
+        "tag_pattern": "v{version}"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }

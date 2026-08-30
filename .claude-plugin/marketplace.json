@@ -47,7 +47,7 @@
     {
       "name": "impeccable",
       "version": "4.1.2",
-      "category": "Productivity",
+      "category": "design",
       "source": {
         "source": "url",
         "url": "https://github.com/pbakaus/impeccable",
@@ -75,6 +75,18 @@
         "url": "https://github.com/oil-oil/beautify-github-readme",
         "ref": "55bdb1c05414cd7a0cf911d02e55ece79777206e",
         "sha": "55bdb1c05414cd7a0cf911d02e55ece79777206e",
+        "tag_pattern": "v{version}"
+      }
+    },
+    {
+      "name": "show-me",
+      "category": "Productivity",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/humanlayer/skills",
+        "path": "plugins/show-me",
+        "ref": "3c2629142c5d437428269b1b722b08c0b87f574d",
+        "sha": "3c2629142c5d437428269b1b722b08c0b87f574d",
         "tag_pattern": "v{version}"
       }
     }
