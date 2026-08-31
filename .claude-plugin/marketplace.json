@@ -89,6 +89,18 @@
         "sha": "3c2629142c5d437428269b1b722b08c0b87f574d",
         "tag_pattern": "v{version}"
       }
+    },
+    {
+      "name": "reviewable-html-workbench",
+      "version": "1.28.0",
+      "category": "Productivity",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/u-ichi/reviewable-html-workbench",
+        "ref": "v1.28.0",
+        "sha": "2be05dbd31510670af04381e24d735c4c77493b8",
+        "tag_pattern": "v{version}"
+      }
     }
   ]
 }

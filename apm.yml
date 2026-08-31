@@ -83,3 +83,7 @@ marketplace:
       ref: 3c2629142c5d437428269b1b722b08c0b87f574d
       subdir: plugins/show-me
       category: Productivity
+    - name: reviewable-html-workbench
+      source: https://github.com/u-ichi/reviewable-html-workbench.git
+      version: 1.28.0
+      category: Productivity

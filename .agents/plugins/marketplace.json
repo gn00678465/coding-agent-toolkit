@@ -127,6 +127,21 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Productivity"
+    },
+    {
+      "name": "reviewable-html-workbench",
+      "source": {
+        "source": "url",
+        "url": "u-ichi/reviewable-html-workbench",
+        "ref": "v1.28.0",
+        "sha": "2be05dbd31510670af04381e24d735c4c77493b8",
+        "tag_pattern": "v{version}"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }
