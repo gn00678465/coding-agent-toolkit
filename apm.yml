@@ -50,16 +50,16 @@ marketplace:
     #   description: Human-readable description of the package
     #   source: acme-org/example-package
     #   version: "^1.0.0"
-      # Required when outputs includes codex:
-      # category: Productivity
-      # Optional overrides:
-      # subdir: path/inside/repo
-      # Per-package version tag (recommended for monorepos so each
-      # package can be released independently). Leave commented for
-      # repo-wide lockstep tagging.
-      # tag_pattern: "{name}-v{version}"
-      # include_prerelease: false
-      # ref: v1.0.0  # pin to an explicit ref instead of a version range
+    # Required when outputs includes codex:
+    # category: Productivity
+    # Optional overrides:
+    # subdir: path/inside/repo
+    # Per-package version tag (recommended for monorepos so each
+    # package can be released independently). Leave commented for
+    # repo-wide lockstep tagging.
+    # tag_pattern: "{name}-v{version}"
+    # include_prerelease: false
+    # ref: v1.0.0  # pin to an explicit ref instead of a version range
     - name: web-quality-skills
       source: https://github.com/addyosmani/web-quality-skills.git
       ref: afa8da942115f2961fdbfa80807ea0b232ff6c00
