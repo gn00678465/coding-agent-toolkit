@@ -87,3 +87,8 @@ marketplace:
       source: https://github.com/u-ichi/reviewable-html-workbench.git
       version: 1.28.0
       category: Productivity
+    - name: archify
+      source: https://github.com/tt-a1i/archify.git
+      version: 2.16.0
+      subdir: archify
+      category: Productivity

@@ -101,6 +101,19 @@
         "sha": "2be05dbd31510670af04381e24d735c4c77493b8",
         "tag_pattern": "v{version}"
       }
+    },
+    {
+      "name": "archify",
+      "version": "2.16.0",
+      "category": "Productivity",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/tt-a1i/archify",
+        "path": "archify",
+        "ref": "v2.16.0",
+        "sha": "fe2c0da92389bb35e9d71a9c7ae000c1083f2c37",
+        "tag_pattern": "v{version}"
+      }
     }
   ]
 }
