@@ -23,6 +23,7 @@
 | `beautify-github-readme` | https://github.com/oil-oil/beautify-github-readme | design |
 | `show-me` | https://github.com/humanlayer/skills/tree/main/plugins/show-me | Productivity |
 | `reviewable-html-workbench` | https://github.com/u-ichi/reviewable-html-workbench | Productivity |
+| `archify` | https://github.com/tt-a1i/archify | Productivity |
 
 安裝方式與本專案插件相同，例如：`/plugin install impeccable@coding-agent-toolkit`。
 
