@@ -92,4 +92,4 @@ marketplace:
       version: 2.16.0
       subdir: archify
       category: Productivity
-      ref: v2.16.0
+      ref: c826e6c3a7abad19c0f3cd1ca57207d54b1ad8de
