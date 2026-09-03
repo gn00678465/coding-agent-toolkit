@@ -96,7 +96,11 @@
 - **識別名 = `plugin-name:<skill 目錄名>`，slash 形態亦含命名空間前綴**。實測 `taste-skill` 插件的 slash command 為 `/taste-skill:taste-skill` 與 `/taste-skill:taste-skill-v1`——用的是目錄名 `skills/taste-skill/`、`skills/taste-skill-v1/`，**不是** frontmatter `name` 的 `design-taste-frontend`／`design-taste-frontend-v1`。單一 skill 的插件因此會出現 `archify:archify` 這種「插件名:同名目錄」的重複形態。
 - 模型看到的 skill listing 用的是同一套識別名（本研究於 Claude Code session 內確認 listing 形態為 `git-assistant:commit-message`、`security-supply-chain:security-supply-chain` 等 `plugin:dir` 形態；`Skill` tool 亦要求傳入「exact name from the listing」）。
 - 文件對 `name` 欄位的定義「Display name shown in skill listings. Defaults to the directory name.」在此情境下應理解為**顯示用途**；實際的呼叫識別名以目錄名為準（推論：由實測結果反推文件語意；`taste-skill` 是本 repo 唯一目錄名 ≠ `name` 的套件，共 13 個 skill 中 10 個不一致，其餘六個套件不受影響）。
-- 對 router 的意義：決策表一律引用 `plugin:目錄名`，例如 `taste-skill:brutalist-skill`，而非以 frontmatter `name` 組成的 `taste-skill:industrial-brutalist-ui`。
+- **第二次實測（方案 A 落地後）**：`taste-skill` 改以 `git-subdir` 指向 `skills/brutalist-skill`（子目錄根層即 `SKILL.md`、以單一 skill 插件載入，入口名 `taste-brutalist`）後，slash command 為 **`/taste-brutalist:industrial-brutalist-ui`**——這次取的是 frontmatter `name`，不是目錄名。
+- **兩次實測合併出的規則（實測歸納，文件未逐字明載）**：識別名的第二段依載入路徑而異——
+  - 插件以預設 `skills/<dir>/SKILL.md` 掃描載入 → 取**目錄名**（`/taste-skill:taste-skill`）
+  - 插件根層即 `SKILL.md`（單一 skill 插件）或經 `skills` 路徑欄位載入 → 取 **frontmatter `name`**（`/taste-brutalist:industrial-brutalist-ui`），與文件「Path behavior rules」的「takes the skill's invocation name from the frontmatter `name` field」一致
+- 對 router 的意義：本 repo 的 `taste-*` 五個入口全部是單一 skill 插件，決策表一律引用 `<入口名>:<frontmatter name>`；同一套件若改回整 repo 載入，識別名會變回目錄名——**切換載入方式必須重新核對 router 表**。
 
 #### 1.1.7 `UserPromptSubmit` hook 與 `.claude/rules/`：能否影響路由（文件明載，結論為「不能」）
 
@@ -300,12 +304,13 @@ license: Apache 2.0
    - `strict: true`（預設）：「`plugin.json` is the authority. The marketplace entry can supplement it with additional components, and both sources are merged.」——入口可**加**`skills`／`hooks`（`hooks` 接受 inline object，不需上游有檔案），但**不能減**。
    - `strict: false`：「The marketplace entry is the entire definition. If the plugin also has a `plugin.json` that declares components, that's a conflict and the plugin fails to load.」——入口可**只挑選**上游 `skills/` 的子集合曝光。`taste-skill` 的 `plugin.json`（pinned sha）只有 metadata、未宣告任何 component，符合前提；因此可在 `.claude-plugin/marketplace.json` 對 `taste-skill` 設 `strict: false` 並列出例如 `./skills/taste-skill`、`./skills/brutalist-skill`、`./skills/minimalist-skill`、`./skills/soft-skill`、`./skills/redesign-skill`，把 13 個壓到 5 個，直接減少 listing 預算競爭。**待實測**：(i) 文件的「`skills` adds to the default scan」規則在 `strict: false` 下是否仍會掃描預設 `skills/`（若會，子集合曝光無效）；(ii) `source: url`＋`sha` 的外部來源是否支援 `strict`／`skills` 欄位（文件範例多為 marketplace-root 或 git 來源）。
    - `defaultEnabled: false`（入口欄位，「Takes precedence over the same field in `plugin.json`」）：對低使用率套件（例如 `taste-skill-v1` 若獨立成套件、或整個 `web-quality-skills`）預設安裝即停用，使用者要用再 `/plugin` 開啟——整套件粒度，粗但可用。
-   - **識別名副作用（推論，待實測）**：文件在「Path behavior rules」指出，經 `skills` 路徑欄位載入的 skill「takes the skill's invocation name from the frontmatter `name` field… If `name` isn't set… falls back to the directory basename」；而使用者實測預設 `skills/` 掃描下 `taste-skill` 的識別名是目錄名（1.1.6 節）。兩者若同時成立，代表**改用 `strict: false`＋`skills` 路徑後，`taste-skill` 的識別名可能從 `taste-skill:brutalist-skill` 變成 `taste-skill:industrial-brutalist-ui`**——router 決策表必須在切換後重新核對。
+   - **識別名副作用（已由下方 `git-subdir` 實測間接證實）**：文件在「Path behavior rules」指出，經 `skills` 路徑欄位載入的 skill「takes the skill's invocation name from the frontmatter `name` field… If `name` isn't set… falls back to the directory basename」；而使用者實測預設 `skills/` 掃描下 `taste-skill` 的識別名是目錄名（1.1.6 節）。兩者若同時成立，代表**改用 `strict: false`＋`skills` 路徑後，`taste-skill` 的識別名可能從 `taste-skill:brutalist-skill` 變成 `taste-skill:industrial-brutalist-ui`**——router 決策表必須在切換後重新核對。
    - Codex 側的 `.agents/plugins/marketplace.json` 沒有對等的 `strict`／`skills` 語意，以上僅影響 Claude Code output。
    - **更直接的替代（使用者提出，優於 `strict: false`）：以 `git-subdir` 逐一指向子 skill 目錄，比照 `archify` 目前的做法**。`apm-go marketplace package add <taste-skill.git> --subdir skills/brutalist-skill --name <entry-name> --ref <sha>`；`--subdir` 是單一字串（apm-go 0.3.0-rc.1 `-s, --subdir string`），Claude Code 的 `git-subdir` 來源 `path` 亦為單一字串（文件明載「Required. Subdirectory path within the repo containing the plugin」），因此**一個子 skill = 一個 marketplace 入口**。已確認 `taste-skill` 13 個子 skill 目錄全部自包含（各只有 `SKILL.md`，`stitch-skill` 另有 `DESIGN.md`；`SKILL.md` 內無任何 `../`、`scripts/`、`assets/` 參照），拆出後不會斷鏈。子目錄根層有 `SKILL.md` → Claude Code 依「automatically loaded as a single-skill plugin」規則載入。
      - 優點：不依賴 `strict: false` 的兩個待實測前提；Claude 與 Codex 兩個 output 都支援 `git-subdir`（`archify`、`show-me` 已是先例）；每個子 skill 成為獨立插件，**`/plugin` 與 `defaultEnabled` 的粒度從整套件降到單一 skill**——這正是 `skillOverrides` 對 plugin skill 做不到的事。
      - 代價：N 個入口共用同一 repo/sha（挑 5 個就是 5 筆），升版時 5 筆一起改（`apm-go marketplace outdated`／`check` 可協助）；每筆需自訂 `--name`（例如 `taste-brutalist`），README 表格隨之變長；**授權檔不會跟著子目錄走**（`taste-skill` 的 MIT `LICENSE` 在 repo 根層，與 `show-me` 的缺口相同，README「授權說明」需一併記載）。
-     - **識別名待實測**：單一 skill 插件的識別名會是 `<入口名>:<?>`——`archify:archify` 因目錄名與 frontmatter `name` 相同無法區分；`brutalist-skill` 目錄的 `name` 是 `industrial-brutalist-ui`，實際會得到 `taste-brutalist:brutalist-skill` 還是 `taste-brutalist:industrial-brutalist-ui`，需安裝一筆確認後再寫 router 決策表。
+     - **識別名已實測**：安裝 `taste-brutalist` 後為 `/taste-brutalist:industrial-brutalist-ui`——單一 skill 插件取 frontmatter `name`（見 1.1.6 節歸納的規則）。
+     - **狀態**：此做法已於 2026-09-04 實際落地並驗證，同日撤回（見 5.8 節）；步驟與識別名結論保留，日後需要時可直接重用。
 
 ### 5.5 建議方案：(a) 為主、(d)-3 為輔、(b)/(c) 不採用
 
@@ -347,7 +352,7 @@ license: Apache 2.0
 | 使用者意圖 | 套件 | 進入第二層 |
 |---|---|---|
 | 前端介面的 UX／UI 設計、審查、打磨、修正（網站、dashboard、product UI、表單…） | `impeccable` | 是，選子命令（見下表 A） |
-| 全站／整頁高端視覺風格重做，且講出美學關鍵字（brutalist／minimalist／soft／awwwards／anti-slop） | `taste-*`（方案 A 拆為 5 個入口） | 是，選入口（見下表 B） |
+| 全站／整頁高端視覺風格重做，且講出美學關鍵字（brutalist／minimalist／soft／awwwards／anti-slop） | `taste-skill` | 是，選子 skill（見下表 B） |
 | GitHub README／專案首頁視覺資產（hero、badge、SVG、GIF） | `beautify-github-readme` | 否 |
 | 正式的架構／流程／序列／資料流／生命週期圖，需驗證、可匯出 | `archify` | 是，選子命令（見下表 D） |
 | 對話中快速畫個簡圖幫助理解，不需正式交付物 | `show-me` | 否 |
@@ -376,17 +381,22 @@ Tie-break（同時命中兩套件時）：`beautify-github-readme` 受詞含 REA
 | 開關設計檢測 hook、修復產物漂移 | `hooks <on\|off\|status\|…>`／`doctor` |
 | 使用者意圖籠統、無法對應任一子命令 | **不帶參數**（讓上游呈現選單） |
 
-*第二層 B：`taste-*` 入口*（無參數；**已依方案 A 落地**：`taste-skill` 改以 `git-subdir` 拆成 5 個獨立入口，其餘 8 個子 skill 未收錄。每個入口是「根層即 `SKILL.md`」的單一 skill 插件，識別名在目錄名 ≠ frontmatter `name` 時取何者**待實測**，下表兩個候選並列）
+*第二層 B：`taste-skill` 子 skill*（無參數；目前以整 repo 單一入口載入，識別名為 `taste-skill:<目錄名>`，依 1.1.6 節第一次實測。曾於 2026-09-04 短暫拆為 5 個 `git-subdir` 入口——該載入方式下識別名改取 frontmatter `name`，例如 `taste-brutalist:industrial-brutalist-ui`（實測）——同日撤回，見 5.8 節）
 
-| 使用者意圖 | marketplace 入口（`--subdir`） | router 引用候選（待實測擇一） |
+| 使用者意圖 | router 引用（`plugin:目錄名`） | frontmatter `name`（顯示名） |
 |---|---|---|
-| 預設高端前端品味（無特定風格詞） | `taste-skill`（`skills/taste-skill`） | `taste-skill:taste-skill` 或 `taste-skill:design-taste-frontend` |
-| 粗獷／工業風 | `taste-brutalist`（`skills/brutalist-skill`） | `taste-brutalist:brutalist-skill` 或 `taste-brutalist:industrial-brutalist-ui` |
-| 極簡 | `taste-minimalist`（`skills/minimalist-skill`） | `taste-minimalist:minimalist-skill` 或 `taste-minimalist:minimalist-ui` |
-| 柔和高端／awwwards 等級 | `taste-soft`（`skills/soft-skill`） | `taste-soft:soft-skill` 或 `taste-soft:high-end-visual-design` |
-| 既有專案升級到 premium（audit → redesign） | `taste-redesign`（`skills/redesign-skill`） | `taste-redesign:redesign-skill` 或 `taste-redesign:redesign-existing-projects` |
-
-未收錄（方案 A，目前使用機會低）：`gpt-tasteskill`、`image-to-code-skill`、`imagegen-frontend-web`、`imagegen-frontend-mobile`、`brandkit`、`stitch-skill`、`output-skill`、`taste-skill-v1`。需要時以同樣方式各加一筆入口即可。
+| 預設高端前端品味（無特定風格詞） | `taste-skill:taste-skill` | `design-taste-frontend` |
+| 粗獷／工業風 | `taste-skill:brutalist-skill` | `industrial-brutalist-ui` |
+| 極簡 | `taste-skill:minimalist-skill` | `minimalist-ui` |
+| 柔和高端／awwwards 等級 | `taste-skill:soft-skill` | `high-end-visual-design` |
+| GPT 風格品味 | `taste-skill:gpt-tasteskill` | `gpt-taste` |
+| 既有專案升級到 premium（audit → redesign） | `taste-skill:redesign-skill` | `redesign-existing-projects` |
+| 截圖／設計稿轉程式碼 | `taste-skill:image-to-code-skill` | `image-to-code` |
+| 產生 web／mobile UI 概念圖 | `taste-skill:imagegen-frontend-web`／`taste-skill:imagegen-frontend-mobile` | 同目錄名 |
+| 品牌識別套件 | `taste-skill:brandkit` | `brandkit` |
+| Stitch 設計品味 | `taste-skill:stitch-skill` | `stitch-design-taste` |
+| 強制完整輸出（輔助，非入口） | `taste-skill:output-skill` | `full-output-enforcement` |
+| 舊版 v1（不建議 router 指向） | `taste-skill:taste-skill-v1` | `design-taste-frontend-v1` |
 
 *第二層 C：`reviewable-html-workbench` 子 skill 與旗標*（直接取自各 skill 的 `argument-hint`）
 
@@ -435,6 +445,27 @@ Tie-break（同時命中兩套件時）：`beautify-github-readme` 受詞含 REA
 2. 每個 host 一行常駐 pointer：Claude Code 用 router 插件自帶的 SessionStart hook（例如「設計／圖表／文件審閱／網站品質類任務，先呼叫 `skills-router`」，compaction 後自動重注入）；Codex／OpenCode 用 AGENTS.md 同一句話。與本 repo `slim-agents-md` 的原則一致：根層只放 pointer，細節在 skill。
 3. 維護者端以 5.4-3 節的入口策展減少競爭者（`taste-skill` 子集合、低使用率套件 `defaultEnabled: false`）。
 
+### 5.7 補充：`PreToolUse` hook 攔截 `Skill` tool——唯一有閘門效果的機制
+
+5.1–5.6 的方案都無法**阻止**模型直接命中 `impeccable`：`skillOverrides` 對 plugin skill 無效、router skill 自己也要先被選中、SessionStart 只能注入。但模型選用 skill 時實際走的是 `Skill` tool 呼叫，而 `PreToolUse` hook 依 tool 名稱比對、**可以擋 tool call**（文件明載，來源：`code.claude.com/docs/en/hooks`「PreToolUse decision control」）：
+
+| `hookSpecificOutput` 欄位 | 效果（文件明載） |
+|---|---|
+| `permissionDecision: "deny"` ＋ `permissionDecisionReason` | 擋下呼叫；「For `"deny"`, shown to Claude」 |
+| `updatedInput` | 「Modifies the tool's input parameters before execution. Replaces the entire input object」 |
+| `additionalContext` | 「String added to Claude's context alongside the tool result」 |
+
+Hook 輸入含 `tool_input`（對 `Skill` tool 即 `skill` 與 `args`）。因此一個插件自帶的 hook 可在**選擇發生的那一刻、只針對相關 skill、零常駐成本**做到：
+- 呼叫 `impeccable` 且 `args` 為空 → 以 `additionalContext` 注入第二層 A 表，或 deny 並要求指定子命令
+- 呼叫 `impeccable` → 注入 tie-break（使用者提到 brutalist／minimalist／soft／awwwards 時改用對應 `taste-*`）
+- 呼叫 `show-me` → 注入「需交付／匯出／驗證時改用 `archify`」
+
+限制：Claude Code 專屬（Codex／OpenCode 無對等機制）；本研究**尚未實際撰寫 hook 驗證**能攔到模型發起的 `Skill` 呼叫（推論：`Skill` 是 tool、`PreToolUse` 依 tool 名稱比對，應成立）。若日後要做 router，此為優先候選，5.1 的 router skill 可不做。
+
+### 5.8 決策記錄
+
+- **2026-09-04**：採方案「A：先不建 router」。曾同日落地 `taste-skill` 拆分（5.4-3 節 `git-subdir` 做法，commit `8236e14`）並實測識別名，隨後**撤回**、`taste-skill` 改回單一整 repo 入口——理由：沒有 router 時，拆分只換到「單一 skill 可個別開關」，不足以抵銷 5 個入口的維護成本；先以現狀使用一段時間，再依實際誤選情況決定是否引入 5.7 的 `PreToolUse` 閘門或重啟拆分。5.5 節的決策表保留作為日後的資料來源，非當前實作項目。
+
 ## 6. 引用來源總表
 
 | Claim | 來源 |
@@ -478,4 +509,5 @@ Tie-break（同時命中兩套件時）：`beautify-github-readme` 受詞含 REA
 | Marketplace 入口的 `strict`／`skills`／`hooks`／`defaultEnabled` 欄位與 Strict mode 語意 | `code.claude.com/docs/en/plugin-marketplaces`「Optional plugin fields」「Strict mode」 |
 | `skills` 路徑欄位「adds to default scan」規則、經路徑欄位載入的 skill 以 frontmatter `name` 為識別名 | `code.claude.com/docs/en/plugins-reference`「Path behavior rules」 |
 | SessionStart hook stdout 進入 context；matcher 含 `compact`；resume/fork 重跑 | `code.claude.com/docs/en/hooks`「Hook output」「SessionStart」 |
+| `PreToolUse` 的 `permissionDecision`／`updatedInput`／`additionalContext` 語意 | `code.claude.com/docs/en/hooks`「PreToolUse decision control」 |
 | `taste-skill` 的 `plugin.json` 僅含 metadata、未宣告 component（`strict: false` 前提） | `Leonxlnx/taste-skill`，`.claude-plugin/plugin.json`，`ref=ccbc15639c97057cbfcf32ecebc38ef716e4bb37` |
