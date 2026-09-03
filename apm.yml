@@ -25,21 +25,6 @@ marketplace:
   #   apm-go pack --marketplace=claude,codex --json | jq -r '.marketplace.outputs[].path'
 
   packages:
-    # - name: example-package
-    #   description: Human-readable description of the package
-    #   source: acme-org/example-package
-    #   version: "^1.0.0"
-      # Required when outputs includes codex:
-      # category: Productivity
-      # Optional overrides:
-      # subdir: path/inside/repo
-      # Per-package version tag (recommended for monorepos so each
-      # package can be released independently). Leave commented for
-      # repo-wide lockstep tagging.
-      # tag_pattern: "{name}-v{version}"
-      # include_prerelease: false
-      # ref: v1.0.0  # pin to an explicit ref instead of a version range
-
     # Local-path entry: ship a package shipped alongside this repo.
     - name: git-assistant
       source: ./plugins/git-assistant
@@ -60,4 +45,52 @@ marketplace:
       source: ./plugins/slim-agents-md
       description: "Curate and slim bloated AGENTS.md / CLAUDE.md files with progressive disclosure: minimal root, on-demand category docs, contradiction and redundancy cleanup"
       version: 0.1.0
+      category: Productivity
+    # - name: example-package
+    #   description: Human-readable description of the package
+    #   source: acme-org/example-package
+    #   version: "^1.0.0"
+    # Required when outputs includes codex:
+    # category: Productivity
+    # Optional overrides:
+    # subdir: path/inside/repo
+    # Per-package version tag (recommended for monorepos so each
+    # package can be released independently). Leave commented for
+    # repo-wide lockstep tagging.
+    # tag_pattern: "{name}-v{version}"
+    # include_prerelease: false
+    # ref: v1.0.0  # pin to an explicit ref instead of a version range
+    - name: web-quality-skills
+      source: https://github.com/addyosmani/web-quality-skills.git
+      ref: afa8da942115f2961fdbfa80807ea0b232ff6c00
+      category: Productivity
+    - name: impeccable
+      source: https://github.com/pbakaus/impeccable.git
+      ref: 63b04e2530f5c7b41ea83c133daab24f34912456
+      version: 4.1.2
+      tag_pattern: skill-v{version}
+      category: design
+    - name: taste-skill
+      source: https://github.com/Leonxlnx/taste-skill.git
+      ref: ccbc15639c97057cbfcf32ecebc38ef716e4bb37
+      category: design
+    - name: beautify-github-readme
+      source: https://github.com/oil-oil/beautify-github-readme.git
+      ref: 55bdb1c05414cd7a0cf911d02e55ece79777206e
+      category: design
+    - name: show-me
+      source: https://github.com/humanlayer/skills.git
+      ref: 3c2629142c5d437428269b1b722b08c0b87f574d
+      subdir: plugins/show-me
+      category: Productivity
+    - name: reviewable-html-workbench
+      source: https://github.com/u-ichi/reviewable-html-workbench.git
+      ref: 2be05dbd31510670af04381e24d735c4c77493b8
+      version: 1.28.0
+      category: Productivity
+    - name: archify
+      source: https://github.com/tt-a1i/archify.git
+      ref: c826e6c3a7abad19c0f3cd1ca57207d54b1ad8de
+      version: 2.16.0
+      subdir: archify
       category: Productivity
