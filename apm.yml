@@ -73,6 +73,7 @@ marketplace:
     - name: taste-skill
       source: https://github.com/Leonxlnx/taste-skill.git
       ref: ccbc15639c97057cbfcf32ecebc38ef716e4bb37
+      subdir: skills/taste-skill
       category: design
     - name: beautify-github-readme
       source: https://github.com/oil-oil/beautify-github-readme.git
@@ -85,11 +86,32 @@ marketplace:
       category: Productivity
     - name: reviewable-html-workbench
       source: https://github.com/u-ichi/reviewable-html-workbench.git
+      ref: 2be05dbd31510670af04381e24d735c4c77493b8
       version: 1.28.0
       category: Productivity
     - name: archify
       source: https://github.com/tt-a1i/archify.git
+      ref: c826e6c3a7abad19c0f3cd1ca57207d54b1ad8de
       version: 2.16.0
       subdir: archify
       category: Productivity
-      ref: c826e6c3a7abad19c0f3cd1ca57207d54b1ad8de
+    - name: taste-brutalist
+      source: https://github.com/Leonxlnx/taste-skill.git
+      ref: ccbc15639c97057cbfcf32ecebc38ef716e4bb37
+      subdir: skills/brutalist-skill
+      category: design
+    - name: taste-minimalist
+      source: https://github.com/Leonxlnx/taste-skill.git
+      ref: ccbc15639c97057cbfcf32ecebc38ef716e4bb37
+      subdir: skills/minimalist-skill
+      category: design
+    - name: taste-soft
+      source: https://github.com/Leonxlnx/taste-skill.git
+      ref: ccbc15639c97057cbfcf32ecebc38ef716e4bb37
+      subdir: skills/soft-skill
+      category: design
+    - name: taste-redesign
+      source: https://github.com/Leonxlnx/taste-skill.git
+      ref: ccbc15639c97057cbfcf32ecebc38ef716e4bb37
+      subdir: skills/redesign-skill
+      category: design
