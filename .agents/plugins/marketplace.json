@@ -85,9 +85,8 @@
     {
       "name": "taste-skill",
       "source": {
-        "source": "git-subdir",
+        "source": "url",
         "url": "Leonxlnx/taste-skill",
-        "path": "skills/taste-skill",
         "ref": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
         "sha": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
         "tag_pattern": "v{version}"
@@ -159,70 +158,6 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Productivity"
-    },
-    {
-      "name": "taste-brutalist",
-      "source": {
-        "source": "git-subdir",
-        "url": "Leonxlnx/taste-skill",
-        "path": "skills/brutalist-skill",
-        "ref": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
-        "sha": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
-        "tag_pattern": "v{version}"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "design"
-    },
-    {
-      "name": "taste-minimalist",
-      "source": {
-        "source": "git-subdir",
-        "url": "Leonxlnx/taste-skill",
-        "path": "skills/minimalist-skill",
-        "ref": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
-        "sha": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
-        "tag_pattern": "v{version}"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "design"
-    },
-    {
-      "name": "taste-soft",
-      "source": {
-        "source": "git-subdir",
-        "url": "Leonxlnx/taste-skill",
-        "path": "skills/soft-skill",
-        "ref": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
-        "sha": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
-        "tag_pattern": "v{version}"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "design"
-    },
-    {
-      "name": "taste-redesign",
-      "source": {
-        "source": "git-subdir",
-        "url": "Leonxlnx/taste-skill",
-        "path": "skills/redesign-skill",
-        "ref": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
-        "sha": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
-        "tag_pattern": "v{version}"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "design"
     }
   ]
 }

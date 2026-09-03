@@ -19,11 +19,7 @@
 |------|--------|------|------|
 | `web-quality-skills` | https://github.com/addyosmani/web-quality-skills | Productivity | MIT |
 | `impeccable` | https://github.com/pbakaus/impeccable | design | Apache-2.0 |
-| `taste-skill` | https://github.com/Leonxlnx/taste-skill/tree/main/skills/taste-skill | design | MIT |
-| `taste-brutalist` | https://github.com/Leonxlnx/taste-skill/tree/main/skills/brutalist-skill | design | MIT |
-| `taste-minimalist` | https://github.com/Leonxlnx/taste-skill/tree/main/skills/minimalist-skill | design | MIT |
-| `taste-soft` | https://github.com/Leonxlnx/taste-skill/tree/main/skills/soft-skill | design | MIT |
-| `taste-redesign` | https://github.com/Leonxlnx/taste-skill/tree/main/skills/redesign-skill | design | MIT |
+| `taste-skill` | https://github.com/Leonxlnx/taste-skill | design | MIT |
 | `beautify-github-readme` | https://github.com/oil-oil/beautify-github-readme | design | MIT |
 | `show-me` | https://github.com/humanlayer/skills/tree/main/plugins/show-me | Productivity | MIT |
 | `reviewable-html-workbench` | https://github.com/u-ichi/reviewable-html-workbench | Productivity | MIT |
@@ -37,7 +33,6 @@
 
 - `impeccable` 為 **Apache-2.0**，非 MIT。使用時須額外保留其 `NOTICE.md`，修改檔案時須標示變更；該套件內容不會因併入本 marketplace 而變更授權。
 - `show-me` 的 MIT 授權檔位於 `humanlayer/skills` 的 repo 根目錄，未包含在 `plugins/show-me` 子目錄內，因此以子目錄方式安裝時不會帶入授權檔，請自行參照 upstream 的 [LICENSE](https://github.com/humanlayer/skills/blob/main/LICENSE)。
-- `taste-*` 五個套件皆取自 `Leonxlnx/taste-skill` 的個別子目錄（僅收錄常用的 5 個子 skill，其餘 8 個未收錄），MIT 授權檔同樣位於 repo 根目錄、不會隨子目錄安裝，請參照 upstream 的 [LICENSE](https://github.com/Leonxlnx/taste-skill/blob/main/LICENSE)。
 - `archify` 內建的品牌 logo 向量不受其 MIT 涵蓋，個別圖示另有授權與商標限制（例如 Vue.js 為 CC-BY-NC-SA-4.0），詳見 upstream 的 [THIRD_PARTY_NOTICES.md](https://github.com/tt-a1i/archify/blob/main/archify/THIRD_PARTY_NOTICES.md)。
 
 ## Claude Code 安裝方式
