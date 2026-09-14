@@ -94,3 +94,8 @@ marketplace:
       version: 2.16.0
       subdir: archify
       category: Productivity
+    - name: open-steps
+      source: https://github.com/kharmanskyi/open-steps.git
+      version: 0.4.2
+      ref: 4ea6ec967be1326c53b0816dde1e30749ea7ecea
+      category: Productivity
