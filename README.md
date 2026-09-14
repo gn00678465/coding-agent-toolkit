@@ -24,6 +24,7 @@
 | `show-me` | https://github.com/humanlayer/skills/tree/main/plugins/show-me | Productivity | MIT |
 | `reviewable-html-workbench` | https://github.com/u-ichi/reviewable-html-workbench | Productivity | MIT |
 | `archify` | https://github.com/tt-a1i/archify | Productivity | MIT |
+| `open-steps` | https://github.com/kharmanskyi/open-steps | Productivity | MIT |
 
 安裝方式與本專案插件相同，例如：`/plugin install impeccable@coding-agent-toolkit`。
 
