@@ -158,6 +158,21 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Productivity"
+    },
+    {
+      "name": "open-steps",
+      "source": {
+        "source": "url",
+        "url": "kharmanskyi/open-steps",
+        "ref": "4ea6ec967be1326c53b0816dde1e30749ea7ecea",
+        "sha": "4ea6ec967be1326c53b0816dde1e30749ea7ecea",
+        "tag_pattern": "v{version}"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }
