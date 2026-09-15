@@ -126,6 +126,18 @@
         "sha": "4ea6ec967be1326c53b0816dde1e30749ea7ecea",
         "tag_pattern": "v{version}"
       }
+    },
+    {
+      "name": "pstack",
+      "category": "Productivity",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/cursor/plugins",
+        "path": "pstack",
+        "ref": "c1c0a32802223f4be824112dd83d33ad29a8b26c",
+        "sha": "c1c0a32802223f4be824112dd83d33ad29a8b26c",
+        "tag_pattern": "v{version}"
+      }
     }
   ]
 }

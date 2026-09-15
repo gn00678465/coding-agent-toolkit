@@ -99,3 +99,8 @@ marketplace:
       version: 0.4.2
       ref: 4ea6ec967be1326c53b0816dde1e30749ea7ecea
       category: Productivity
+    - name: pstack
+      source: https://github.com/cursor/plugins.git
+      ref: c1c0a32802223f4be824112dd83d33ad29a8b26c
+      subdir: pstack
+      category: Productivity

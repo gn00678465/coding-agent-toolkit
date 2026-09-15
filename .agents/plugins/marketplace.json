@@ -173,6 +173,22 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Productivity"
+    },
+    {
+      "name": "pstack",
+      "source": {
+        "source": "git-subdir",
+        "url": "cursor/plugins",
+        "path": "pstack",
+        "ref": "c1c0a32802223f4be824112dd83d33ad29a8b26c",
+        "sha": "c1c0a32802223f4be824112dd83d33ad29a8b26c",
+        "tag_pattern": "v{version}"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }
