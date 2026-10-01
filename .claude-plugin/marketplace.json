@@ -46,13 +46,13 @@
     },
     {
       "name": "impeccable",
-      "version": "4.1.2",
+      "version": "4.4.0",
       "category": "design",
       "source": {
         "source": "url",
         "url": "https://github.com/pbakaus/impeccable",
-        "ref": "63b04e2530f5c7b41ea83c133daab24f34912456",
-        "sha": "63b04e2530f5c7b41ea83c133daab24f34912456",
+        "ref": "5efd0eeee80b7a627233b53539fe829f05b5a60f",
+        "sha": "5efd0eeee80b7a627233b53539fe829f05b5a60f",
         "tag_pattern": "skill-v{version}"
       }
     },
@@ -85,8 +85,8 @@
         "source": "git-subdir",
         "url": "https://github.com/humanlayer/skills",
         "path": "plugins/show-me",
-        "ref": "3c2629142c5d437428269b1b722b08c0b87f574d",
-        "sha": "3c2629142c5d437428269b1b722b08c0b87f574d",
+        "ref": "ca7c8088db69e315a8b2deea43820270457f8f3c",
+        "sha": "ca7c8088db69e315a8b2deea43820270457f8f3c",
         "tag_pattern": "v{version}"
       }
     },
@@ -104,26 +104,26 @@
     },
     {
       "name": "archify",
-      "version": "2.16.0",
+      "version": "3.0.1",
       "category": "Productivity",
       "source": {
         "source": "git-subdir",
         "url": "https://github.com/tt-a1i/archify",
         "path": "archify",
-        "ref": "c826e6c3a7abad19c0f3cd1ca57207d54b1ad8de",
-        "sha": "c826e6c3a7abad19c0f3cd1ca57207d54b1ad8de",
+        "ref": "2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c",
+        "sha": "2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c",
         "tag_pattern": "v{version}"
       }
     },
     {
       "name": "open-steps",
-      "version": "0.4.2",
+      "version": "0.4.6",
       "category": "Productivity",
       "source": {
         "source": "url",
         "url": "https://github.com/kharmanskyi/open-steps",
-        "ref": "4ea6ec967be1326c53b0816dde1e30749ea7ecea",
-        "sha": "4ea6ec967be1326c53b0816dde1e30749ea7ecea",
+        "ref": "7c2b358dbfd656b652c295322d88d90a75328d47",
+        "sha": "7c2b358dbfd656b652c295322d88d90a75328d47",
         "tag_pattern": "v{version}"
       }
     },
@@ -134,8 +134,8 @@
         "source": "git-subdir",
         "url": "https://github.com/cursor/plugins",
         "path": "pstack",
-        "ref": "c1c0a32802223f4be824112dd83d33ad29a8b26c",
-        "sha": "c1c0a32802223f4be824112dd83d33ad29a8b26c",
+        "ref": "c47b12849e43f18d5c374c7069c744cc55b0ea00",
+        "sha": "c47b12849e43f18d5c374c7069c744cc55b0ea00",
         "tag_pattern": "v{version}"
       }
     }
