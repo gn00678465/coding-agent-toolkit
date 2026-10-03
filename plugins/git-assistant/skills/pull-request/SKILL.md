@@ -1,6 +1,6 @@
 ---
 name: pull-request
-description: 建立與維護 GitHub Pull Request 的專用 skill，應在以下情況立即使用：使用者提到建立/開 PR、open a PR、submit PR、make a PR、push and create PR、修改或更新 PR 標題/描述/標籤/審核者、查看 PR 狀態或 CI 結果。自動偵測預設分支、檢查未提交變更、分析 commit 與 diff，產生符合 Conventional Commits 規範的標題，並依 PR 規模選擇精簡版或完整版模板。支援中英文切換（含 english / 英文 / 用英語 等關鍵字）。透過 GitHub CLI (gh) 執行。不適用於純 git push、git merge、PR code review/審查程式碼（由獨立 review skill 處理）或非 GitHub 平台的 PR 操作。
+description: 建立與修改 GitHub Pull Request 的唯一流程。執行 `gh pr create`、`gh pr edit`，或以 `gh api` 修改 PR 標題/描述之前，必須先載入本 skill。適用於所有來源：使用者直接要求（開 PR、create PR、「commit -> push -> pr」、把內容補到 PR 內文、更新 PR 描述/標題/標籤/審核者）、其他 skill 或工作流程中的「開 PR」步驟，以及 agent 在任務結尾自行決定開 PR。也用於查看 PR 狀態或 CI 結果。自動偵測預設分支、檢查未提交變更、分析 commit 與 diff，產生符合 Conventional Commits 規範的標題，並依 PR 規模選擇精簡版或完整版模板。支援中英文切換（含 english / 英文 / 用英語 等關鍵字）。不適用於純 git push、git merge、PR code review/審查程式碼（由獨立 review skill 處理）或非 GitHub 平台的 PR 操作。
 ---
 
 # GitHub Pull Request
@@ -182,7 +182,7 @@ rm -f pr-body.md pr-title.txt
 
 ## 修改 PR 流程
 
-當使用者要求「修改 PR」「更新描述」「edit PR」或 PR 已存在時自動進入此流程。
+當使用者要求「修改 PR」「更新描述」「edit PR」、要求把新內容補進既有 PR 的內文，或 PR 已存在時自動進入此流程。
 
 > **重要**：`gh pr edit` 對 title/body 的更新因 GitHub Projects (classic) 棄用而已不可靠，請改用 `gh api -X PATCH` 直接呼叫 REST API。標籤與審核者仍可使用 `gh pr edit`。
 
@@ -194,7 +194,7 @@ gh pr view --json number,title,body,labels,assignees
 
 ### Step 2：確認修改項目
 
-詢問使用者要修改的欄位（標題、描述、標籤、審核者等）。
+請求已指明欄位與內容時直接修改；未指明時才詢問使用者要修改的欄位（標題、描述、標籤、審核者等）。
 
 ### Step 3：執行修改
 
