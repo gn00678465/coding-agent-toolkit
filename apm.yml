@@ -29,7 +29,7 @@ marketplace:
     - name: git-assistant
       source: ./plugins/git-assistant
       description: Claude Code, GitHub Copilot & Codex plugin bundle for commit and pull request workflows
-      version: 0.1.4
+      version: 0.1.5
       category: Productivity
     - name: advisor
       source: ./plugins/advisor
@@ -66,21 +66,21 @@ marketplace:
       category: Productivity
     - name: impeccable
       source: https://github.com/pbakaus/impeccable.git
-      ref: 5efd0eeee80b7a627233b53539fe829f05b5a60f
-      version: 4.4.0
+      ref: d631a8827f99414d2b6daba4ef08b7f8701751d7
+      version: 4.5.2
       tag_pattern: skill-v{version}
       category: design
     - name: taste-skill
       source: https://github.com/Leonxlnx/taste-skill.git
-      ref: ccbc15639c97057cbfcf32ecebc38ef716e4bb37
+      ref: d237dd399d57524945c0c81327da5da19f7a468d
       category: design
     - name: beautify-github-readme
       source: https://github.com/oil-oil/beautify-github-readme.git
-      ref: 55bdb1c05414cd7a0cf911d02e55ece79777206e
+      ref: d6562a5f5c484d069f8560b39c215c9cda4b5a55
       category: design
     - name: show-me
       source: https://github.com/humanlayer/skills.git
-      ref: ca7c8088db69e315a8b2deea43820270457f8f3c
+      ref: 653b6411c1f70c275a18e37673b042ff99f67ceb
       subdir: plugins/show-me
       category: Productivity
     - name: reviewable-html-workbench
@@ -96,11 +96,11 @@ marketplace:
       category: Productivity
     - name: open-steps
       source: https://github.com/kharmanskyi/open-steps.git
-      version: 0.4.6
-      ref: 7c2b358dbfd656b652c295322d88d90a75328d47
+      version: 0.4.8
+      ref: 4fa744ba8ea06ccf128a39853824c46ac391dd00
       category: Productivity
     - name: pstack
       source: https://github.com/cursor/plugins.git
-      ref: c47b12849e43f18d5c374c7069c744cc55b0ea00
+      ref: 08bd59b37834550f5e8fa0bb5e8852204a7534cf
       subdir: pstack
       category: Productivity
