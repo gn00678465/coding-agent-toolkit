@@ -1,44 +1,64 @@
 # Final Review Report
 
+<!-- Rendered from final-report.json. Field values come from the JSON; only checkboxes are edited by humans. -->
+<!-- Voting never checks items. Re-rendering carries each RF id's checkbox state over unchanged. -->
+
 - `command`: `report`
-- `feature`: <!-- feature folder name -->
-- `target`: <!-- branch, PR, commit range, or working tree -->
-- `base`: <!-- comparison ref -->
-- `summary_file`: `summary.md`
-- `vote_files`: <!-- vote files used, e.g. gpt-5.5-vote.md, opus-4.6-vote.md -->
-- `missing_voters`: <!-- expected models that have not voted, or none -->
-- `model_weights`: <!-- resolved weights, e.g. gpt-5.5: 1.5, opus-4.6: 1.0 -->
-- `report_language`: <!-- auto | en | zh-CN | ... -->
+- `feature`: <!-- final-report.feature -->
+- `scope_sha256`: <!-- final-report.scope_sha256 -->
+- `model_weights`: <!-- resolved weights, e.g. gpt-5.6-sol: 1.5, opus: 1.0 -->
+- `missing_voters`: <!-- models with no complete vote, or none -->
+- `report_flags`: <!-- single_vendor | intent_inferred | missing_voters | has_stand_ins, or none -->
+- `report_language`: <!-- auto | en | zh-TW | ... -->
 - `created_at`: <!-- ISO 8601 timestamp -->
 
-## Fix Approval Checklist
+## Intent
 
-<!-- Ordered by severity, then confidence_score descending; unvoted sorts after low. -->
-<!-- Checked means approved for fixing. Voting never checks items; only humans do. -->
+<!-- intent.statement; append "(inferred, not confirmed by the user)" when intent.status is inferred. -->
 
-- [ ] `RF-001`
-  - `status`: `open`
-  - `status_label`: <!-- localized label -->
-  - `severity`: <!-- critical | high | medium | low | note -->
-  - `confidence`: <!-- high | medium | low | unvoted -->
-  - `confidence_score`: <!-- e.g. 0.83 -->
-  - `sources`: <!-- originating models -->
-  - `votes`: <!-- confirm: [models] | dispute: [models] | unsure: [models] | abstain: [models] -->
-  - `summary`: <!-- merged issue summary -->
-  - `dispute_notes`: <!-- key dispute evidence, when any model disputed -->
-  - `proposed_fix`: <!-- specific intended fix -->
-  - `suggested_tests`: <!-- tests to run after fixing -->
+## Reviewers
 
-## Confidence Overview
+<!-- One bullet per reviewers entry, then one per voters entry. -->
 
-| Item | Severity | Confidence | Score | Confirm | Dispute | Unsure | Abstain |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `RF-001` | <!-- severity --> | <!-- tier --> | <!-- score --> | <!-- models --> | <!-- models --> | <!-- models --> | <!-- models --> |
+- Reviewer `<label>`: `<model_used>` (`<vendor>`, `<kind>`), <findings_count> findings, `status`: `<status>`
+- Voter `<label>`: `<model_used>` (`<vendor>`, `<kind>`), `status`: `<status>`
 
-## Likely False Positives
+## Act On
 
-<!-- Findings with low or disputed confidence and why they are doubted. -->
+<!-- act_on items. Each: what it is, which models raised it, why it matters. -->
 
-## Residual Disagreements
+- [ ] `RF-001` <!-- title -->
+  - `severity`: <!-- severity --> · `confidence`: <!-- tier --> (<!-- score -->)
+  - `raised_by`: <!-- sources --> · `confirm`: <!-- models --> · `dispute`: <!-- models --> · `unsure`: <!-- models --> · `abstain`: <!-- models -->
+  - `why_it_matters`: <!-- why_it_matters -->
+  - `affected_files`: <!-- path:line_start-line_end -->
+  - `suggested_fix`: <!-- suggested_fix -->
+  - `suggested_tests`: <!-- suggested_tests -->
+  - `status`: `open` · `status_label`: <!-- localized label -->
 
-<!-- Material conflicts between voters that humans should resolve. -->
+## Consider
+
+<!-- consider items, same shape as Act On with `tradeoff` in place of `why_it_matters`. -->
+
+## Noted
+
+<!-- noted items as one checkbox line each: `RF-xxx` title (severity, confidence, raised by). -->
+
+## Dismissed
+
+<!-- dismissed items, one checkbox line each plus `dismiss_rationale` drawn from dispute evidence. -->
+
+## Unvoted
+
+<!-- unvoted items, one checkbox line each with the reason no eligible vote exists. -->
+
+## Agreement Map
+
+| Model A | Model B | Shared votes | Agreement |
+| --- | --- | --- | --- |
+| <!-- model_a --> | <!-- model_b --> | <!-- shared_votes --> | <!-- agreement_rate, or n/a when null --> |
+
+- `same_vendor_agreement`: <!-- rate or n/a -->
+- `cross_vendor_agreement`: <!-- rate or n/a -->
+
+<!-- agreement_map.pattern: where models agreed and diverged, and what that pattern suggests. -->

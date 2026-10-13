@@ -1,270 +1,269 @@
 ---
 name: review-forge
-description: Use when orchestrating a code review workflow across multiple LLMs or agents, synthesizing review findings, cross-voting findings between models, producing confidence-ranked final reports, producing checklist-driven fix scopes, applying selected fixes, running regression tests, independently verifying fixes, updating review status, or keeping code review process artifacts isolated under .review/.
+description: Use when orchestrating a code review across multiple models or agents, including other vendors' models through the Codex or Claude Code CLI; freezing a review scope and intent; synthesizing or cross-voting findings; producing a confidence-ranked final report; or fixing, testing, and verifying approved findings, with every artifact kept under .review/.
 ---
 
 # Review Forge
 
-Review Forge runs a conservative, feature-scoped code review workflow:
+Review Forge runs a conservative, feature-scoped code review. Every reviewer, whichever model or vendor, reviews one **frozen scope** against one stated **intent** and returns one **JSON artifact** that matches a schema. The host turns those artifacts into a human-controlled checklist, and fixes only what a human checks.
 
-1. Inspect the target diff and project context.
-2. Create one review file per model or agent inside the current feature folder.
-3. Synthesize multiple model review files into a human-controlled checklist.
-4. Cross-vote the synthesized findings: each model votes on every finding it did not originate.
-5. Produce a final report ranked by severity and weighted vote confidence.
-6. Fix only checked and confirmed items.
-7. Run focused and regression tests after every fix batch.
-8. Verify fixes independently when possible.
-9. Update machine-readable status and localized report labels.
-10. Keep all workflow artifacts isolated from product code.
+```text
+scope → review → synthesize → vote → report → (human checks items) → fix → verify
+```
 
 ## Commands
 
-- `review`: create one model-specific review file. Do not modify product code.
-- `synthesize`: merge model review files from one feature folder into one summary checklist. Do not modify product code.
-- `vote`: one model votes on every `summary.md` finding it did not originate, writing one vote file. Do not modify product code.
-- `report`: aggregate vote files into a confidence-ranked `final-report.md`. Do not modify product code.
-- `fix`: read checked items from `final-report.md` when it exists, otherwise `summary.md`; confirm the selected scope, implement only those items, run tests, and update status.
-- `verify`: verify fixed items with an independent perspective, rerun or inspect tests, and update verification status.
+- `scope`: freeze the review scope and intent into `scope.json` and `scope.patch`.
+- `review`: produce one review artifact per lane.
+- `synthesize`: merge the review artifacts into `summary.json` and `summary.md`.
+- `vote`: produce one vote artifact per lane on every `summary.json` finding.
+- `report`: aggregate the votes into `final-report.json` and `final-report.md`.
+- `fix`: implement checked items only, run tests, update status.
+- `verify`: verify fixed items from an independent perspective, update status.
 
-If the user does not specify a command, infer the safest command from the request. When ambiguous, default to `review`.
+`review` and `vote` run `scope` first when `scope.json` is missing. If the user names no command, infer the safest one from the request; when ambiguous, use `review`. Only `fix` modifies product code.
 
 ## Inputs
 
-Resolve or ask for these inputs before doing work:
+Resolve or ask for these before doing work:
 
-- `target`: branch, commit range, pull request, or current working tree.
-- `base`: comparison branch or ref. If omitted, infer it using the default diff rules below.
-- `artifact_root`: default `.review/`.
-- `feature`: feature name used as the artifact subfolder. If omitted, infer from branch name, PR title, changed package, or a short sanitized summary of the diff.
+- `target`: files, a diff, a PR, a branch, a commit range, or the working tree. Resolved by `scope`.
+- `base`: comparison ref. Resolved by `scope` when omitted.
+- `intent`: the user's own statement of what the change is meant to do. Resolved by `scope` when omitted.
+- `feature`: artifact subfolder name. If omitted, infer from the branch name, PR title, changed package, or a short sanitized summary of the diff.
 - `feature_dir`: default `.review/<feature>/`.
-- `command`: `review`, `synthesize`, `vote`, `report`, `fix`, or `verify`.
-- `model`: model name for a review or vote file, such as `gpt-5.5`, `opus-4.6`, `gemini-3.5` or `sonnet-4.6`.
-- `model_weights`: optional map of model name to vote weight, for example `gpt-5.5: 1.5`. Models not listed default to `1.0`.
-- `report_language`: default `auto`, meaning follow the user's prompt language. Explicit values such as `en`, `zh-TW`, or `ja` are allowed.
+- `command`: one of the commands above.
+- `model`: the model name for a single-lane `review` or `vote`, such as `gpt-5.6-sol` or `opus`. Defaults to the host's own model.
+- `lanes`: models to fan `review` and `vote` out to, such as `host:opus, host:sonnet, codex:default`. See [Lanes](#lanes).
+- `perspective`: optional review focus, such as correctness, security, tests, or maintainability.
+- `model_weights`: optional vote weights, for example `gpt-5.6-sol: 1.5`. Unlisted models weigh `1.0`.
+- `report_language`: default `auto` (follow the user's prompt language); explicit values such as `en`, `zh-TW`, or `ja`.
 - `auto_fix_allowed`: default `false` unless the user explicitly asks to fix.
-- `perspective`: optional review focus, such as correctness, security, maintainability, tests, or UX.
-- `test_command`: optional override for validation.
+- `test_command`: optional validation override.
 
-## Default Diff Rules
+## Artifacts
 
-When the user does not specify a target or base, infer the review scope in this order:
+```text
+.review/<feature>/
+  scope.json            scope.patch
+  <model>.json          # one per review lane; <model>-<perspective>.json for extra perspectives
+  summary.json          summary.md
+  <model>-vote.json     # one per vote lane
+  final-report.json     final-report.md
+  fix-plan.md           verify.md         status.md
+  .lanes/<label>/       # lane briefs and raw CLI output, only when lanes ran
+```
 
-1. If the working tree or index has uncommitted changes, review the uncommitted diff.
-   - Inspect both unstaged and staged changes.
-   - Treat this as `target: working tree`.
-   - No base branch is required unless additional context is needed.
-2. If there are no uncommitted changes, review the current `HEAD` against `main`.
-   - Prefer a merge-base comparison such as `main...HEAD` when supported.
-   - If `main` does not exist, try `master...HEAD`.
-3. If neither `main` nor `master` exists, inspect branch tracking metadata or PR metadata when available.
-4. Ask the user for `base` only when no reasonable comparison ref can be inferred.
+**JSON is the record.** Each JSON artifact matches its schema in `assets/schemas/`, and the `.md` files are rendered from the JSON with the templates in `assets/templates/`:
 
-Explicit user-provided PRs, branches, commit ranges, or base refs always override these defaults.
+| Artifact | Schema | Written by |
+| --- | --- | --- |
+| `scope.json` | `scope.schema.json` | host, `scope` |
+| `<model>.json` | `lane-review.schema.json` | host, from a lane's output |
+| `summary.json` | `summary.schema.json` | host, `synthesize` |
+| `<model>-vote.json` | `lane-vote.schema.json` | host, from a lane's output |
+| `final-report.json` | `final-report.schema.json` | host, `report` |
+
+Validate every JSON artifact before writing it: `python3 -I <this skill dir>/scripts/validate.py <schema-name> <file>` (exit 0 valid, 1 invalid, 3 jsonschema missing: then check every required field against the schema by hand).
+
+**Checkboxes in `summary.md` and `final-report.md` are the only approval record.** Humans edit them; re-rendering a `.md` carries each `RF` id's checkbox state over unchanged.
+
+Each command writes only its own artifacts:
+
+- `scope`: `scope.json`, `scope.patch`.
+- `review`: one `<model>.json` per lane, plus `.lanes/` when lanes ran.
+- `synthesize`: `summary.json`, `summary.md`.
+- `vote`: one `<model>-vote.json` per lane, plus `.lanes/` when lanes ran.
+- `report`: `final-report.json`, `final-report.md`.
+- `fix`: `fix-plan.md`, `status.md`, and the product code for checked items.
+- `verify`: `verify.md`, `status.md`.
+
+Use stable names without timestamps, unless the user asks to keep several historical runs. `fix-plan.md`, `verify.md`, and `status.md` use their templates in `assets/templates/`.
 
 ## Required Initial Inspection
 
 Before producing artifacts or modifying code, inspect:
 
 - repo status and uncommitted changes;
-- target diff against the chosen base;
-- existing `.review/` feature folders and review artifacts;
+- existing `.review/` feature folders and artifacts;
 - `.gitignore` for `.review/`;
 - package, build, and test configuration;
 - project-specific instructions for tests, lint, typecheck, or CI.
 
-Never revert unrelated user changes. If `.review/` is not ignored, recommend adding it to `.gitignore`, but do not edit `.gitignore` unless the user asks.
+Keep unrelated user changes intact. If `.review/` is not ignored, recommend adding it to `.gitignore`; edit `.gitignore` only when the user asks.
 
-## Artifact Layout
+## Scope Command
 
-Group every workflow by feature:
+`scope` decides what every reviewer sees. It runs once per feature; every later command reads its output and none re-infers it.
 
-```text
-.review/<feature>/
-  <model>.md
-  <model>-<perspective>.md
-  summary.md
-  <model>-vote.md
-  final-report.md
-  fix-plan.md
-  verify.md
-  status.md
-```
+### 1. Target
 
-Rules:
+Use the first rule that applies, and record it in `resolved_by`:
 
-- One model review pass should produce exactly one review file.
-- Name review files with the model or agent name first, for example `gpt-5.5.md`, `opencode.md`, `cursor.md`, `claude.md`.
-- If the same model runs multiple perspectives, append a short perspective suffix, for example `gpt-5.5-security.md`.
-- Do not include timestamps by default. Use stable names so the folder is easy to scan.
-- Use timestamps only when preserving multiple historical runs is explicitly requested.
+1. `explicit`: the user named files, a diff, a PR, a branch, a commit range, or a base ref.
+2. `recent_work`: the user's message refers to recent work ("the change I just made"). Gather the files that work touched, from the conversation and recent commits, as a `files` target.
+3. `uncommitted`: the working tree or index has changes. Target the working tree, staged and unstaged.
+4. `branch_diff`: compare `HEAD` with its merge base against `main`, else `master`, else the branch's tracking or PR base.
+5. `asked_user`: none of the above yields a target or base, so ask.
 
-Command output boundaries:
+### 2. Freeze the diff
 
-- `review`: create or overwrite exactly one model review file, such as `gpt-5.5.md`. Do not create `summary.md`, `fix-plan.md`, `verify.md`, or `status.md`.
-- `synthesize`: read model review files and create or overwrite `summary.md`. Do not create `status.md`.
-- `vote`: create or overwrite exactly one vote file, such as `gpt-5.5-vote.md`. Do not create `final-report.md` or modify `summary.md`.
-- `report`: read `summary.md` and all `*-vote.md` files, then create or overwrite `final-report.md`. Do not modify `summary.md` or vote files.
-- `fix`: read checked items from `final-report.md` when it exists, otherwise `summary.md`; create or update `fix-plan.md`, and create or update `status.md` after code changes and tests.
-- `verify`: create or update `verify.md` and update `status.md` with verification evidence.
+Write the change under review to `scope.patch`:
 
-Use the templates in `assets/templates/` unless the repository already has a stronger local convention.
+- branch: `git diff <base>...HEAD`
+- commit range: `git diff <range>`
+- PR: `gh pr diff <number>` when available, otherwise the branch diff of the PR head against its base
+- working tree: `git diff HEAD`, plus `git diff --no-index /dev/null <file>` for each untracked file from `git ls-files --others --exclude-standard`
+- files: `git diff --no-index /dev/null <file>` for each file, so the whole file is under review
 
-## Review Collection
+Record `review_files` (every path in the patch, minus `exclude`), `base_sha`, `head_sha`, and `patch_sha256`. Always exclude `.review/**`.
 
-In `review` command, create a single file for the current model or agent. If the user does not provide `model`, infer it from the host when obvious; otherwise use a clear name such as `gpt-5.5`.
+### 3. Context package
 
-For multi-model workflows, each model should run `review` separately and write into the same `feature_dir`. Use distinct perspectives when helpful:
+List in `context_files` every file outside the patch that a reviewer needs to judge the change: callers of changed functions, the types and interfaces they use, the existing tests for the changed behaviour, and config that changes runtime behaviour. Give each a one-line `why`. Reviewers read these for understanding; findings stay anchored in `review_files`.
 
-- correctness and edge cases;
-- security and data safety;
-- tests and regression risk;
-- maintainability and architecture;
-- product or UX behavior when relevant.
+### 4. Intent
 
-Each finding must include severity, evidence, affected files, risk, and a concrete suggested fix. Avoid vague style preferences unless they affect maintainability or user-facing behavior.
+Write one clear paragraph stating what the change is meant to do, drawn from the user's message, commit messages, the PR description if one exists, and the code. Record which of those you used in `intent.sources`.
+
+Show the paragraph to the user before any reviewer starts. Set `intent.status: confirmed` when the user accepts it or wrote it themselves. Set `inferred` only when the sources agree and leave nothing to interpret; the report flags it. When you are unsure of the intent, ask, and continue once the user answers.
+
+### 5. Write
+
+Write `scope.json`, validate it, and compute `scope_sha256` from its bytes (`sha256sum`, or `shasum -a 256` on macOS). Every brief and artifact carries this hash.
+
+Done when `scope.json` validates, `patch_sha256` matches `scope.patch`, and the intent is confirmed or recorded as inferred.
+
+Re-running `scope` with a different target or intent changes `scope_sha256`, so `synthesize` excludes reviews made against the old scope. Tell the user which existing reviews that strands.
+
+## Review Command
+
+Every reviewer follows [`references/reviewer-contract.md`](references/reviewer-contract.md): findings anchored in `review_files`, judged against the intent, with evidence, returned as `lane-review.schema.json` JSON.
+
+- **Single lane** (no `lanes`): the host is the reviewer. Follow the reviewer contract yourself for `model` (default: your own model), then write `<model>.json` with `lane.kind: host-native`.
+- **Several lanes**: follow [`references/lanes.md`](references/lanes.md) to preflight, brief, dispatch, collect, and write one artifact per lane.
+
+When the user runs separate hosts by hand (one `review` per host), each host is a single lane reading the same `scope.json`.
+
+Done when every requested lane has exactly one `<model>.json` that validates, including lanes that failed, which record their `status`.
 
 ## Synthesize Command
 
-In `synthesize` command, read review files from one `feature_dir` and produce `summary.md`:
+Read every `<model>.json` in `feature_dir` and write `summary.json`:
 
-- select all model review files in the folder by default;
-- exclude `summary.md`, `*-vote.md`, `final-report.md`, `fix-plan.md`, `verify.md`, and `status.md`;
-- merge duplicate findings;
-- preserve meaningful disagreement;
-- record reviewer agreement count;
-- record `sources`: the models that originally reported each finding, required for vote abstention;
-- include suggested tests;
-- use checkboxes for human fix approval.
+1. **Accept** a review only when it validates, its `lane.status` is `complete`, and its `scope_sha256` equals the current hash of `scope.json`. List every other review in `excluded_reviews` with its reason, and every lane in `reviewers`.
+2. **Merge** duplicate findings across accepted reviews; keep meaningful disagreement as separate findings or in `disagreements`.
+3. **Number** merged findings `RF-001`, `RF-002`, … in severity order.
+4. **Record** `sources` (the `lane.model_used` of every review that reported the finding; vote abstention depends on it), `agreement_count`, and `suggested_tests`.
+5. Carry `intent` over from `scope.json`.
 
-Checkbox semantics are stable:
+Render `summary.md` from `assets/templates/review_summary.md`, every checkbox unchecked.
 
-- unchecked: not approved for fixing;
-- checked: approved for fixing.
-
-Do not fix unchecked issues opportunistically.
+Done when every accepted finding appears in exactly one `RF` entry with its `sources`, and every review file is either accepted or listed in `excluded_reviews`.
 
 ## Vote Command
 
-In `vote` command, one model reads `summary.md` and votes on every finding, writing exactly one file named `<model>-vote.md`:
+Every voter follows the vote rules in [`references/reviewer-contract.md`](references/reviewer-contract.md): one vote per `RF` id, `abstain` on its own findings, evidence for every `confirm` and `dispute`, independent of other votes, returned as `lane-vote.schema.json` JSON.
 
-- vote independently: do not read other `*-vote.md` files or `final-report.md`;
-- cast one vote per finding using the vote enums below;
-- vote `abstain` on any finding whose `sources` includes the voting model;
-- justify every `confirm` and `dispute` with concrete evidence from the code or diff, not from other reviews.
+- **Single lane**: the host votes as `model` and writes `<model>-vote.json`.
+- **Several lanes**: follow [`references/lanes.md`](references/lanes.md), briefing each lane with `summary.json` and the same `scope.json`, and no other vote file.
 
-Vote enums (machine-readable, English):
+After collecting, enforce abstention by `model_used`: a non-abstain vote on a finding whose `sources` contains the voter's `lane.model_used` becomes `abstain`, noted in `voter_notes`.
 
-- `confirm`: the finding is real and worth fixing.
-- `dispute`: the finding is wrong, not reproducible, or not an issue.
-- `unsure`: cannot confirm or refute with available evidence.
-- `abstain`: the voting model originated this finding.
-
-For multi-model workflows, each model runs `vote` separately into the same `feature_dir`, mirroring the `review` command pattern.
+Done when every requested lane has one `<model>-vote.json` that validates, with one vote per `RF` id.
 
 ## Report Command
 
-In `report` command, read `summary.md` and all `*-vote.md` files in the `feature_dir`, then produce `final-report.md`.
+Read `summary.json` and every `*-vote.json` whose `lane.status` is `complete` and whose `scope_sha256` matches, then write `final-report.json`.
 
-Confidence scoring:
+### Confidence
 
-- resolve each model's weight from `model_weights`; unlisted models default to `1.0`;
-- `confidence_score` = (sum of `confirm` weights + 0.5 × sum of `unsure` weights) ÷ (total weight of non-abstain votes);
-- `confidence`: `high` when score ≥ 0.7, `medium` when ≥ 0.4, `low` when < 0.4;
-- when every vote is `abstain` or no votes exist, set `confidence: unvoted` and sort it after `low`.
+- Resolve each model's weight from `model_weights`; unlisted models weigh `1.0`. Record the weights used.
+- `confidence_score` = (sum of `confirm` weights + 0.5 × sum of `unsure` weights) ÷ (total weight of non-abstain votes).
+- `confidence`: `high` when the score ≥ 0.7, `medium` when ≥ 0.4, `low` below 0.4.
+- No non-abstain votes: `confidence: unvoted`, `confidence_score: null`.
 
-Report rules:
+### Buckets
 
-- order findings by severity first, then confidence score descending;
-- record per finding: which models voted `confirm`, `dispute`, `unsure`, or `abstain`, the originating `sources`, the computed score, and the fix recommendation;
-- record the resolved model weights used for scoring;
-- keep every checkbox unchecked: voting never grants fix approval, only humans check items;
-- carry over each finding's `suggested_tests`.
+Place each finding in the first bucket whose rule matches:
 
-If some expected models have not voted yet, list them as missing voters and compute confidence from available votes.
+1. `unvoted`: `confidence` is `unvoted`.
+2. `dismissed`: total `dispute` weight exceeds total `confirm` weight. Fill `dismiss_rationale` from the dispute evidence.
+3. `act_on`: `confidence` is `high` and severity is `critical`, `high`, or `medium`; or severity is `critical` and `confidence` is `medium`. Fill `why_it_matters`.
+4. `consider`: `confidence` is `medium`, or `confidence` is `high` with severity `low`. Fill `tradeoff`.
+5. `noted`: everything else.
+
+Within each bucket, order by severity, then `confidence_score` descending. A bucket is a reading aid: every item stays unchecked, and only a human's checkbox approves a fix.
+
+### Reviewers, flags, and agreement
+
+- `reviewers` and `voters`: every lane, with its `status`, including failed ones. `missing_voters`: complete reviewers with no complete vote.
+- `agreement_map.pairwise`: for each pair of voters, `shared_votes` counts findings both voted on without abstaining, and `agreement_rate` is the share of those where their votes match (`null` when none are shared). `same_vendor_agreement` and `cross_vendor_agreement` are the shared-vote-weighted means over same-vendor and cross-vendor pairs. `pattern` says in prose where models agreed and diverged, and what that suggests about the findings.
+- `report_flags`: `single_vendor` when complete lanes span fewer than two vendors; `intent_inferred` when `intent.status` is `inferred`; `missing_voters` when any are missing; `has_stand_ins` when any lane has `stand_in: true`.
+
+Render `final-report.md` from `assets/templates/final_report.md`, in the order Intent, Reviewers, Act On, Consider, Noted, Dismissed, Unvoted, Agreement Map, carrying checkbox states over by `RF` id.
+
+Done when every `summary.json` finding sits in exactly one bucket, and every score can be recomputed from the vote files and weights.
+
+## Lanes
+
+A lane is one model reached by one mechanism: a native subagent of the host's own vendor (`host:<model>`), the Codex CLI (`codex:<model>`), or the Claude Code CLI (`claude:<model>`). Read [`references/lanes.md`](references/lanes.md) whenever `lanes` is set or the user asks for a multi-model, cross-model, or cross-vendor review: it holds the lane spec, the default lane lists, the exact CLI invocations, status mapping, and failure rules.
 
 ## Fix Rules
 
-In `fix` command:
+In `fix`:
 
-1. Read `final-report.md` from the selected `feature_dir` when it exists; otherwise read `summary.md`.
+1. Read the checked `RF` ids from `final-report.md` when it exists, otherwise from `summary.md`, and their details from the matching JSON.
 2. Select only checked items whose status allows fixing.
 3. Confirm the fix scope unless the user already explicitly approved it.
 4. Create or update `fix-plan.md`.
-5. Modify only the files needed for selected items.
+5. Modify only the files the selected items need.
 6. Run tests.
-7. Update `status.md` and, when appropriate, the summary status fields.
+7. Update `status.md`.
 
-If a checked item reveals a larger issue, stop and ask before expanding scope.
+When a checked item reveals a larger issue, stop and ask before widening the fix.
 
 ## Test Rules
 
-Tests are mandatory after fixes unless impossible.
+Run tests after every fix batch, in this order:
 
-Run validation in this order:
-
-1. The narrowest relevant test for the touched behavior, when discoverable.
+1. The narrowest relevant test for the touched behaviour, when discoverable.
 2. Typecheck, lint, or build checks relevant to the touched files.
-3. The broader project regression command when discoverable and reasonably scoped.
+3. The broader regression command, when discoverable and reasonably scoped.
 
-If tests cannot be run, record:
+When tests cannot run, record status `test_blocked`, the command that should have run, the blocking reason, and the residual risk.
 
-- status enum `test_blocked`;
-- the command that should have run;
-- the blocking reason;
-- residual risk.
-
-If tests fail, do not claim the item is fixed or verified. Mark affected items `verification_failed` or `partially_fixed`, record the failing command, and summarize the failure.
+When tests fail, mark the affected items `verification_failed` or `partially_fixed`, record the failing command, and summarize the failure. An item counts as fixed only with passing test evidence.
 
 ## Verification Rules
 
-In `verify` command:
+In `verify`:
 
 - verify from a perspective independent of the fixer when possible;
 - check whether each selected issue was actually addressed;
 - rerun or inspect test evidence;
 - look for regressions caused by the fix;
-- update status only when evidence supports it.
+- update status only as far as the evidence supports.
 
-Verification requires either passing test evidence or a clear `test_blocked` explanation.
+Verification requires passing test evidence or a clear `test_blocked` explanation.
 
 ## Language Policy
 
-Write skill instructions, template field names, and machine-readable status enums in English.
-
-Generated prose reports should use `report_language`:
-
-- `auto`: follow the user's prompt language;
-- explicit language values: write prose in that language;
-- keep status enums in English even inside localized reports.
-
-Status display labels may be localized.
+Skill instructions, schema field names, and enum values stay in English. Prose fields in artifacts and rendered reports follow `report_language`: `auto` follows the user's prompt language; an explicit value sets it. Status display labels may be localized.
 
 ## Status Enums
 
-Use these exact machine-readable status values:
+Finding status values: `open`, `approved_for_fix`, `fixed`, `partially_fixed`, `wont_fix`, `risk_accepted`, `verified`, `verification_failed`, `test_blocked`. Each entry in a rendered report shows both `status` (the enum) and `status_label` (a localized label such as `Fixed ✅` or `已修復 ✅`).
 
-- `open`
-- `approved_for_fix`
-- `fixed`
-- `partially_fixed`
-- `wont_fix`
-- `risk_accepted`
-- `verified`
-- `verification_failed`
-- `test_blocked`
-
-Each status entry should include both:
-
-- `status`: one enum above;
-- `status_label`: localized human-readable label, for example `Fixed ✅` or `已修復 ✅`.
+Lane status values (`lane.status`): `complete`, `unavailable`, `timeout`, `invocation_error`, `schema_invalid`, `scope_mismatch`.
 
 ## Completion Criteria
 
 A Review Forge workflow is complete only when:
 
-- review artifacts are under `feature_dir`;
+- every artifact is under `feature_dir`, and every JSON artifact validates;
+- every review and vote was made against the current `scope_sha256`;
 - checked items are the only fixed items;
-- test evidence or `test_blocked` rationale is recorded after fixes;
-- verification status does not overclaim;
+- test evidence or a `test_blocked` rationale is recorded after fixes;
+- verification status claims only what its evidence shows;
 - process artifacts remain isolated from product code.

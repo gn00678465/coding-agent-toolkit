@@ -1,34 +1,49 @@
 # Review Summary
 
+<!-- Rendered from summary.json. Field values come from the JSON; only checkboxes are edited by humans. -->
+
 - `command`: `synthesize`
-- `feature`: <!-- feature folder name -->
-- `target`: <!-- branch, PR, commit range, or working tree -->
-- `base`: <!-- comparison ref -->
-- `feature_dir`: `.review/<feature>/`
-- `report_language`: <!-- auto | en | zh-CN | ... -->
+- `feature`: <!-- summary.feature -->
+- `scope_sha256`: <!-- summary.scope_sha256 -->
+- `report_language`: <!-- auto | en | zh-TW | ... -->
 - `created_at`: <!-- ISO 8601 timestamp -->
-- `source_reports`: <!-- model review files used, e.g. codex.md, opencode.md, cursor.md -->
+
+## Intent
+
+<!-- intent.statement; append "(inferred, not confirmed by the user)" when intent.status is inferred. -->
+
+## Reviewers
+
+<!-- One bullet per summary.reviewers entry. -->
+
+- Reviewer `<label>`: `<model_used>` (`<vendor>`, `<kind>`), <findings_count> findings, `status`: `<status>`<!-- add ", stand-in for <model_requested>" when stand_in -->
+
+## Excluded Reviews
+
+<!-- summary.excluded_reviews as `file`: reason; "none" when empty. -->
 
 ## Fix Approval Checklist
 
 <!-- Checked means approved for fixing. Unchecked means do not fix yet. -->
 
-- [ ] `RF-001`
+- [ ] `RF-001` <!-- title -->
   - `status`: `open`
   - `status_label`: <!-- localized label -->
   - `severity`: <!-- critical | high | medium | low | note -->
-  - `reviewer_agreement`: <!-- e.g. 2/3 -->
-  - `sources`: <!-- models that originally reported this finding, e.g. gpt-5.5, opus-4.6 -->
-  - `affected_files`: <!-- file paths -->
-  - `summary`: <!-- merged issue summary -->
-  - `rationale`: <!-- why this matters -->
-  - `proposed_fix`: <!-- specific intended fix -->
+  - `category`: <!-- correctness | security | tests | maintainability | intent_mismatch -->
+  - `sources`: <!-- models that reported it -->
+  - `agreement_count`: <!-- e.g. 2 of 3 complete reviewers -->
+  - `affected_files`: <!-- path:line_start-line_end -->
+  - `description`: <!-- merged issue description -->
+  - `evidence`: <!-- concrete code or diff evidence -->
+  - `risk`: <!-- impact -->
+  - `suggested_fix`: <!-- specific intended fix -->
   - `suggested_tests`: <!-- tests to run after fixing -->
 
 ## Common Themes
 
-<!-- Cross-cutting risks, repeated patterns, or root causes. -->
+<!-- summary.common_themes -->
 
-## Disagreements And Deferrals
+## Disagreements
 
-<!-- Findings with reviewer disagreement, accepted risks, or reasons not to fix. -->
+<!-- summary.disagreements -->

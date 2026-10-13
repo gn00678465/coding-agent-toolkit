@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review-forge/final-report.schema.json",
+  "title": "Review Forge final report",
+  "description": "Vote-weighted report written by the host in the report command and rendered to final-report.md. Bucket placement follows the report rules in SKILL.md; it never grants fix approval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "feature",
+    "scope_sha256",
+    "intent",
+    "reviewers",
+    "voters",
+    "missing_voters",
+    "model_weights",
+    "act_on",
+    "consider",
+    "noted",
+    "dismissed",
+    "unvoted",
+    "agreement_map",
+    "report_flags"
+  ],
+  "properties": {
+    "feature": { "type": "string" },
+    "scope_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "intent": { "$ref": "summary.schema.json#/$defs/intent" },
+    "reviewers": { "type": "array", "items": { "$ref": "summary.schema.json#/$defs/reviewer" } },
+    "voters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "kind", "vendor", "model_requested", "model_used", "stand_in", "status"],
+        "properties": {
+          "label": { "type": "string" },
+          "kind": { "type": "string", "enum": ["host-native", "codex", "claude"] },
+          "vendor": { "type": "string" },
+          "model_requested": { "type": "string" },
+          "model_used": { "type": "string" },
+          "stand_in": { "type": "boolean" },
+          "status": {
+            "type": "string",
+            "enum": ["complete", "unavailable", "timeout", "invocation_error", "schema_invalid", "scope_mismatch"]
+          }
+        }
+      }
+    },
+    "missing_voters": { "type": "array", "items": { "type": "string" } },
+    "model_weights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["model", "weight"],
+        "properties": {
+          "model": { "type": "string" },
+          "weight": { "type": "number", "exclusiveMinimum": 0 }
+        }
+      }
+    },
+    "act_on": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "consider": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "noted": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "dismissed": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "unvoted": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "agreement_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pairwise", "same_vendor_agreement", "cross_vendor_agreement", "pattern"],
+      "properties": {
+        "pairwise": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["model_a", "model_b", "shared_votes", "agreement_rate"],
+            "properties": {
+              "model_a": { "type": "string" },
+              "model_b": { "type": "string" },
+              "shared_votes": { "type": "integer", "minimum": 0 },
+              "agreement_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+            }
+          }
+        },
+        "same_vendor_agreement": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "cross_vendor_agreement": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "pattern": { "type": "string", "description": "Prose: where models agreed and diverged, and what that pattern suggests." }
+      }
+    },
+    "report_flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["single_vendor", "intent_inferred", "missing_voters", "has_stand_ins"] }
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "description",
+        "severity",
+        "category",
+        "affected_files",
+        "sources",
+        "votes",
+        "confidence",
+        "confidence_score",
+        "why_it_matters",
+        "tradeoff",
+        "dismiss_rationale",
+        "suggested_fix",
+        "suggested_tests",
+        "status"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^RF-[0-9]{3,}$" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "severity": { "$ref": "summary.schema.json#/$defs/severity" },
+        "category": { "$ref": "summary.schema.json#/$defs/category" },
+        "affected_files": { "type": "array", "items": { "$ref": "summary.schema.json#/$defs/file_range" } },
+        "sources": { "type": "array", "items": { "type": "string" } },
+        "votes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["confirm", "dispute", "unsure", "abstain"],
+          "properties": {
+            "confirm": { "type": "array", "items": { "type": "string" } },
+            "dispute": { "type": "array", "items": { "type": "string" } },
+            "unsure": { "type": "array", "items": { "type": "string" } },
+            "abstain": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "confidence": { "type": "string", "enum": ["high", "medium", "low", "unvoted"] },
+        "confidence_score": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "null when unvoted." },
+        "why_it_matters": { "type": "string", "description": "Non-empty in act_on." },
+        "tradeoff": { "type": "string", "description": "Non-empty in consider." },
+        "dismiss_rationale": { "type": "string", "description": "Non-empty in dismissed; drawn from dispute evidence." },
+        "suggested_fix": { "type": "string" },
+        "suggested_tests": { "type": "string" },
+        "status": { "$ref": "summary.schema.json#/$defs/status" }
+      }
+    }
+  }
+}
