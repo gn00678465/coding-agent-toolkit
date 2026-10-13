@@ -40,14 +40,16 @@ Give each lane a unique `label`, `<kind>-<model>` plus `-<perspective>` when one
 
 ### 1. Preflight
 
-Check every CLI lane before dispatching any lane:
+Check every CLI lane before dispatching any lane. Each check prints its own reason, so a failed lane always has one to record:
 
 ```bash
-command -v codex && codex login status   # codex lanes; exit 0 means ready
-command -v claude && claude auth status  # claude lanes; exit 0 means ready
+# codex lanes; exit 0 means ready
+command -v codex >/dev/null || { echo "codex not on PATH" >&2; false; } && codex login status
+# claude lanes; exit 0 means ready
+command -v claude >/dev/null || { echo "claude not on PATH" >&2; false; } && claude auth status
 ```
 
-A lane that fails preflight gets `status: unavailable` with the exact stderr as its reason, and is not dispatched. `host` lanes need no preflight.
+A lane that fails preflight gets `status: unavailable` with the check's stderr as its reason (in `reviewer_notes` of its artifact), and is not dispatched. `host` lanes need no preflight.
 
 Done when every lane is either ready or recorded as `unavailable`.
 
