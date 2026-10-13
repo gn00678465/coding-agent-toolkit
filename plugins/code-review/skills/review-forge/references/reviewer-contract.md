@@ -16,10 +16,11 @@ The scope is frozen. Read `scope.patch` for the change; read the repository only
 
 1. **Anchor every finding in `review_files`.** Each `affected_files[].path` is one of `scope.review_files`. Read `context_files` (each has a `why`) and any other file you need for understanding; an issue you see outside `review_files` goes to `out_of_scope_notes`.
 2. **Judge against intent.** A behaviour the intent asks for is correct by definition, even if you would design it differently. When the code fails to do what the intent states, or does something the intent rules out, report it with `category: intent_mismatch`.
-3. **Every finding carries evidence.** `evidence` cites the concrete code or diff behaviour (file, line, what happens). `risk` names the impact. `suggested_fix` is specific enough to implement. `suggested_tests` names the test that would go red on the bug.
-4. **Severity is impact:** `critical` loses data, breaks security, or blocks release; `high` is a user-visible defect on a common path; `medium` is a defect on an edge path or a missing test for risky logic; `low` is a minor defect or maintainability cost with a concrete consequence; `note` is worth knowing with no required action.
-5. **Stay inside your `perspective`** when one is given; otherwise cover correctness, security, tests, and maintainability.
-6. Done means: every hunk in `scope.patch` was read, and every finding meets rules 1 to 3.
+3. **Line numbers are file lines at `head_sha`**: the numbers `git show <head_sha>:<path>` prints, or the file on disk for a working-tree target. Hunk headers and line positions inside `scope.patch` are a different numbering; read the file itself before filling `line_start` and `line_end`.
+4. **Every finding carries evidence.** `evidence` cites the concrete code or diff behaviour (file, line, what happens). `risk` names the impact. `suggested_fix` is specific enough to implement. `suggested_tests` names the test that would go red on the bug.
+5. **Severity is impact:** `critical` loses data, breaks security, or blocks release; `high` is a user-visible defect on a common path; `medium` is a defect on an edge path or a missing test for risky logic; `low` is a minor defect or maintainability cost with a concrete consequence; `note` is worth knowing with no required action.
+6. **Stay inside your `perspective`** when one is given; otherwise cover correctness, security, tests, and maintainability.
+7. Done means: every hunk in `scope.patch` was read, and every finding meets rules 1 to 4.
 
 ## Vote rules
 

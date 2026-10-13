@@ -124,9 +124,15 @@ List in `context_files` every file outside the patch that a reviewer needs to ju
 
 ### 4. Intent
 
-Write one clear paragraph stating what the change is meant to do, drawn from the user's message, commit messages, the PR description if one exists, and the code. Record which of those you used in `intent.sources`.
+Steps 1 to 3 never wait on intent: `scope.patch` is already on disk and the context list drafted when you reach this step, so any question you ask can cite the frozen diff. Only `scope.json` waits for the answer.
 
-Show the paragraph to the user before any reviewer starts. Set `intent.status: confirmed` when the user accepts it or wrote it themselves. Set `inferred` only when the sources agree and leave nothing to interpret; the report flags it. When you are unsure of the intent, ask, and continue once the user answers.
+Write your **best reading** as one clear paragraph stating what the change is meant to do, drawn from the user's message, commit messages, the PR description if one exists, and the code. Record which of those you used in `intent.sources`. Commit to one reading even when the sources conflict: a paragraph the user can accept or correct gets a faster, sharper answer than a menu of options.
+
+Show the paragraph to the user before any reviewer starts:
+
+- The user wrote the intent, or accepts your paragraph: `intent.status: confirmed`.
+- The sources agree and leave nothing to interpret: `inferred`, which the report flags.
+- The sources conflict or leave a gap: below the paragraph, name each conflicting source in one line (for example, a PR description that promises one behaviour and a later commit that reverses it), then ask the user to confirm or correct the paragraph. Continue once they answer.
 
 ### 5. Write
 
