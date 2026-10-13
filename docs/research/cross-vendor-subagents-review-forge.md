@@ -690,6 +690,60 @@ Return only JSON matching the schema named in the brief.
 
 ---
 
+### 5.8 定案：scope、intent 與 JSON 輸出格式（已實作）
+
+5.1–5.7 是初版設計。之後依使用者回饋定案三件事，並已實作到 `plugins/code-review/skills/review-forge/`。本節只記錄**決策與理由**；欄位定義以 schema 檔為準，不在這裡重抄。
+
+#### 5.8.1 Scope：參考 interrogate 的 Step 1，主 session 只解析一次
+
+初版的問題是每條 lane 各自套用 Default Diff Rules，時間點、工作目錄、`main`/`master` 判斷都可能不同，造成「不同範圍的審查」被合併與交叉投票。定案做法：
+
+- 新增 `scope` 指令。只有主 session 解析範圍，寫出 `scope.json` 與 `scope.patch`（固定下來的 diff）；lane 只讀，不重新推斷。
+- 判斷順序合併 interrogate 與原規則，並記錄在 `resolved_by`：`explicit`（使用者指定檔案、diff、PR、分支、範圍）→ `recent_work`（訊息提到近期工作，interrogate 新增）→ `uncommitted` → `branch_diff`（`main...HEAD` 等）→ `asked_user`。
+- interrogate 的「把 diff 和審查者需要的周邊檔案打包」對應到 `context_files`（每項附 `why`）。與 `review_files` 分開：finding 只能落在 `review_files`，在 `context_files` 看到的問題寫進 `out_of_scope_notes`。interrogate 會附上檔案內容，因為它的審查者不一定能讀 repo；這裡的 CLI lane 都在同一個 repo 下執行，所以只傳路徑。
+- `scope_sha256` = `scope.json` 位元組的 SHA-256。每份 brief、review、vote 都帶著它，`synthesize` 與 `report` 拒收不一致的檔案（`scope_mismatch`）。
+
+#### 5.8.2 Intent：參考 interrogate 的 Step 2
+
+- 派出審查者之前，主 session 用一段話寫出這次修改的目的，來源是使用者訊息、commit message、PR 描述、程式碼，記錄在 `intent.sources`。
+- 先給使用者看。使用者接受或本人寫的是 `confirmed`；只有來源一致、沒有詮釋空間時才可以是 `inferred`，報告會加上 `intent_inferred` 旗標。不確定就先問，這點直接沿用 interrogate。
+- 審查依 intent 判斷：intent 要求的行為即使設計上有異議也算正確；做不到或違反 intent 時，finding 標 `category: intent_mismatch`。投票者拿到同一段 intent。
+
+#### 5.8.3 輸出格式：JSON 為唯一紀錄，Markdown 由 JSON 轉出
+
+| Schema | 產出者 | 備註 |
+|---|---|---|
+| `scope.schema.json` | 主 session | 含 `intent`、`review_files`、`context_files` |
+| `lane-review.schema.json` | lane | 直接傳給 `codex exec --output-schema` 與 `claude -p --json-schema` |
+| `lane-vote.schema.json` | lane | 同上 |
+| `summary.schema.json` | 主 session | `RF-xxx` 編號、`sources`、`excluded_reviews` |
+| `final-report.schema.json` | 主 session | 段落結構參考 interrogate 的 Output Format |
+
+- **lane 的兩份 schema 不能有 `$schema`、`$id`、`title`、`$ref`**。實測：`claude -p --json-schema` 收到含 `"$schema": "https://json-schema.org/draft/2020-12/schema"` 的 schema 時直接失敗（`Error: --json-schema is not a valid JSON Schema: no schema with key or ref "https://json-schema.org/draft/2020-12/schema"`，2.1.296）。拿掉後，同一份 schema 用 haiku 實際跑一次 review，`structured_output` 通過 `validate.py` 驗證，`modelUsage` 的 key 是 `claude-haiku-5-5`。`$id`、`title` 是為了 Codex 保險起見一併拿掉；Codex 端仍**未驗證**。
+- 主 session 產出的三份 schema 可以用 `$defs` 與跨檔 `$ref`（`final-report` 引用 `summary.schema.json#/$defs/...`），因為它們不經過 CLI。
+- `final-report` 的分類採 interrogate 的段落：Intent、Reviewers、Act On、Consider、Noted、Dismissed，加上 review-forge 自己的 Unvoted 與 Agreement Map。差別在於 interrogate 由模型判斷分類，這裡**依嚴重度 × 投票信心的規則**分類（規則寫在 SKILL.md 的 Report Command），讓同一組投票每次得到相同結果。分類只是閱讀輔助，核准修復仍然只靠人勾 checkbox。
+- Agreement Map 的數字（兩兩一致率、同廠商與跨廠商一致率）由主 session 計算，只有 `pattern` 這段文字交給模型寫。
+- 單一審查者與投票的 Markdown 模板（`review_report.md`、`vote_report.md`）已刪除，由 schema 取代；`summary.md`、`final-report.md` 改為從 JSON 轉出，checkbox 是唯一的核准紀錄，重新轉出時依 `RF` id 保留勾選狀態。
+- 驗證腳本 `scripts/validate.py` 以 `jsonschema` 套件驗證任一 artifact（exit 0 有效、1 無效、3 沒裝 `jsonschema`）。
+
+#### 5.8.4 SKILL 與 subagent 共用同一套範圍與格式
+
+- 審查規則只寫在 `references/reviewer-contract.md`（範圍、intent、finding 標準、投票規則、輸出規則）。
+- 主 session 依 `assets/templates/lane_brief.md` 組 brief，把 contract 全文、`scope.json` 指標、intent、lane 欄位、schema 路徑放進去。任何 lane（主 session 自己、同廠商 subagent、`codex exec`、`claude -p`）都只透過 brief 拿到規則，agent 定義檔不重寫規則。
+- lane 的派工方式（lane 規格、預設名單、preflight、兩個 CLI 的完整指令、狀態對應、失敗規則）在 `references/lanes.md`，SKILL.md 只在 `lanes` 有設或使用者要求多模型時才指向它。
+- evals 新增三個案例：intent 不明確時先問、lane 不可用時保持失敗且不冒名、`synthesize` 拒收 `scope_mismatch`。
+
+#### 5.8.5 與 5.1–5.7 的差異
+
+| 初版 | 定案 |
+|---|---|
+| lane 各自推斷 diff | `scope` 指令只解析一次，`scope_sha256` 比對 |
+| 無 intent | 派工前寫出並確認 intent，審查依 intent 判斷 |
+| `findings.schema.json` 一份 | 五份 schema，lane 用的兩份可直接給 CLI |
+| `final-report.md` 依嚴重度與分數排序 | 依規則分到 Act On / Consider / Noted / Dismissed / Unvoted，加 Agreement Map |
+| 規劃 `agents/forge-reviewer.md`、`codex-reviewer.md` 等 agent 檔 | 先以 `lanes.md` 的直接呼叫實作；host lane 用一般 subagent 加 brief，CLI lane 由主 session 直接執行。專用 agent 檔留待之後評估 |
+| 允許 stand-in 補位 | 失敗的 lane 保持失敗，重跑要使用者同意；`stand_in` 只記錄 CLI 自己換了模型的情況（例如 `--fallback-model`） |
+
 ## 6. Claude Code 與 Codex 對照表
 
 | 面向 | Claude Code（2.1.296 + docs） | Codex（`f82e365` + docs） |
