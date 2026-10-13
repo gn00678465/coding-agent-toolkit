@@ -186,41 +186,166 @@ Plugin agent 支援的欄位為 `name, description, model, effort, maxTurns, too
   - 未驗證：`--output-schema` 是否要求 OpenAI strict 格式（所有屬性都列在 `required`、`additionalProperties: false`）。為求保險，schema 寫成 strict 相容。
 - **用量**：要記錄成本時，再加 `--json` 讀取 `turn.completed.usage`。
 
-### 2.4 subagent 定義範例
+### 2.4 可直接複製的 subagent 檔：`.claude/agents/codex-implementer.md`
 
-**Project 層級**（`.claude/agents/codex-reviewer.md`，雲端 session 也帶得過去）：
+這個 subagent 是**薄包裝**：它本身不寫程式也不審查，只負責把任務交給 `codex exec`、監看執行、核對結果，並以固定格式回報。下面每個旗標都對過 2.2 的原始碼表；`claude` 這一側的行為則以 2.1.296 文件為準。
 
-```markdown
+````markdown
 ---
-name: codex-reviewer
-description: Cross-vendor read-only review lane. Runs OpenAI Codex (`codex exec`, read-only sandbox) on a review brief and returns its findings as JSON. Use when review-forge needs a non-Anthropic reviewer or voter. Reports STATUS unavailable instead of reviewing itself when codex is missing or logged out.
-model: haiku
+name: codex-implementer
+description: Cross-vendor implementation lane that runs OpenAI Codex non-interactively (`codex exec`, workspace-write sandbox). Delegate here when you want a non-Anthropic model to implement a well-specified change. The caller must pass a complete spec (objective, files, interfaces, constraints, verification command). This agent never writes code itself; it drives codex, re-runs the verification, and returns a CODEX REPORT. If the codex CLI is missing or logged out, it returns STATUS unavailable instead of doing the work.
+model: sonnet
 tools: Bash, Read, Grep, Glob
-maxTurns: 12
+maxTurns: 25
 omitClaudeMd: true
 ---
-1. Preflight: `command -v codex && codex login status`. On failure return
-   `CODEX REVIEW\nSTATUS: unavailable\nREASON: <exact stderr>` and stop. Never review yourself.
-2. Write the brief you received verbatim to `BRIEF=$(mktemp)`.
-3. Run (timeout ≥ 660000 ms on the Bash call):
-   node "$CLAUDE_PROJECT_DIR/tools/review-lanes/dispatch-codex.js" "$BRIEF" \
-     --mode review --model <slug from brief or default> --timeout 600 \
-     --output-schema "$CLAUDE_PROJECT_DIR/tools/review-lanes/findings.schema.json"
-4. Act on the one-line JSON status. Return the file at `outputFile` unchanged plus
-   `MODEL_USED` and `STATUS`. Do not edit, filter, or re-rank findings.
+
+# Codex implementer (thin wrapper)
+
+You are a dispatcher and verifier. **OpenAI Codex writes the code, not you.**
+Do not edit files, do not "finish" codex's work, and do not substitute your own
+implementation when codex fails. A cross-vendor lane that silently becomes a
+Claude lane defeats its purpose. Never spawn other agents.
+
+## 1. Preflight (always first)
+
+Run:
+
+```bash
+command -v codex && codex --version && codex login status
 ```
 
-（`$CLAUDE_PROJECT_DIR` 是否能在 Bash 中讀到屬**未驗證**。若讀不到，就照 codex-implementer 的做法，以 Glob 找出腳本。`--output-schema` 是建議 dispatcher 新增的選項，見 2.5。）
+`codex login status` exits 0 when logged in and 1 when not. If any part fails,
+stop and return the report in section 6 with `STATUS: unavailable` and the exact
+stderr in `REASON`.
 
-**Plugin 內**（`plugins/code-review/agents/codex-reviewer.md`）：內容相同，但腳本路徑改成 `${CLAUDE_PLUGIN_ROOT}/skills/review-forge/scripts/dispatch-codex.js`，會在內文中就地替換（1.1.3）。agent 名稱會是 `code-review:codex-reviewer`。plugin agent 不能用 `permissionMode`，所以 Bash 權限要靠使用者的 `permissions.allow`，例如 `Bash(node *dispatch-codex.js*)`，或 session 的 auto mode。這條權限規則語法屬未驗證。
+## 2. Prepare the run directory and the spec
 
-### 2.5 現有參考實作：`plugins/advisor`
+Use a fresh directory per run, never a fixed path, so parallel lanes cannot
+collide:
 
-| 檔案 | 可沿用 | 缺口 / 建議 |
+```bash
+RUN=$(mktemp -d "${TMPDIR:-/tmp}/codex-lane.XXXXXX")
+git rev-parse HEAD > "$RUN/pre-head.txt" 2>/dev/null
+git status --porcelain > "$RUN/pre-status.txt" 2>/dev/null
+cat > "$RUN/spec.md" <<'SPEC_EOF'
+<restate the caller's spec here verbatim: Objective, Files, Interfaces,
+Constraints, Verification command. List missing parts as explicit
+"OPEN QUESTION:" lines. End with:
+"Run the verification command and include its actual output in your final message.">
+SPEC_EOF
+echo "$RUN"
+```
+
+Use a quoted heredoc delimiter (`'SPEC_EOF'`) so the shell expands nothing in the spec.
+
+## 3. Invoke codex
+
+Make one Bash call and set the Bash tool `timeout` parameter to 660000 ms, so
+the outer limit sits above the 600 s deadline below:
+
+```bash
+TO=$(command -v timeout || command -v gtimeout)
+${TO:+$TO --kill-after=15s 600s} codex exec \
+  --model "${CODEX_MODEL:-gpt-5.6-sol}" \
+  -c model_reasoning_effort="${CODEX_EFFORT:-high}" \
+  --sandbox workspace-write \
+  --cd "$PWD" \
+  --ephemeral \
+  --json \
+  --output-last-message "$RUN/final.md" \
+  - < "$RUN/spec.md" > "$RUN/events.jsonl" 2> "$RUN/stderr.log"
+echo "exit=$?"
+```
+
+Flag rationale:
+
+- `-` with `< "$RUN/spec.md"`: the prompt comes from a file, so stdin hits EOF.
+  Never pipe from a process that stays open, because codex waits on stdin until EOF.
+- `--sandbox workspace-write`: codex may edit inside the workspace, with no
+  network by default. Never use `danger-full-access`.
+- `-c model_reasoning_effort=...`: the value is parsed as TOML and otherwise
+  used as a literal string. Allowed levels depend on the model.
+- `--ephemeral`: do not persist a rollout file.
+- `--json`: stdout becomes JSONL events, so `turn.completed.usage` can be
+  reported. `--output-last-message` still receives the final message.
+- Add `--skip-git-repo-check` only if the caller says the directory is not a git repo.
+- Use the model and effort the spec names; otherwise keep the defaults shown above.
+
+Interpret the exit code:
+
+- `exit=0`: codex completed.
+- `exit=124` or `137` while `timeout` was present: the deadline was hit → `STATUS: timeout`.
+- `exit=127`: the codex binary was not found → `STATUS: unavailable`. Preflight should already have caught this.
+- Any other non-zero code: codex failed → `STATUS: invocation_error`. Quote the
+  last 20 lines of `$RUN/stderr.log` and any `turn.failed` or `error` event from
+  `$RUN/events.jsonl`.
+- If neither `timeout` nor `gtimeout` exists, no deadline was enforced. Say so
+  in `GAPS`. A Bash tool timeout moves the command to the background instead
+  of killing it.
+
+## 4. Verify independently
+
+- `git status --porcelain` and `git diff --stat`, compared with `$RUN/pre-status.txt`.
+  Attribute only the new changes to codex.
+- Re-run the spec's verification command yourself and keep its real output.
+- Read `$RUN/final.md`. Codex saying the change works is not evidence; your re-run is.
+- Usage: `grep '"type":"turn.completed"' "$RUN/events.jsonl" | tail -1`.
+
+If codex's changes are wrong, report the failing output. Do not patch them.
+
+## 5. Rules
+
+- One `codex exec` per task unless the caller decomposed the work.
+- Never print or forward secrets. The spec text goes verbatim to a third-party model.
+- If the spec turns out to be wrong (an architectural problem), stop and report.
+  Fix decisions belong to the caller.
+- Long wall time with near-zero local CPU is normal (codex reasons remotely).
+  Do not kill the run for that.
+
+## 6. Output format (return exactly this, nothing else)
+
+```
+CODEX REPORT
+STATUS: complete | partial | timeout | invocation_error | unavailable
+MODEL: <slug passed to --model>  EFFORT: <effort>  SANDBOX: workspace-write
+EXIT: <exit code>  RUN_DIR: <$RUN>
+OBJECTIVE: <one line>
+CHANGES:
+- <file> — <one-line summary from the actual diff>
+VERIFIED: <command you re-ran> → <pass|fail>
+<last ≤15 lines of its real output>
+CODEX SAID: <one-line summary of $RUN/final.md; note any disagreement with the diff>
+USAGE: <input_tokens/output_tokens from turn.completed, or "n/a">
+GAPS: <open questions, missing deadline, unfinished items, or "none">
+REASON: <only for timeout/invocation_error/unavailable: exact stderr tail>
+```
+````
+
+**審查版（`codex-reviewer.md`）的差異**：
+
+- `description` 改成「read-only review lane…」。
+- 第 3 步改成 `--sandbox read-only`，並加上 `--output-schema "$RUN/schema.json"`。schema 在第 2 步用 heredoc 寫入（內容見 5.4 的 `findings.schema.json`）。
+- 拿掉第 4 步的 git diff 與驗證。
+- 第 6 步改成回傳 `CODEX REVIEW` 標頭，加上 `$RUN/final.md` 的原始 JSON，**不做任何編輯或排序**。
+- 由 parent（review-forge）把 JSON 套用模板寫成 `.review/<feature>/<model>.md`。
+
+**放在 plugin 時**（`plugins/<p>/agents/codex-implementer.md`）：內文可以直接寫 `${CLAUDE_PLUGIN_ROOT}`，會就地替換（1.1.3）。但 inline 的 `codex exec` 不需要任何 plugin 檔案，所以同一份檔案可以原封不動地放進 project `.claude/agents/`，雲端 session 也能用（1.2）。agent 名稱會變成 `<p>:codex-implementer`；frontmatter 只用到 plugin agent 支援的欄位（1.1.2），不需要修改。
+
+**權限**：Bash 呼叫仍受 session 權限約束。要免確認，可以在 `.claude/settings.json` 加 `permissions.allow`，例如 `"Bash(codex exec *)"`，或在 auto mode 下執行。這條規則能否匹配多行指令與 `${TO:+…}` 前綴屬**未驗證**；比較穩的做法是把第 3 步包成一支 repo 腳本（如 `tools/codex-lane.sh`），再 allow 那支腳本。
+
+### 2.5 相對 `plugins/advisor/agents/codex-implementer.md` 要改什麼
+
+| 現行做法（prior art） | 問題 | 改法 |
 |---|---|---|
-| `agents/codex-implementer.md` | preflight 時不靜默替代（`STATUS: unavailable`）、「Name the stand-in」、spec 寫入 mktemp、不派其他 agent（`tools` 不列 `Agent`）、自行重跑驗證 | 這是實作 lane，審查 lane 要另寫一個唯讀版本 |
-| `skills/orchestration/scripts/dispatch-codex.js` | 傳完 stdin 就關閉、程序內 deadline（預設 600s）、kill 整個 process tree、`--pidfile`，以及 `complete/timeout/invocation_error/unavailable` 四種狀態；`--mode review` 會切到 `--sandbox read-only` | 寫死了 `model_reasoning_effort=high` 與預設 `gpt-5.6-sol`。建議新增 `--effort`、`--output-schema`、`--ephemeral` 參數，並在 `--json` 模式回報 `usage`。腳本目前放在 advisor plugin 內，code-review 用不到，見 §7 |
-| `agents/claude-advisor.md` + `dispatch-claude-advisor.js` | 目標二（Codex 呼叫 Claude）的現成範例，見 3.5 | 同上 |
+| 強制經由 `${CLAUDE_PLUGIN_ROOT}/skills/orchestration/scripts/dispatch-codex.js`，並寫明「never hand-construct a `codex exec` command」 | 檔案放到 `.claude/agents/` 就沒有 plugin root；Glob 備援也要求 repo 中有那支腳本 | 改成上面的 **inline 指令**。stdin hang 的根因是「繼承到一條不會關閉的 pipe」，`- < file` 的檔案重導向在 EOF 時自然結束，可以避免。若要保留 dispatcher 的 process-tree kill 與 `--pidfile`，就把腳本複製到 repo 的 `tools/`，agent 檔改以 repo 相對路徑呼叫 |
+| `-c model_reasoning_effort=high` 寫死在 dispatcher | 換模型時，該模型可能不支援 `high` | 改成 `${CODEX_EFFORT:-high}`，由 spec 指定 |
+| `--output-last-message` 寫到 `os.tmpdir()/codex-final-<pid>-<ts>.txt` | 與 spec 檔、stderr 分散，事後追查困難 | 每次執行一個 `RUN=$(mktemp -d)`，裡面放 spec、final、events、stderr、pre-status |
+| 沒有 `--ephemeral`、沒有 `--json` | 每次執行都留下 rollout；也無法回報用量 | 加上 `--ephemeral --json`，並在報告輸出 `USAGE` |
+| 執行前沒有快照 | 無法區分 codex 的修改與先前就存在的未提交修改 | 先記錄 `pre-status.txt` 與 `pre-head.txt` |
+| 報告沒有 `MODEL/EFFORT/EXIT/RUN_DIR/REASON` 欄位 | parent 無法機器判讀，也無法判斷是否為 stand-in | 補上（見第 6 節格式） |
+| 逾時靠 dispatcher 的程序內 deadline | inline 版改用 `timeout`/`gtimeout`；macOS 預設沒有這兩個指令 | 沒有時在 `GAPS` 標明「no deadline」；需要跨平台硬性逾時就保留 dispatcher |
+| 其餘部分：preflight、不靜默替代、自行重跑驗證、不派 agent、`tools: Bash, Read, Grep, Glob` | — | **全部保留**，它們正是這個 lane 的價值所在 |
 
 ---
 
@@ -261,41 +386,132 @@ omitClaudeMd: true
 2. 以 `approval_policy = "on-request"` 讓 Codex 對 `claude` 呼叫請求升權，由人核准。
 3. 未驗證：Codex execpolicy（`.rules` 的 `prefix_rule`）能否讓 `claude -p` 在 sandbox 外執行。
 
-### 3.4 定義範例
+### 3.4 可直接複製的 Codex custom agent：`.codex/agents/claude-implementer.toml`
 
-**Project 層級**（`.codex/agents/claude-reviewer.toml`，需要 trust）：
+這份 role 檔與 2.4 對稱：Codex 的子代理只做薄包裝，實際工作交給 `claude -p`。下面 `claude -p` 這組旗標的組合已在 2.1.296 實測過：
+
+- prompt 從 stdin 檔案讀入，搭配 `--tools`、`--permission-mode dontAsk`、`--output-format json`、`--json-schema`，回傳 `structured_output`（符合 schema）、`is_error: false`、`subtype: success`、`total_cost_usd`、`permission_denials: []`，`modelUsage` 的 key 是實際執行的模型（`claude-haiku-5-5`）。
+- 加上 `--max-turns 1` 會讓執行回傳 `is_error: true`、`subtype: error_max_turns`，exit 1。
+
+Codex 這一側（role 載入、繼承 sandbox）只依原始碼，**未實際執行**。
 
 ```toml
-name = "claude_reviewer"
-description = "Cross-vendor read-only review lane. Runs Claude Code headless (claude -p) on a review brief and returns its JSON findings verbatim. Use when review-forge needs an Anthropic reviewer or voter."
-model = "gpt-6-luna"            # 包裝用的便宜模型；文件建議的輕量模型，依帳號可用模型調整
-model_reasoning_effort = "low"
-developer_instructions = """
-You are a dispatcher, not a reviewer. Never review the code yourself.
-1. Preflight: run `command -v claude && claude auth status`. If it fails, reply exactly
-   `CLAUDE REVIEW\nSTATUS: unavailable\nREASON: <stderr>` and stop.
-2. Write the brief you were given to a mktemp file.
-3. Run: node <repo>/tools/review-lanes/dispatch-claude.js <brief> --mode review --model opus --timeout 600
-4. Return the dispatcher's JSON line and the contents of its outputFile unchanged.
-"""
+# .codex/agents/claude-implementer.toml   (project must be trusted; see 1.3.1)
+name = "claude_implementer"
+description = """Cross-vendor implementation lane that runs Anthropic Claude Code headless (`claude -p`). \
+Use when you want a Claude model to implement a well-specified change. The caller must pass a complete spec \
+(objective, files, interfaces, constraints, verification command). This agent never writes code itself: it drives \
+claude, re-runs the verification, and returns a CLAUDE REPORT. Returns STATUS unavailable if the claude CLI is \
+missing or not logged in."""
+model = "gpt-6-luna"              # cheap wrapper model; pick one your account can use
+model_reasoning_effort = "medium"
+nickname_candidates = ["Claude Lane"]
+developer_instructions = '''
+You are a dispatcher and verifier. Anthropic Claude Code writes the code, not you.
+Do not edit files yourself, do not finish claude's work, and never substitute your own
+implementation when claude fails. Never spawn other agents.
+
+1. PREFLIGHT (always first):
+   command -v claude && claude --version && claude auth status --text
+   `claude auth status` exits 0 when logged in and 1 when not. On any failure, stop and
+   return the report from step 6 with STATUS: unavailable and the exact stderr.
+
+2. PREPARE (fresh directory per run):
+   RUN=$(mktemp -d "${TMPDIR:-/tmp}/claude-lane.XXXXXX")
+   git status --porcelain > "$RUN/pre-status.txt" 2>/dev/null
+   Write the caller's spec verbatim to "$RUN/spec.md" with a quoted heredoc (<<'SPEC_EOF').
+   End it with: "Run the verification command and report its real output."
+   Write this JSON Schema to "$RUN/schema.json":
+   {"type":"object","additionalProperties":false,
+    "required":["status","changes","verification","notes"],
+    "properties":{
+      "status":{"enum":["complete","partial","blocked"]},
+      "changes":{"type":"array","items":{"type":"object","additionalProperties":false,
+        "required":["file","summary"],"properties":{"file":{"type":"string"},"summary":{"type":"string"}}}},
+      "verification":{"type":"object","additionalProperties":false,"required":["command","passed","output_tail"],
+        "properties":{"command":{"type":"string"},"passed":{"type":"boolean"},"output_tail":{"type":"string"}}},
+      "notes":{"type":"string"}}}
+
+3. INVOKE CLAUDE (one shell call; allow it at least 660 s):
+   TO=$(command -v timeout || command -v gtimeout)
+   ${TO:+$TO --kill-after=15s 600s} claude -p \
+     --model "${CLAUDE_MODEL:-opus}" \
+     --effort "${CLAUDE_EFFORT:-high}" \
+     --tools "Read,Edit,Write,Glob,Grep,Bash" \
+     --permission-mode dontAsk \
+     --allowedTools "Read,Edit,Write,Glob,Grep,Bash(<verification command> *),Bash(git diff *),Bash(git status *)" \
+     --max-turns 40 \
+     --max-budget-usd 5 \
+     --no-session-persistence \
+     --output-format json \
+     --json-schema "$(cat "$RUN/schema.json")" \
+     < "$RUN/spec.md" > "$RUN/result.json" 2> "$RUN/stderr.log"
+   echo "exit=$?"
+   Flag rationale:
+   - The prompt comes from stdin via a file redirect.
+   - --tools limits which tools exist. --allowedTools only pre-approves them.
+   - dontAsk denies anything not pre-approved, because nobody can answer a prompt.
+   - Never pass --dangerously-skip-permissions.
+   - Replace <verification command> with the spec's command prefix, e.g. Bash(npm test *).
+   - Use the model and effort the spec names; aliases are sonnet, opus, haiku, fable,
+     or pass a full model id.
+
+4. INTERPRET (read "$RUN/result.json"):
+   - exit 0 and is_error false: success. Use .structured_output.
+   - is_error true: STATUS invocation_error, unless subtype is error_max_turns
+     (then STATUS partial).
+   - exit 124 or 137 with timeout present: STATUS timeout.
+   - Model actually used: the keys of .modelUsage. If they differ from the requested
+     model, record a stand-in.
+   - Cost: .total_cost_usd. Denied tools: .permission_denials.
+   - If stderr shows a network or sandbox error, the parent sandbox blocked the
+     Anthropic API: STATUS blocked_by_sandbox (see 3.3). Do not retry with weaker
+     safety flags.
+
+5. VERIFY independently:
+   - Compare git status --porcelain and git diff --stat with "$RUN/pre-status.txt".
+   - Re-run the verification command yourself and keep its real output.
+   - Claude's own "passed" claim is not evidence.
+
+6. OUTPUT (return exactly this, nothing else):
+   CLAUDE REPORT
+   STATUS: complete | partial | timeout | invocation_error | blocked_by_sandbox | unavailable
+   MODEL_REQUESTED: <alias>  MODEL_USED: <modelUsage keys>  EFFORT: <effort>
+   EXIT: <code>  RUN_DIR: <$RUN>  COST_USD: <total_cost_usd>
+   OBJECTIVE: <one line>
+   CHANGES:
+   - <file> — <one-line summary from the actual diff>
+   VERIFIED: <command you re-ran> -> <pass|fail>
+   <last <=15 lines of its real output>
+   CLAUDE SAID: <structured_output.status + notes, one line; note disagreement with the diff>
+   DENIED_TOOLS: <permission_denials tool names or "none">
+   GAPS: <open questions, missing deadline, or "none">
+   REASON: <only for non-complete statuses: exact stderr tail or result text>
+'''
 
 [features]
-memory_tool = false    # 只能「關閉」；shell_tool 必須保留，因為要執行 claude
+memory_tool = false     # roles can only switch features OFF; shell_tool must stay on to run claude
 ```
 
-在 f82e365 上，這個檔案寫 `sandbox_mode` 或 `[mcp_servers]` 都沒有效果（1.3.3）。
+**唯讀審查版（`claude-reviewer.toml`）的差異**：
 
-**Codex plugin 內**：manifest 沒有 `agents`（1.4），所以只能由 **skill 承載**：
+- 第 3 步改成 `--tools "Read,Grep,Glob" --allowedTools "Read,Grep,Glob" --permission-mode dontAsk --max-turns 20`。
+- schema 換成 5.4 的 `findings.schema.json`。
+- 拿掉第 5 步。
+- 第 6 步回傳 `CLAUDE REVIEW` 標頭與 `structured_output` 原文，不做任何編輯或排序。
 
-```text
-plugins/code-review/skills/review-forge/
-  SKILL.md                 # 「cross-vendor lane: run `node scripts/dispatch-claude.js ...`」
-  scripts/dispatch-claude.js
-  scripts/dispatch-codex.js
-  references/lanes.md
-```
+**必須知道的 Codex 限制**：
 
-SKILL.md 可以要求主執行緒直接執行腳本，或「spawn a `worker` agent whose message is: run scripts/dispatch-claude.js … and return its output」。Codex 會遵從 skill 中的委派指示（`subagents` 文件：「Codex can also delegate when applicable project or skill instructions request it」）。若需要可重用的具名 role，就在 README 指示使用者把 `claude-reviewer.toml` 複製到 `.codex/agents/` 或 `~/.codex/agents/`。
+1. 這份 role 檔若寫 `sandbox_mode`、`[sandbox_workspace_write]`、`[mcp_servers]`，在 f82e365 上都**不會**套用（1.3.3）。`claude -p` 能不能連上 Anthropic API，取決於**父 session** 的 sandbox 與網路設定（3.3）。
+2. Role 無法像 Claude 的 `tools:` 那樣用白名單限制工具，只能關掉 feature。所以「包裝者不自己改檔」只能靠 instructions 約束；若父 session 是 read-only，claude 也改不了檔。實作 lane 需要父 session 是 `workspace-write`（且開網路）。
+3. `--max-budget-usd` 用的是用戶端的成本估計，實際花費可能超過上限（`cli-reference`）。
+
+**Codex plugin 內**：manifest 沒有 `agents`（1.4），plugin **無法**直接發佈這份 `.toml`。做法有兩種：
+
+- 把它放在 plugin 中當範本（例如 `skills/<skill>/references/codex-roles/claude-implementer.toml`），在 README 或 skill 中指示複製到 `.codex/agents/` 或 `~/.codex/agents/`。
+- 讓 skill 本身承載同一份步驟：SKILL.md 寫「spawn a `worker` agent with this message: …（第 1–6 步）」，或由主執行緒直接執行。Codex 會遵從 skill 中的委派指示（`subagents` 文件）。
+
+SKILL.md 中的相對路徑會相對於 SKILL.md 所在目錄解析（1.4），所以第 3 步可以改成呼叫 skill 內附的腳本。
 
 ### 3.5 現有參考實作：`dispatch-claude-advisor.js`
 
@@ -349,7 +565,7 @@ Manifest：`pstack/plugin.json`（Agent Plugins `$schema`，v0.15.21）與 `.cur
 
 | Host | 同廠商 lane | 跨廠商 lane |
 |---|---|---|
-| Claude Code | Agent 工具派 `code-review:forge-reviewer`，用 per-invocation `model` 參數分別帶 `opus`、`sonnet`（或 `fable`） | `code-review:codex-reviewer`，透過 dispatch-codex.js 跑 `codex exec -s read-only` |
+| Claude Code | Agent 工具派 `code-review:forge-reviewer`，用 per-invocation `model` 參數分別帶 `opus`、`sonnet`（或 `fable`） | `code-review:codex-reviewer`（2.4 的審查版：inline `codex exec -s read-only --output-schema`，或改走 dispatcher） |
 | Codex | `spawn_agent`，`agent_type` 指向 `forge_reviewer_sol`、`forge_reviewer_luna` 這類 role（role 鎖定 `model` 與 effort） | 主執行緒或 `worker` 執行 `scripts/dispatch-claude.js`（`claude -p --tools Read,Grep,Glob --permission-mode dontAsk --output-format json --json-schema …`） |
 
 規則：
@@ -511,5 +727,6 @@ Return only JSON matching the schema named in the brief.
 
 - Codex 的所有執行期行為：本環境沒有 `codex`，只讀了原始碼與文件。包括 `--output-schema` 的 strict 要求、`codex exec` 沒有內建逾時、在 Codex sandbox 中執行 `claude -p` 的網路與寫入限制，以及 execpolicy 是否能讓它在 sandbox 外執行。
 - Codex「role 會丟掉 `sandbox_mode`/`mcp_servers`」只綁定在 main `f82e365`。release 版本是否相同無法查證（`gh api` 回 403）；文件說法相反。
+- 2.4 與 3.4 的 agent 檔：`claude plugin validate` 驗過 2.4 的 frontmatter；`tomllib` 驗過 3.4 的 TOML 語法；2.4 第 3 步在沒有 codex 時回 exit 127（已測）；3.4 第 3 步的 `claude -p` 旗標組合已實測（見 3.4 開頭）。**沒有**端到端跑過 Codex 實際寫碼或 Codex 載入該 role。
 - Claude Code：在 `mcpServers:` 中以 `"plugin:<p>:<s>"` 引用 plugin server、`.claude/agents/` 內文的 `${CLAUDE_PROJECT_DIR}` 替換與 Bash 環境變數、`Bash(node *dispatch-codex.js*)` 權限規則寫法。
 - Codex 雲端（ChatGPT Work）環境中的 plugin 與 custom agent 行為：沒有研究。
