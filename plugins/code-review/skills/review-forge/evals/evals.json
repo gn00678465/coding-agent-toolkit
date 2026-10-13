@@ -30,6 +30,7 @@
       "assertions": [
         "Creates .review/demo/final-report.json and .review/demo/final-report.md and no other new or modified files",
         "final-report.json validates against assets/schemas/final-report.schema.json",
+        "final-report.json numbers come from scripts/report.py: rerunning it with the same weights reproduces every score, bucket, agreement rate and flag",
         "RF-001 confidence_score is 1.0 with confidence high and sits in act_on (confirm claude-opus-5-5 1.0 + claude-sonnet-5-5 1.0, gpt-6.1-sol abstained)",
         "RF-002 confidence_score is 0.2 with confidence low (dispute gpt-6.1-sol weight 1.5, unsure claude-opus-5-5 counts 0.5) and sits in dismissed with a dismiss_rationale drawn from the dispute evidence",
         "RF-003 confidence_score is 1.0 with confidence high and sits in consider (severity low) with a tradeoff",
@@ -63,7 +64,7 @@
         "fixture-lanes"
       ],
       "assertions": [
-        "gpt-6.1-sol.json exists with lane.status unavailable, the preflight stderr as the reason, and an empty findings array",
+        "gpt-6.1-sol.json exists with lane.status unavailable, a reviewer_notes reason naming the missing codex CLI (for example 'codex not on PATH'), and an empty findings array",
         "claude-opus-5-5.json exists with lane.status complete, validates against lane-review.schema.json, and came from claude -p run with --effort xhigh",
         "Every affected_files line number falls inside the file's line count at head_sha",
         "No file under .review/demo/ attributes host-written findings to a codex or gpt model",

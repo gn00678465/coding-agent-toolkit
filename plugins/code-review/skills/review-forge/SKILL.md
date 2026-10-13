@@ -180,7 +180,13 @@ Done when every requested lane has one `<model>-vote.json` that validates, with 
 
 ## Report Command
 
-Read `summary.json` and every `*-vote.json` whose `lane.status` is `complete` and whose `scope_sha256` matches, then write `final-report.json`.
+Every number in the report is deterministic, so a script computes it and you write only the prose:
+
+1. **Compute.** Run `python3 -I <this skill dir>/scripts/report.py <feature_dir> [--weight MODEL=WEIGHT ...]`, one `--weight` per entry in `model_weights`. It reads `scope.json`, `summary.json`, and every `*-vote.json` (only `complete` votes on the current `scope_sha256` count), applies the rules below, and writes `final-report.json` with every score, bucket, agreement rate, flag, and missing voter filled in. Exit 1 means the inputs disagree (for example `summary.json` was made against an older scope): report its message to the user instead of computing by hand.
+2. **Write the prose.** Fill `why_it_matters` for every `act_on` item, `tradeoff` for every `consider` item, `dismiss_rationale` for every `dismissed` item (drawn from the dispute evidence in the vote files), and `agreement_map.pattern`. Leave every number and bucket as the script wrote it.
+3. **Validate and render** (below).
+
+The rules the script applies, for writing prose that matches them:
 
 ### Confidence
 
@@ -194,9 +200,9 @@ Read `summary.json` and every `*-vote.json` whose `lane.status` is `complete` an
 Place each finding in the first bucket whose rule matches:
 
 1. `unvoted`: `confidence` is `unvoted`.
-2. `dismissed`: total `dispute` weight exceeds total `confirm` weight. Fill `dismiss_rationale` from the dispute evidence.
-3. `act_on`: `confidence` is `high` and severity is `critical`, `high`, or `medium`; or severity is `critical` and `confidence` is `medium`. Fill `why_it_matters`.
-4. `consider`: `confidence` is `medium`, or `confidence` is `high` with severity `low`. Fill `tradeoff`.
+2. `dismissed`: total `dispute` weight exceeds total `confirm` weight.
+3. `act_on`: `confidence` is `high` and severity is `critical`, `high`, or `medium`; or severity is `critical` and `confidence` is `medium`.
+4. `consider`: `confidence` is `medium`, or `confidence` is `high` with severity `low`.
 5. `noted`: everything else.
 
 Within each bucket, order by severity, then `confidence_score` descending. A bucket is a reading aid: every item stays unchecked, and only a human's checkbox approves a fix.
@@ -204,12 +210,12 @@ Within each bucket, order by severity, then `confidence_score` descending. A buc
 ### Reviewers, flags, and agreement
 
 - `reviewers` and `voters`: every lane, with its `status`, including failed ones. `missing_voters`: complete reviewers with no complete vote.
-- `agreement_map.pairwise`: for each pair of voters, `shared_votes` counts findings both voted on without abstaining, and `agreement_rate` is the share of those where their votes match (`null` when none are shared). `same_vendor_agreement` and `cross_vendor_agreement` are the shared-vote-weighted means over same-vendor and cross-vendor pairs. `pattern` says in prose where models agreed and diverged, and what that suggests about the findings.
+- `agreement_map.pairwise`: for each pair of voters, `shared_votes` counts findings both voted on without abstaining, and `agreement_rate` is the share of those where their votes match (`null` when none are shared). `same_vendor_agreement` and `cross_vendor_agreement` are the shared-vote-weighted means over same-vendor and cross-vendor pairs. `pattern` (yours to write) says where models agreed and diverged, and what that suggests about the findings; say so when pairs share too few votes to mean much.
 - `report_flags`: `single_vendor` when complete lanes span fewer than two vendors; `intent_inferred` when `intent.status` is `inferred`; `missing_voters` when any are missing; `has_stand_ins` when any lane has `stand_in: true`.
 
-Render `final-report.md` from `assets/templates/final_report.md`, in the order Intent, Reviewers, Act On, Consider, Noted, Dismissed, Unvoted, Agreement Map, carrying checkbox states over by `RF` id.
+Validate `final-report.json`, then render `final-report.md` from `assets/templates/final_report.md`, in the order Intent, Reviewers, Act On, Consider, Noted, Dismissed, Unvoted, Agreement Map, carrying checkbox states over by `RF` id.
 
-Done when every `summary.json` finding sits in exactly one bucket, and every score can be recomputed from the vote files and weights.
+Done when `final-report.json` validates, every number in it is the script's, and every `act_on`, `consider`, and `dismissed` item has its prose field filled.
 
 ## Lanes
 
