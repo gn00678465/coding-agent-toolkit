@@ -14,7 +14,7 @@
 
 <!-- Copy into the output unchanged. -->
 
-- `label`: <!-- unique lane label, e.g. codex-gpt-5.6-sol -->
+- `label`: <!-- unique lane label, e.g. codex-gpt-6.1-sol -->
 - `kind`: <!-- host-native | codex | claude -->
 - `vendor`: <!-- anthropic | openai | ... -->
 - `model_requested`: <!-- model slug or alias -->

@@ -10,16 +10,27 @@ A **lane** is one reviewer or voter: one model reached by one mechanism, produci
 
 | `kind` | Mechanism | Example |
 | --- | --- | --- |
-| `host` | A subagent of the host's own vendor (`host-native`) | `host:opus`, `host:sonnet`, `host:gpt-5.6-sol@high` |
-| `codex` | OpenAI Codex CLI, `codex exec` | `codex:gpt-5.6-sol@high`, `codex:default` |
-| `claude` | Claude Code CLI, `claude -p` | `claude:opus@high`, `claude:sonnet` |
+| `host` | A subagent of the host's own vendor (`host-native`) | `host:claude-opus-5-5@xhigh`, `host:gpt-6.1-sol@xhigh` |
+| `codex` | OpenAI Codex CLI, `codex exec` | `codex:gpt-6.1-sol@xhigh` |
+| `claude` | Claude Code CLI, `claude -p` | `claude:claude-opus-5-5@xhigh` |
 
-`default` means the CLI's own configured model: omit `--model`, and name the lane's model `<kind>-default` (for example `codex-default`).
+Name models by their full ID, so the lane, its artifact file, and `sources` all carry the exact model that ran.
 
-When the user asks for a multi-model review without naming lanes, use:
+When the user asks for a multi-model review without naming lanes, use one lane per vendor on the newest models at `xhigh`:
 
-- Claude Code host: `host:opus, host:sonnet, codex:default`
-- Codex host: `host:default, claude:opus`
+- Claude Code host: `host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh`
+- Codex host: `host:gpt-6.1-sol@xhigh, claude:claude-opus-5-5@xhigh`
+
+### Model and effort per mechanism
+
+| Mechanism | Model | Effort |
+| --- | --- | --- |
+| `host` on Claude Code (Agent tool) | `model` takes a family alias: `claude-opus-5-5` → `opus`, `claude-sonnet-5-5` → `sonnet`, `claude-haiku-5-5` → `haiku`, `claude-fable-5-1` → `fable`. The alias resolves to the newest model of that family. | `effort`: `low`, `medium`, `high`, `xhigh`, `max` |
+| `host` on Codex (`spawn_agent`) | `model: gpt-6.1-sol` | `reasoning_effort: xhigh` |
+| `codex` (`codex exec`) | `--model gpt-6.1-sol` | `-c model_reasoning_effort=xhigh` (`minimal`, `low`, `medium`, `high`, `xhigh`, `max`) |
+| `claude` (`claude -p`) | `--model claude-opus-5-5` (full ID or alias) | `--effort xhigh` (`low`, `medium`, `high`, `xhigh`, `max`) |
+
+A lane with no `@<effort>` passes no effort and runs at the mechanism's default. `xhigh` runs take longer: when a CLI lane overruns the 600 s deadline, record `timeout` and tell the user, rather than lowering the effort on your own.
 
 State the lane list before dispatching. The user may add, drop, or reweight lanes.
 
@@ -50,7 +61,7 @@ Done when every ready lane has a `brief.md` whose `scope_sha256` matches the oth
 
 Dispatch every ready lane in parallel, then wait for all of them.
 
-**`host` lane, Claude Code host.** One Agent tool call per lane, all in a single message. Set the call's `model` to the lane model, use a general-purpose subagent, and send the full `brief.md` text as the prompt, ending with: `Return only the JSON document.`
+**`host` lane, Claude Code host.** One Agent tool call per lane, all in a single message. Set the call's `model` to the lane model's family alias and `effort` to the lane effort (see the table above), use a general-purpose subagent, and send the full `brief.md` text as the prompt, ending with: `Return only the JSON document.`
 
 **`host` lane, Codex host.** One `spawn_agent` per lane with `message` set to the full `brief.md` text, plus `model` and `reasoning_effort` from the lane spec. Collect each with `wait_agent`.
 
@@ -69,7 +80,7 @@ ${TO:+$TO --kill-after=15s 600s} codex exec \
 echo "exit=$?"
 ```
 
-Drop `--model` for `codex:default` and drop `-c model_reasoning_effort=...` when the spec gives no effort. The result is `$L/output.json`.
+Drop `-c model_reasoning_effort=...` when the spec gives no effort. The result is `$L/output.json`.
 
 **`claude` lane.** One Bash call per lane, with the tool timeout at 660000 ms:
 
@@ -110,6 +121,7 @@ For each lane, set `lane.status`:
 Then stamp the lane fields the reviewer could not know:
 
 - `model_used`: the keys of `.modelUsage` for `claude` lanes; the requested model for `codex` and `host` lanes.
+- `effort`: record the effort each lane ran at in `.lanes/<label>/`, next to its cost.
 - `stand_in`: `true` when `model_used` is a different model family from `model_requested` (an alias resolving to its own full ID is the same model).
 
 Write the artifact under the feature folder:

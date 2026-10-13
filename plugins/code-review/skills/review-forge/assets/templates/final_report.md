@@ -6,7 +6,7 @@
 - `command`: `report`
 - `feature`: <!-- final-report.feature -->
 - `scope_sha256`: <!-- final-report.scope_sha256 -->
-- `model_weights`: <!-- resolved weights, e.g. gpt-5.6-sol: 1.5, opus: 1.0 -->
+- `model_weights`: <!-- resolved weights, e.g. gpt-6.1-sol: 1.5, claude-opus-5-5: 1.0 -->
 - `missing_voters`: <!-- models with no complete vote, or none -->
 - `report_flags`: <!-- single_vendor | intent_inferred | missing_voters | has_stand_ins, or none -->
 - `report_language`: <!-- auto | en | zh-TW | ... -->

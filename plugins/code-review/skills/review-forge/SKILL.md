@@ -33,10 +33,10 @@ Resolve or ask for these before doing work:
 - `feature`: artifact subfolder name. If omitted, infer from the branch name, PR title, changed package, or a short sanitized summary of the diff.
 - `feature_dir`: default `.review/<feature>/`.
 - `command`: one of the commands above.
-- `model`: the model name for a single-lane `review` or `vote`, such as `gpt-5.6-sol` or `opus`. Defaults to the host's own model.
-- `lanes`: models to fan `review` and `vote` out to, such as `host:opus, host:sonnet, codex:default`. See [Lanes](#lanes).
+- `model`: the model name for a single-lane `review` or `vote`, such as `claude-opus-5-5` or `gpt-6.1-sol`. Defaults to the host's own model.
+- `lanes`: models to fan `review` and `vote` out to, as `<kind>:<model>@<effort>`, such as `host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh`. See [Lanes](#lanes).
 - `perspective`: optional review focus, such as correctness, security, tests, or maintainability.
-- `model_weights`: optional vote weights, for example `gpt-5.6-sol: 1.5`. Unlisted models weigh `1.0`.
+- `model_weights`: optional vote weights, for example `gpt-6.1-sol: 1.5`. Unlisted models weigh `1.0`.
 - `report_language`: default `auto` (follow the user's prompt language); explicit values such as `en`, `zh-TW`, or `ja`.
 - `auto_fix_allowed`: default `false` unless the user explicitly asks to fix.
 - `test_command`: optional validation override.
@@ -213,7 +213,7 @@ Done when every `summary.json` finding sits in exactly one bucket, and every sco
 
 ## Lanes
 
-A lane is one model reached by one mechanism: a native subagent of the host's own vendor (`host:<model>`), the Codex CLI (`codex:<model>`), or the Claude Code CLI (`claude:<model>`). Read [`references/lanes.md`](references/lanes.md) whenever `lanes` is set or the user asks for a multi-model, cross-model, or cross-vendor review: it holds the lane spec, the default lane lists, the exact CLI invocations, status mapping, and failure rules.
+A lane is one model at one effort, reached by one mechanism: a native subagent of the host's own vendor (`host:<model>`), the Codex CLI (`codex:<model>`), or the Claude Code CLI (`claude:<model>`). Read [`references/lanes.md`](references/lanes.md) whenever `lanes` is set or the user asks for a multi-model, cross-model, or cross-vendor review: it holds the lane spec, the default lane lists (newest models at `xhigh`), how model and effort map onto each mechanism, the exact CLI invocations, status mapping, and failure rules.
 
 ## Fix Rules
 

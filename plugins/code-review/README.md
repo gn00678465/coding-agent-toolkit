@@ -73,7 +73,9 @@ verification, and status tracking.
 
 A lane is one reviewer: `host:<model>` (a subagent of the host's own vendor),
 `codex:<model>` (Codex CLI), or `claude:<model>` (Claude Code CLI). Pass them as
-`lanes`, for example `lanes: host:opus, host:sonnet, codex:default`. A lane whose
+`lanes` as `<kind>:<model>@<effort>`, for example
+`lanes: host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh` (the default when you
+ask for a multi-model review without naming lanes). A lane whose
 CLI is missing or logged out is recorded as `unavailable` instead of being
 silently replaced. See `skills/review-forge/references/lanes.md`.
 
@@ -86,9 +88,8 @@ flowchart TD
 
     subgraph collect["① Review — 每條 lane 獨立審查同一份 scope（不動產品碼）"]
         direction LR
-        R1["host:opus<br/>→ opus.json"]
-        R2["host:sonnet<br/>→ sonnet.json"]
-        R3["codex:default<br/>→ codex-default.json"]
+        R1["host:claude-opus-5-5@xhigh<br/>→ claude-opus-5-5.json"]
+        R3["codex:gpt-6.1-sol@xhigh<br/>→ gpt-6.1-sol.json"]
     end
 
     collect --> SYN["② synthesize<br/>只收 scope_sha256 相符的 review・合併去重・記 sources<br/>→ summary.json + summary.md（checkbox 全未勾）"]
@@ -97,9 +98,8 @@ flowchart TD
 
     subgraph vote_phase["③ Vote — 每條 lane 對每個 finding 投票，自家 finding 投 abstain"]
         direction LR
-        V1["→ opus-vote.json"]
-        V2["→ sonnet-vote.json"]
-        V3["→ codex-default-vote.json"]
+        V1["→ claude-opus-5-5-vote.json"]
+        V3["→ gpt-6.1-sol-vote.json"]
     end
 
     VOTE_Q -- "是" --> vote_phase
@@ -150,9 +150,9 @@ Review Forge groups workflow files by feature under `.review/`:
 ```text
 .review/<feature>/
   scope.json  scope.patch
-  opus.json  sonnet.json  codex-default.json
+  claude-opus-5-5.json  gpt-6.1-sol.json
   summary.json  summary.md
-  opus-vote.json  sonnet-vote.json  codex-default-vote.json
+  claude-opus-5-5-vote.json  gpt-6.1-sol-vote.json
   final-report.json  final-report.md
   fix-plan.md  verify.md  status.md
   .lanes/<label>/
@@ -177,11 +177,11 @@ Status values remain stable English enums, while display labels may be localized
 ### Example Prompts
 
 ```text
-Use /review-forge review feature: checkout-refactor lanes: host:opus, host:sonnet, codex:default.
+Use /review-forge review feature: checkout-refactor lanes: host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh.
 ```
 
 ```text
-Use /review-forge review feature: checkout-refactor model: gpt-5.6-sol perspective: security.
+Use /review-forge review feature: checkout-refactor model: gpt-6.1-sol perspective: security.
 ```
 
 ```text
@@ -189,11 +189,11 @@ Use /review-forge synthesize feature: checkout-refactor.
 ```
 
 ```text
-Use /review-forge vote feature: checkout-refactor lanes: host:opus, codex:default.
+Use /review-forge vote feature: checkout-refactor lanes: host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh.
 ```
 
 ```text
-Use /review-forge report feature: checkout-refactor model_weights: gpt-5.6-sol: 1.5.
+Use /review-forge report feature: checkout-refactor model_weights: gpt-6.1-sol: 1.5.
 ```
 
 ```text
