@@ -73,7 +73,7 @@
 
 - `git-assistant`: `commit-message`、`pull-request`
 - `advisor`: `orchestration` skill 與 `claude-advisor`、`grok-implementer`、`codex-implementer` agents
-- `code-review`: `review-forge` skill（`review` / `synthesize` / `vote` / `report` / `fix` / `verify` 六階段命令）與 `verification-gate` skill（`gate` / `evidence` 兩階段命令）
+- `code-review`: `review-forge` skill（`scope` / `review` / `synthesize` / `vote` / `report` / `fix` / `verify` 七階段命令，可透過 Codex / Claude Code CLI 跨廠商審查）與 `verification-gate` skill（`gate` / `evidence` 兩階段命令）
 - `slim-agents-md`: `slim-agents-md` skill（AGENTS.md / CLAUDE.md 等 agent 指令文件的精簡與重構）
 
 > `advisor` 另需先安裝 [Grok CLI](https://x.ai/cli) 與 Codex CLI，並確認 `grok`、`codex` 可於 `PATH` 中執行。
