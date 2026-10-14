@@ -29,6 +29,17 @@
 
 安裝方式與本專案插件相同，例如：`/plugin install impeccable@coding-agent-toolkit`。
 
+### 自動更新
+
+[`.github/workflows/upstream-update.yml`](./.github/workflows/upstream-update.yml) 每天台灣時間 00:00 檢查外部套件的上游：
+
+1. `apm-go marketplace outdated` 列出可更新的套件。
+2. `apm-go marketplace package update` 把 `apm.yml` 的鎖定移到新 tag（有 `version` 的套件）或預設分支最新 commit（沒有 `version` 的套件；有 `subdir` 時只在子目錄內容有變動才移動）。
+3. `apm-go pack --claude-source-style url` 重新產生兩份 `marketplace.json`，`apm-go marketplace check` 確認每個 ref 都存在。
+4. 有變動時在 `bot/upstream-update` 分支開 PR 並直接 squash 合併。
+
+需要先在 Settings → Actions → General 開啟「Allow GitHub Actions to create and approve pull requests」。也可以在 Actions 頁面手動執行，勾選 `dry_run` 只看差異、不建立 PR。授權欄位是依舊的鎖定 commit 查得的，套件更新後請留意上游是否變更授權。
+
 ### 授權說明
 
 授權欄位為各套件在本專案鎖定的 commit sha 上實際查得的授權，皆與本專案的 MIT 相容。本專案不散布這些套件的程式碼，marketplace 僅保存 URL 與 commit sha 指標，安裝時由使用者端自 upstream 取得，因此授權義務適用於使用者本地的副本。
