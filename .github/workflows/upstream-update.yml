@@ -1,0 +1,129 @@
+# Daily upstream refresh for the external marketplace packages in apm.yml.
+#
+# check   -> apm-go marketplace outdated
+# update  -> apm-go marketplace package update   (moves SHA pins to the new tag / default-branch tip)
+# rebuild -> apm-go pack --claude-source-style url (regenerates both marketplace.json files)
+# verify  -> apm-go marketplace check              (every pinned ref resolves upstream)
+# ship    -> commit on bot/upstream-update, open or refresh the PR, squash-merge it
+#
+# Repo setting required for the PR step: Settings -> Actions -> General ->
+# "Allow GitHub Actions to create and approve pull requests".
+name: Upstream update
+
+on:
+  schedule:
+    - cron: "0 16 * * *" # 00:00 Asia/Taipei (UTC+8)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Show the update diff without committing, opening a PR, or merging
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-update
+  cancel-in-progress: false
+
+env:
+  APM_GO_VERSION: 0.4.0-rc.1
+  BRANCH: bot/upstream-update
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install apm-go
+        run: |
+          # Script and binary both come from the pinned tag, so an apm-go release changes nothing here until APM_GO_VERSION is bumped.
+          curl -fsSL "https://raw.githubusercontent.com/gn00678465/apm-go/v${APM_GO_VERSION}/install.sh" | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Check
+        run: |
+          apm-go --version
+          apm-go marketplace outdated -v | tee outdated.log
+
+      - name: Update
+        run: apm-go marketplace package update | tee update.log
+
+      - name: Rebuild marketplace.json
+        run: apm-go pack --claude-source-style url
+
+      - name: Detect changes
+        id: diff
+        run: |
+          if git diff --quiet -- apm.yml .claude-plugin/marketplace.json .agents/plugins/marketplace.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "All external packages are current." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat
+            git diff -- apm.yml
+          fi
+
+      - name: Verify pinned refs
+        if: steps.diff.outputs.changed == 'true'
+        run: apm-go marketplace check
+
+      - name: Write commit message
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          # "+ Updated package 'archify': version 3.0.1 -> 3.1.0, ref 2ab3cae7ac2c -> 1c2b42d660e4"
+          lines=$(sed -n "s/^ *+ Updated package '\([^']*\)': \(.*\)$/- \1：\2/p" update.log | sed 's/ -> / → /g')
+          count=$(printf '%s\n' "$lines" | grep -c '^- ' || true)
+          if [ "$count" -gt 0 ]; then
+            title="chore(marketplace): 更新 ${count} 個外部套件的版本鎖定"
+          else
+            title="chore(marketplace): 重新產生 marketplace.json"
+          fi
+          {
+            echo "$title"
+            echo
+            printf '%s\n' "$lines"
+            echo "- 以 apm-go pack --claude-source-style url 重新產生兩份 marketplace.json"
+          } > commit-msg.txt
+          {
+            echo "## Upstream update"
+            echo
+            sed 1,2d commit-msg.txt
+            echo
+            echo "<details><summary>apm-go marketplace outdated</summary>"
+            echo
+            echo '```'
+            cat outdated.log
+            echo '```'
+            echo
+            echo "</details>"
+          } > pr-body.md
+          cat commit-msg.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit, open PR, and merge
+        if: steps.diff.outputs.changed == 'true' && inputs.dry_run != true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git add apm.yml .claude-plugin/marketplace.json .agents/plugins/marketplace.json
+          git commit -F commit-msg.txt
+          git push --force origin "$BRANCH"
+
+          title=$(head -n 1 commit-msg.txt)
+          pr=$(gh pr list --head "$BRANCH" --base main --state open --json url --jq '.[0].url')
+          if [ -n "$pr" ]; then
+            gh pr edit "$pr" --title "$title" --body-file pr-body.md
+          else
+            pr=$(gh pr create --head "$BRANCH" --base main --title "$title" --body-file pr-body.md)
+          fi
+          echo "PR: $pr" >> "$GITHUB_STEP_SUMMARY"
+
+          gh pr merge "$pr" --squash --delete-branch --subject "$title" --body "$(sed 1,2d commit-msg.txt)"
