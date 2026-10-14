@@ -1,0 +1,177 @@
+{
+  "description": "One reviewer's output for one lane. Passed verbatim to codex exec --output-schema and claude -p --json-schema, so it stays CLI-safe: no $schema, $id, title or $ref (claude --json-schema rejects the draft 2020-12 $schema URI), every property required, additionalProperties false. The reviewer copies lane and scope_sha256 from the brief; the host overwrites lane.model_used, lane.stand_in and lane.status after the run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scope_sha256",
+    "lane",
+    "perspective",
+    "findings",
+    "out_of_scope_notes",
+    "reviewer_notes"
+  ],
+  "properties": {
+    "scope_sha256": {
+      "type": "string"
+    },
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "kind",
+        "vendor",
+        "model_requested",
+        "model_used",
+        "stand_in",
+        "status"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "host-native",
+            "codex",
+            "claude"
+          ]
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "model_requested": {
+          "type": "string"
+        },
+        "model_used": {
+          "type": "string"
+        },
+        "stand_in": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "unavailable",
+            "timeout",
+            "invocation_error",
+            "schema_invalid",
+            "scope_mismatch"
+          ]
+        }
+      }
+    },
+    "perspective": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lane_finding_id",
+          "title",
+          "severity",
+          "category",
+          "affected_files",
+          "evidence",
+          "risk",
+          "suggested_fix",
+          "suggested_tests"
+        ],
+        "properties": {
+          "lane_finding_id": {
+            "type": "string",
+            "description": "Lane-local id such as F1. synthesize assigns RF ids."
+          },
+          "title": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "note"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "correctness",
+              "security",
+              "tests",
+              "maintainability",
+              "intent_mismatch"
+            ]
+          },
+          "affected_files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "line_start",
+                "line_end"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Must be one of scope.review_files."
+                },
+                "line_start": {
+                  "type": "integer",
+                  "description": "0 when unknown."
+                },
+                "line_end": {
+                  "type": "integer",
+                  "description": "0 when unknown."
+                }
+              }
+            }
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "risk": {
+            "type": "string"
+          },
+          "suggested_fix": {
+            "type": "string"
+          },
+          "suggested_tests": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "out_of_scope_notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "note"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "reviewer_notes": {
+      "type": "string"
+    }
+  }
+}

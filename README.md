@@ -8,7 +8,7 @@
 |------|------|----------|------|
 | `git-assistant` | 0.1.5 | Claude Code / Codex | Commit / PR 工作流插件，包含 `commit-message`、`pull-request` 等技能 |
 | `advisor` | 0.1.4 | Claude Code / Codex | 架構師模式 model-routing：session 跑在 Claude 最強模型上負責規格與驗證，實作路由給 Grok 4.5（Grok CLI）與 GPT-5.6 Sol（Codex），並提供承諾邊界 advisor |
-| `code-review` | 0.2.0 | Claude Code / Codex / OpenCode | 程式碼審查與驗證：`review-forge` 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`verification-gate` 完工後的驗證關卡與 evidence 報告 |
+| `code-review` | 0.3.0 | Claude Code / Codex / OpenCode | 程式碼審查與驗證：`review-forge` 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`verification-gate` 完工後的驗證關卡與 evidence 報告 |
 | `slim-agents-md` | 0.1.0 | Claude Code / Codex | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
 
 ## 外部套件
@@ -73,7 +73,7 @@
 
 - `git-assistant`: `commit-message`、`pull-request`
 - `advisor`: `orchestration` skill 與 `claude-advisor`、`grok-implementer`、`codex-implementer` agents
-- `code-review`: `review-forge` skill（`review` / `synthesize` / `vote` / `report` / `fix` / `verify` 六階段命令）與 `verification-gate` skill（`gate` / `evidence` 兩階段命令）
+- `code-review`: `review-forge` skill（`scope` / `review` / `synthesize` / `vote` / `report` / `fix` / `verify` 七階段命令，可透過 Codex / Claude Code CLI 跨廠商審查）與 `verification-gate` skill（`gate` / `evidence` 兩階段命令）
 - `slim-agents-md`: `slim-agents-md` skill（AGENTS.md / CLAUDE.md 等 agent 指令文件的精簡與重構）
 
 > `advisor` 另需先安裝 [Grok CLI](https://x.ai/cli) 與 Codex CLI，並確認 `grok`、`codex` 可於 `PATH` 中執行。

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review-forge/summary.schema.json",
+  "title": "Review Forge summary",
+  "description": "Synthesized findings from every accepted lane review in one feature_dir. Written by the host in the synthesize command and rendered to summary.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["feature", "scope_sha256", "intent", "reviewers", "excluded_reviews", "findings", "common_themes", "disagreements"],
+  "properties": {
+    "feature": { "type": "string" },
+    "scope_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "intent": { "$ref": "#/$defs/intent" },
+    "reviewers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/reviewer" },
+      "description": "Every lane that ran review, including failed ones."
+    },
+    "excluded_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "reason"],
+        "properties": {
+          "file": { "type": "string" },
+          "reason": { "type": "string", "enum": ["scope_mismatch", "schema_invalid", "lane_failed"] }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "description",
+          "severity",
+          "category",
+          "affected_files",
+          "sources",
+          "agreement_count",
+          "evidence",
+          "risk",
+          "suggested_fix",
+          "suggested_tests",
+          "status"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^RF-[0-9]{3,}$" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "severity": { "$ref": "#/$defs/severity" },
+          "category": { "$ref": "#/$defs/category" },
+          "affected_files": { "type": "array", "items": { "$ref": "#/$defs/file_range" } },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "model_used of every lane that reported this finding. Drives vote abstention."
+          },
+          "agreement_count": { "type": "integer", "minimum": 1 },
+          "evidence": { "type": "string" },
+          "risk": { "type": "string" },
+          "suggested_fix": { "type": "string" },
+          "suggested_tests": { "type": "string" },
+          "status": { "$ref": "#/$defs/status" }
+        }
+      }
+    },
+    "common_themes": { "type": "string" },
+    "disagreements": { "type": "string" }
+  },
+  "$defs": {
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "status"],
+      "properties": {
+        "statement": { "type": "string" },
+        "status": { "type": "string", "enum": ["confirmed", "inferred"] }
+      }
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "kind", "vendor", "model_requested", "model_used", "stand_in", "status", "findings_count"],
+      "properties": {
+        "label": { "type": "string" },
+        "kind": { "type": "string", "enum": ["host-native", "codex", "claude"] },
+        "vendor": { "type": "string" },
+        "model_requested": { "type": "string" },
+        "model_used": { "type": "string" },
+        "stand_in": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": ["complete", "unavailable", "timeout", "invocation_error", "schema_invalid", "scope_mismatch"]
+        },
+        "findings_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "file_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "line_start", "line_end"],
+      "properties": {
+        "path": { "type": "string" },
+        "line_start": { "type": "integer", "minimum": 0 },
+        "line_end": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "note"] },
+    "category": { "type": "string", "enum": ["correctness", "security", "tests", "maintainability", "intent_mismatch"] },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "approved_for_fix",
+        "fixed",
+        "partially_fixed",
+        "wont_fix",
+        "risk_accepted",
+        "verified",
+        "verification_failed",
+        "test_blocked"
+      ]
+    }
+  }
+}

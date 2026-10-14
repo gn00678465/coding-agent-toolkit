@@ -1,0 +1,103 @@
+{
+  "description": "One voter's votes on every summary.json finding. Strict-mode friendly like lane-review.schema.json. The voter copies lane and scope_sha256 from the brief; the host overwrites lane.model_used, lane.stand_in and lane.status after the run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scope_sha256",
+    "lane",
+    "votes",
+    "voter_notes"
+  ],
+  "properties": {
+    "scope_sha256": {
+      "type": "string"
+    },
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "kind",
+        "vendor",
+        "model_requested",
+        "model_used",
+        "stand_in",
+        "status"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "host-native",
+            "codex",
+            "claude"
+          ]
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "model_requested": {
+          "type": "string"
+        },
+        "model_used": {
+          "type": "string"
+        },
+        "stand_in": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "unavailable",
+            "timeout",
+            "invocation_error",
+            "schema_invalid",
+            "scope_mismatch"
+          ]
+        }
+      }
+    },
+    "votes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "vote",
+          "evidence",
+          "notes"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "description": "RF id from summary.json."
+          },
+          "vote": {
+            "type": "string",
+            "enum": [
+              "confirm",
+              "dispute",
+              "unsure",
+              "abstain"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "description": "Code or diff evidence. Required for confirm and dispute; empty for abstain."
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "voter_notes": {
+      "type": "string"
+    }
+  }
+}

@@ -46,56 +46,71 @@ verification, and status tracking.
 
 ### What It Does
 
-- Reviews local changes, branches, PRs, or commit ranges.
-- Synthesizes multiple review perspectives into one fix checklist.
-- Cross-votes findings between models to separate real issues from false positives.
-- Ranks the final report by severity and weighted vote confidence.
-- Uses checkboxes as the human approval boundary for fixes.
-- Fixes only approved items.
+- Freezes one review scope and one stated intent, so every reviewer reviews the same change.
+- Fans review and voting out to several models, including other vendors' models
+  through the Codex CLI (`codex exec`) and the Claude Code CLI (`claude -p`).
+- Collects every reviewer's output as JSON that matches a schema in
+  `skills/review-forge/assets/schemas/`.
+- Synthesizes the findings into one fix checklist, cross-votes them, and buckets
+  the final report into Act On, Consider, Noted, Dismissed, and Unvoted, with an
+  agreement map across models and vendors.
+- Uses checkboxes as the human approval boundary for fixes, and fixes only approved items.
 - Requires tests after fixes unless testing is blocked and documented.
 - Verifies fixes independently when possible.
 - Keeps process artifacts isolated under `.review/`.
 
 ### Commands
 
-- `review`: create one model-specific review file.
-- `synthesize`: merge review files in one feature folder into `summary.md`.
-- `vote`: one model votes confirm/dispute/unsure on `summary.md` findings it did not originate, into `<model>-vote.md`.
-- `report`: aggregate votes into a confidence-ranked `final-report.md`.
+- `scope`: freeze the target diff, context files, and intent into `scope.json` and `scope.patch`.
+- `review`: one review artifact per lane, `<model>.json`.
+- `synthesize`: merge the review artifacts into `summary.json` and `summary.md`.
+- `vote`: one vote artifact per lane, `<model>-vote.json`; each model abstains on findings it originated.
+- `report`: aggregate votes into `final-report.json` and `final-report.md`.
 - `fix`: fix checked items, run tests, and update status.
 - `verify`: verify fixed items, inspect or rerun tests, and update status.
+
+### Lanes
+
+A lane is one reviewer: `host:<model>` (a subagent of the host's own vendor),
+`codex:<model>` (Codex CLI), or `claude:<model>` (Claude Code CLI). Pass them as
+`lanes` as `<kind>:<model>@<effort>`, for example
+`lanes: host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh` (the default when you
+ask for a multi-model review without naming lanes). A lane whose
+CLI is missing or logged out is recorded as `unavailable` instead of being
+silently replaced. See `skills/review-forge/references/lanes.md`.
 
 ### Workflow
 
 ```mermaid
 flowchart TD
-    subgraph collect["① Review — 多模型獨立審查（不動產品碼）"]
+    SCOPE["⓪ scope<br/>鎖定 diff・context files・intent<br/>→ scope.json + scope.patch"] --> INTENT{{"intent 不明確？<br/>先問使用者"}}
+    INTENT --> collect
+
+    subgraph collect["① Review — 每條 lane 獨立審查同一份 scope（不動產品碼）"]
         direction LR
-        R1["review (gpt-5.5)<br/>→ gpt-5.5.md"]
-        R2["review (opus-4.6)<br/>→ opus-4.6.md"]
-        R3["review (gemini-3.5)<br/>→ gemini-3.5.md"]
+        R1["host:claude-opus-5-5@xhigh<br/>→ claude-opus-5-5.json"]
+        R3["codex:gpt-6.1-sol@xhigh<br/>→ gpt-6.1-sol.json"]
     end
 
-    collect --> SYN["② synthesize<br/>合併去重・保留分歧・記 sources/agreement<br/>→ summary.md（checkbox 全未勾）"]
+    collect --> SYN["② synthesize<br/>只收 scope_sha256 相符的 review・合併去重・記 sources<br/>→ summary.json + summary.md（checkbox 全未勾）"]
 
     SYN --> VOTE_Q{"要走投票流程？"}
 
-    subgraph vote_phase["③ Vote — 各模型對每個 finding 投票，自家 finding 投 abstain（獨立、不看他人票）"]
+    subgraph vote_phase["③ Vote — 每條 lane 對每個 finding 投票，自家 finding 投 abstain"]
         direction LR
-        V1["vote (gpt-5.5)<br/>→ gpt-5.5-vote.md"]
-        V2["vote (opus-4.6)<br/>→ opus-4.6-vote.md"]
-        V3["vote (gemini-3.5)<br/>→ gemini-3.5-vote.md"]
+        V1["→ claude-opus-5-5-vote.json"]
+        V3["→ gpt-6.1-sol-vote.json"]
     end
 
     VOTE_Q -- "是" --> vote_phase
-    vote_phase --> RPT["④ report<br/>confidence = (confirm + 0.5×unsure) ÷ 非棄權權重<br/>severity → confidence 排序<br/>→ final-report.md（checkbox 仍未勾）"]
+    vote_phase --> RPT["④ report<br/>confidence = (confirm + 0.5×unsure) ÷ 非棄權權重<br/>分類 Act On / Consider / Noted / Dismissed / Unvoted + Agreement Map<br/>→ final-report.json + final-report.md（checkbox 仍未勾）"]
 
     RPT --> HUMAN
     VOTE_Q -- "否（直接人工裁決）" --> HUMAN
 
-    HUMAN{{"⑤ 人工勾選<br/>checked = 核可修復<br/>（投票永遠不授權修復）"}}
+    HUMAN{{"⑤ 人工勾選<br/>checked = 核可修復<br/>（投票與分類永遠不授權修復）"}}
 
-    HUMAN --> FIX["⑥ fix<br/>讀 final-report.md（無則 summary.md）<br/>只修勾選項 → fix-plan.md<br/>改碼後跑測試 → status.md"]
+    HUMAN --> FIX["⑥ fix<br/>讀 final-report.md（無則 summary.md）的勾選項<br/>只修勾選項 → fix-plan.md<br/>改碼後跑測試 → status.md"]
 
     FIX --> TEST{"測試結果？"}
     TEST -- "通過" --> FIXED["status: fixed ✅"]
@@ -110,22 +125,23 @@ flowchart TD
     HUMAN -. "未勾選項" .-> OPEN["維持 open / wont_fix /<br/>risk_accepted（記錄裁決傾向）"]
 
     style HUMAN fill:#fff3cd,stroke:#b8860b
+    style INTENT fill:#fff3cd,stroke:#b8860b
     style FIXED fill:#d4edda,stroke:#2e7d32
     style FAILED fill:#f8d7da,stroke:#c62828
 ```
 
 ### Default Review Scope
 
-When no target or base is specified:
+When no target or base is specified, `scope` uses the first rule that applies:
 
-1. If there are uncommitted or staged changes, Review Forge reviews the working
-   tree diff.
-2. If the working tree is clean, it reviews `main...HEAD`.
-3. If `main` does not exist, it tries `master...HEAD`.
-4. If no reasonable base can be inferred, it asks for one.
+1. Files, a diff, a PR, a branch, a commit range, or a base ref the user named.
+2. Recent work the user's message refers to.
+3. Uncommitted or staged changes: the working tree diff.
+4. Otherwise `main...HEAD`, then `master...HEAD`, then the tracking or PR base.
+5. If no reasonable base can be inferred, it asks for one.
 
-Explicit PRs, branches, commit ranges, or base refs always override these
-defaults.
+It also lists the context files reviewers need, and states the change's intent
+in one paragraph, asking the user when the intent is unclear.
 
 ### Artifacts
 
@@ -133,39 +149,26 @@ Review Forge groups workflow files by feature under `.review/`:
 
 ```text
 .review/<feature>/
-  opus-4.6.md
-  gpt-5.5.md
-  gemini-3.5.md
-  summary.md
-  opus-4.6-vote.md
-  gpt-5.5-vote.md
-  gemini-3.5-vote.md
-  final-report.md
-  fix-plan.md
-  verify.md
-  status.md
+  scope.json  scope.patch
+  claude-opus-5-5.json  gpt-6.1-sol.json
+  summary.json  summary.md
+  claude-opus-5-5-vote.json  gpt-6.1-sol-vote.json
+  final-report.json  final-report.md
+  fix-plan.md  verify.md  status.md
+  .lanes/<label>/
 ```
 
-Each model review should produce one file named after the model or agent. If
-the same model runs multiple perspectives, use a suffix such as
-`gpt-5.5-security.md`.
-
-Command outputs are intentionally simple:
-
-- `review` creates one model review file only, for example `gpt-5.5.md`.
-- `synthesize` creates `summary.md` only.
-- `vote` creates one vote file only, for example `gpt-5.5-vote.md`.
-- `report` creates `final-report.md` only.
-- `fix` reads `final-report.md` when present (otherwise `summary.md`), then
-  creates or updates `fix-plan.md` and `status.md`.
-- `verify` creates or updates `verify.md` and `status.md`.
+JSON files are the record and validate against
+`skills/review-forge/assets/schemas/` (`python3 -I skills/review-forge/scripts/validate.py <schema> <file>`).
+`summary.md` and `final-report.md` are rendered from them, and their checkboxes
+are the only approval record.
 
 Add `.review/` to the target repository's `.gitignore` unless you
 intentionally want to commit review process files.
 
 ### Language Policy
 
-The skill instructions, template field names, and machine-readable status enums
+The skill instructions, schema field names, and machine-readable enums
 are in English. Generated reports can use `report_language: auto` to follow the
 user's prompt language, or explicit values such as `en`, `zh-TW`, or `ja`.
 
@@ -174,11 +177,11 @@ Status values remain stable English enums, while display labels may be localized
 ### Example Prompts
 
 ```text
-Use /review-forge review feature: checkout-refactor model: codex.
+Use /review-forge review feature: checkout-refactor lanes: host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh.
 ```
 
 ```text
-Use /review-forge review feature: checkout-refactor model: opencode perspective: security.
+Use /review-forge review feature: checkout-refactor model: gpt-6.1-sol perspective: security.
 ```
 
 ```text
@@ -186,11 +189,11 @@ Use /review-forge synthesize feature: checkout-refactor.
 ```
 
 ```text
-Use /review-forge vote feature: checkout-refactor model: gpt-5.5.
+Use /review-forge vote feature: checkout-refactor lanes: host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh.
 ```
 
 ```text
-Use /review-forge report feature: checkout-refactor model_weights: gpt-5.5: 1.5.
+Use /review-forge report feature: checkout-refactor model_weights: gpt-6.1-sol: 1.5.
 ```
 
 ```text
