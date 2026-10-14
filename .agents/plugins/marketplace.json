@@ -87,8 +87,8 @@
       "source": {
         "source": "url",
         "url": "Leonxlnx/taste-skill",
-        "ref": "d237dd399d57524945c0c81327da5da19f7a468d",
-        "sha": "d237dd399d57524945c0c81327da5da19f7a468d",
+        "ref": "f624f37a8c650b9cc550253104925efe4c8de246",
+        "sha": "f624f37a8c650b9cc550253104925efe4c8de246",
         "tag_pattern": "v{version}"
       },
       "policy": {
@@ -149,8 +149,8 @@
         "source": "git-subdir",
         "url": "tt-a1i/archify",
         "path": "archify",
-        "ref": "2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c",
-        "sha": "2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c",
+        "ref": "1c2b42d660e4a7571813fb43839c79e3e9ca7720",
+        "sha": "1c2b42d660e4a7571813fb43839c79e3e9ca7720",
         "tag_pattern": "v{version}"
       },
       "policy": {
@@ -180,8 +180,8 @@
         "source": "git-subdir",
         "url": "cursor/plugins",
         "path": "pstack",
-        "ref": "08bd59b37834550f5e8fa0bb5e8852204a7534cf",
-        "sha": "08bd59b37834550f5e8fa0bb5e8852204a7534cf",
+        "ref": "1e5c90a4b6f249917bd21fe361b3a2a7deb741b8",
+        "sha": "1e5c90a4b6f249917bd21fe361b3a2a7deb741b8",
         "tag_pattern": "v{version}"
       },
       "policy": {
