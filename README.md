@@ -40,6 +40,8 @@
 
 需要先在 Settings → Actions → General 開啟「Allow GitHub Actions to create and approve pull requests」。也可以在 Actions 頁面手動執行，勾選 `dry_run` 只看差異、不建立 PR。授權欄位是依舊的鎖定 commit 查得的，套件更新後請留意上游是否變更授權。
 
+`apm-go` 的版本固定在 workflow 的 `APM_GO_VERSION`，安裝腳本與 binary 都從同一個 tag 下載，上游發布新版不會影響排程。要升級時修改 `APM_GO_VERSION`，合併後手動以 `dry_run` 執行一次，確認 `marketplace.json` 的差異只有套件更新、沒有格式變動。
+
 ### 授權說明
 
 授權欄位為各套件在本專案鎖定的 commit sha 上實際查得的授權，皆與本專案的 MIT 相容。本專案不散布這些套件的程式碼，marketplace 僅保存 URL 與 commit sha 指標，安裝時由使用者端自 upstream 取得，因此授權義務適用於使用者本地的副本。
