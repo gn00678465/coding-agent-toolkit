@@ -44,7 +44,8 @@ jobs:
 
       - name: Install apm-go
         run: |
-          curl -fsSL https://raw.githubusercontent.com/gn00678465/apm-go/main/install.sh | sh
+          # Script and binary both come from the pinned tag, so an apm-go release changes nothing here until APM_GO_VERSION is bumped.
+          curl -fsSL "https://raw.githubusercontent.com/gn00678465/apm-go/v${APM_GO_VERSION}/install.sh" | sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Check
