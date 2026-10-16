@@ -46,13 +46,13 @@
     },
     {
       "name": "impeccable",
-      "version": "4.5.2",
+      "version": "4.6.0",
       "category": "design",
       "source": {
         "source": "url",
         "url": "https://github.com/pbakaus/impeccable",
-        "ref": "d631a8827f99414d2b6daba4ef08b7f8701751d7",
-        "sha": "d631a8827f99414d2b6daba4ef08b7f8701751d7",
+        "ref": "8a0e198da34ebc5b936a9d5975fb7a3b1cf353b7",
+        "sha": "8a0e198da34ebc5b936a9d5975fb7a3b1cf353b7",
         "tag_pattern": "skill-v{version}"
       }
     },
