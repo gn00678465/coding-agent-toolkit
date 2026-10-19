@@ -66,13 +66,13 @@ marketplace:
       category: Productivity
     - name: impeccable
       source: https://github.com/pbakaus/impeccable.git
-      ref: 8a0e198da34ebc5b936a9d5975fb7a3b1cf353b7
-      version: 4.6.0
+      ref: aeeb3d8c30b5f95aeeb3e893b0f1a308af8fdb8f
+      version: 4.7.0
       tag_pattern: skill-v{version}
       category: design
     - name: taste-skill
       source: https://github.com/Leonxlnx/taste-skill.git
-      ref: f624f37a8c650b9cc550253104925efe4c8de246
+      ref: b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2
       category: design
     - name: beautify-github-readme
       source: https://github.com/oil-oil/beautify-github-readme.git
@@ -90,8 +90,8 @@ marketplace:
       category: Productivity
     - name: archify
       source: https://github.com/tt-a1i/archify.git
-      ref: 1c2b42d660e4a7571813fb43839c79e3e9ca7720
-      version: 3.1.0
+      ref: 208acba8d412335185b2056fedf54b3405df43fb
+      version: 3.2.0
       subdir: archify
       category: Productivity
     - name: open-steps
@@ -101,6 +101,6 @@ marketplace:
       category: Productivity
     - name: pstack
       source: https://github.com/cursor/plugins.git
-      ref: 0b8e952052d482ee6de06deebf14d590d77b1b34
+      ref: d457567332aa6989e753ea289f30ea2bfbc80bc0
       subdir: pstack
       category: Productivity
