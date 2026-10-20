@@ -87,8 +87,8 @@
       "source": {
         "source": "url",
         "url": "Leonxlnx/taste-skill",
-        "ref": "b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2",
-        "sha": "b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2",
+        "ref": "6010f91a9935f1c167dfc500fb1a475681892e6b",
+        "sha": "6010f91a9935f1c167dfc500fb1a475681892e6b",
         "tag_pattern": "v{version}"
       },
       "policy": {
@@ -180,8 +180,8 @@
         "source": "git-subdir",
         "url": "cursor/plugins",
         "path": "pstack",
-        "ref": "d457567332aa6989e753ea289f30ea2bfbc80bc0",
-        "sha": "d457567332aa6989e753ea289f30ea2bfbc80bc0",
+        "ref": "a66a8931c2dd71f1ed6abf6a52b1898a9f389ae4",
+        "sha": "a66a8931c2dd71f1ed6abf6a52b1898a9f389ae4",
         "tag_pattern": "v{version}"
       },
       "policy": {
