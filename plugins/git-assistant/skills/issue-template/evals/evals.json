@@ -35,7 +35,7 @@
       "id": 6,
       "name": "language-switch-english",
       "prompt": "Please setup GitHub issue templates in English for my open source library. Follow low friction best practices.",
-      "expected_output": "All generated template files (`config.yml`, `1-bug-report.yml`, `2-feature-request.yml`), field labels, descriptions, placeholders, and agent responses must be in English, using the English column from `references/templates.md` (e.g., `Not sure / General` as default area option)."
+      "expected_output": "All generated template files (`config.yml`, `1-bug-report.yml`, `2-feature-request.yml`), field labels, descriptions, placeholders, and agent responses must be in English, using the English column from `references/config.md`, `references/bug-report.md`, and `references/feature-request.md` (e.g., `Not sure / General` as default area option)."
     },
     {
       "id": 7,

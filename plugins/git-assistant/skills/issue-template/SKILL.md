@@ -7,7 +7,7 @@ description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLA
 
 為儲存庫建立兼顧**低填寫摩擦（60 秒原則）**與**結構化自動分流**的 `.github/ISSUE_TEMPLATE/` YAML Issue Forms 套件。
 
-> - 標準 YAML 範本與中英雙語欄位對照見 [`references/templates.md`](references/templates.md)——產製或修改 YAML 檔案時讀取。
+> - 各模板之標準 YAML 範本與中英雙語對照按需讀取：[`references/config.md`](references/config.md)、[`references/bug-report.md`](references/bug-report.md)、[`references/feature-request.md`](references/feature-request.md)、[`references/docs.md`](references/docs.md)、[`references/issue-triage.md`](references/issue-triage.md)。
 > - 大型開源專案實證數據與五大專案（Vite、Next.js、Kubernetes、Astral、VS Code）架構分析見 [`references/issue-forms-guide.md`](references/issue-forms-guide.md)——使用者追問設計依據或需針對特殊專案架構裁切欄位時讀取。
 
 ## 貫穿全程的規則
@@ -47,7 +47,7 @@ description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLA
 
 ### Step 2 — 配置入口分流 `.github/ISSUE_TEMPLATE/config.yml`
 
-設定 `blank_issues_enabled: false` 強制走結構化表單，並依 Step 1 探測結果動態決定 `contact_links`：
+讀取 [`references/config.md`](references/config.md)，設定 `blank_issues_enabled: false` 強制走結構化表單，並依 Step 1 探測結果動態決定 `contact_links`：
 
 - `hasDiscussionsEnabled: true` → 加入 Q&A Discussions 導流連結（`https://github.com/<OWNER>/<REPO>/discussions`）。
 - `isPrivate: false` 或儲存庫存在 `SECURITY.md` → 加入資安漏洞私密通報連結（`https://github.com/<OWNER>/<REPO>/security/advisories/new`）。
@@ -57,12 +57,12 @@ description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLA
 
 ### Step 3 — 產製 YAML Issue Forms
 
-讀取 [`references/templates.md`](references/templates.md)，依目標語言與專案形態於 `.github/ISSUE_TEMPLATE/` 產出：
+依使用者需求與目標專案形態，**僅讀取本次需要產出的模板參考檔**並寫入 `.github/ISSUE_TEMPLATE/`：
 
-1. `1-bug-report.yml`（2 必填：`what-happened`、`repro`；選填：`logs`、`version`、`area`；CLI 專案改用 CLI 內嵌重現結構）
-2. `2-feature-request.yml`（2 必填：`problem`、`proposal`；選填：`alternatives`、`contribution`）
-3. `3-docs.yml`（當使用者要求完整套件或專案包含文件網站時產出；1 必填：`doc-issue`；選填：`suggestion`）
-4. `.github/workflows/issue-triage.yml`（僅在使用者要求自動標籤分流工作流時產出）
+1. `1-bug-report.yml` → 讀取 [`references/bug-report.md`](references/bug-report.md)（通用版或 CLI 內嵌重現版）
+2. `2-feature-request.yml` → 讀取 [`references/feature-request.md`](references/feature-request.md)
+3. `3-docs.yml`（當使用者要求完整套件或專案包含文件網站時產出）→ 讀取 [`references/docs.md`](references/docs.md)
+4. `.github/workflows/issue-triage.yml`（僅在使用者要求自動標籤分流工作流時產出）→ 讀取 [`references/issue-triage.md`](references/issue-triage.md)
 
 **標籤與儲存庫權限處置**：
 
