@@ -1,0 +1,67 @@
+name: 🐛 錯誤回報 (Bug Report)
+description: 回報插件、Skill 觸發、腳本執行或 Marketplace 安裝的非預期行為（僅需填寫 2 項核心資訊）
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 💡 **快速提示**：為節省寶貴時間，本表單僅要求填寫 **2 個必填欄位**。送出前請先透過上方搜尋欄確認是否已有相同回報。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 問題現象與預期行為 (What happened & Expected behavior)
+      description: 請簡述實際發生的錯誤現象，以及原本預期應該出現的正確行為（可直接貼上截圖）。
+      placeholder: |
+        實際現象：執行 `/git-assistant:pull-request` 時，腳本在偵測預設分支階段報錯中斷。
+        預期行為：應正常透過 `gh repo view` 取得預設分支並產出 PR 描述。
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: 最小重現方式 (Minimal Reproduction)
+      description: 請提供以下任一方式協助重現：(1) 觸發問題的 Prompt 或指令、(2) 簡要操作步驟 1-2-3、或 (3) 最小重現環境說明。
+      placeholder: |
+        1. 於 Claude Code 安裝 `git-assistant@coding-agent-toolkit`
+        2. 輸入 Prompt：「幫我建立 PR」
+        3. 觀察終端機或工具呼叫錯誤輸出
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 錯誤輸出與堆疊日誌 (Error Output / Stack Trace)
+      description: 若有終端機、Hook 或 CLI 錯誤訊息，請直接貼上（系統將自動包裹代碼區塊，無須手動加反引號）。
+      placeholder: 請貼上錯誤訊息或 Stack Trace...
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: 執行環境與插件版本 (Environment & Plugin Version)
+      description: 請填入使用的 Agent 平台（Claude Code / Codex / OpenCode）、插件版本與作業系統。
+      placeholder: "例如：Claude Code 2.1 / git-assistant 0.1.6 / Windows 11 (pwsh 7.4)"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 受影響的插件或模組 (Affected Plugin / Area)
+      description: 若知道問題所屬的插件請協助選擇；若不確定請保留預設值。
+      options:
+        - 不確定 / 通用 (Not sure)
+        - git-assistant (pull-request / issue-template)
+        - advisor (orchestration / implementers)
+        - code-review (review-forge / verification-gate)
+        - slim-agents-md
+        - Marketplace 與上游同步 (apm.yml / workflows)
+      default: 0
+    validations:
+      required: false

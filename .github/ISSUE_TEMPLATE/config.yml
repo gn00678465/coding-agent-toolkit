@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 資安漏洞私密通報 (Security Vulnerability)
+    url: https://github.com/gn00678465/coding-agent-toolkit/security/advisories/new
+    about: 若發現潛在的資安風險（如腳本注入、憑證洩漏等），請透過私密管道通報，請勿於公開 Issue 中揭露漏洞細節。

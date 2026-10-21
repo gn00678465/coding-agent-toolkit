@@ -1,0 +1,47 @@
+{
+  "skill_name": "issue-template",
+  "evals": [
+    {
+      "id": 1,
+      "name": "setup-standard-suite-with-preflight",
+      "prompt": "幫我的開源專案設定 GitHub Issue 模板。希望能降低填寫負擔，包含 Bug 回報、新功能提案與入口分流。（此 repo 尚未開啟 GitHub Discussions，且只有預設的 9 個 GitHub 標籤）",
+      "expected_output": "應先執行 `gh repo view --json nameWithOwner,hasDiscussionsEnabled,isPrivate,url` 與 `gh label list`。因 `hasDiscussionsEnabled: false`，`config.yml` 不得寫入 `/discussions` 死鏈（僅保留 `security/advisories/new` 或省略無效連結）；`1-bug-report.yml` 與 `2-feature-request.yml` 各自必填欄位 ≤ 2，頂層 `labels` 預設僅使用已存在的 `bug`、`enhancement`（或提示以 `gh label create` 建立新標籤），且 `what-happened`/`repro` 不得設定 `render` 以保留截圖上傳功能。"
+    },
+    {
+      "id": 2,
+      "name": "cli-tool-custom-forms",
+      "prompt": "我們是一個 Rust 打造的命令列工具（CLI，設定檔為 Cargo.toml），使用者常遇到參數解析與設定檔問題。請幫我們建立適合 CLI 工具特性的 Bug 回報表單。",
+      "expected_output": "應採用 CLI 內嵌重現範本（類似 Astral ruff/uv），必填僅 `what-happened` 與 `repro`，選填包含 `logs`（`render: text`）、`config-file`（依 Rust 生態系設為 `render: toml`）與 `version`，不強迫使用者建立外部沙盒或 GitHub repo，並通過 Step 4 Schema 驗證腳本。"
+    },
+    {
+      "id": 3,
+      "name": "web-frontend-forms-with-area",
+      "prompt": "我們是 Vue/React 前端 UI 函式庫，請建立 Bug 回報表單，並在模組區域加入：路由、狀態管理、元件庫、建置工具。記得避免使用者卡關。",
+      "expected_output": "Bug 模板應於 `repro` 提示支援線上沙盒（StackBlitz/CodeSandbox）或最小重現步驟；`area` dropdown 首項（`default: 0`）必須為「不確定 / 通用 (Not sure)」，且 `options` 嚴禁出現保留字 `None`。"
+    },
+    {
+      "id": 4,
+      "name": "migrate-markdown-to-yaml",
+      "prompt": "我們 repo 原本只有一個根目錄的 ISSUE_TEMPLATE.md，大家填得亂七八糟。請幫我們重構遷移成現代的 YAML Issue Forms。",
+      "expected_output": "應建立 `.github/ISSUE_TEMPLATE/` 目錄並產出 `config.yml`（`blank_issues_enabled: false`）、`1-bug-report.yml`、`2-feature-request.yml`，提示移除舊的 `ISSUE_TEMPLATE.md` 以避免新舊模板並存，並執行 Step 4 YAML Schema 驗證。"
+    },
+    {
+      "id": 5,
+      "name": "anti-trap-schema-gate",
+      "prompt": "檢查我們專案準備提交的 YAML Issue Forms 是否有語法或 GitHub 平台陷阱：其中包含頂層 `---` 分隔線、`projects: [\"org/1\"]`、`what-happened` 設了 `render: markdown`、以及 dropdown 含 `None`。",
+      "expected_output": "應攔截並修正全部四項缺陷：(1) 移除 `---` frontmatter 分隔線；(2) 移除頂層 `projects`（外部提單者無寫入權限會靜默失敗）；(3) 移除 `what-happened` 的 `render`（會阻擋圖片與附件拖曳上傳）；(4) 將 dropdown 的 `None` 改為 `不確定 / 通用 (Not sure)`。"
+    },
+    {
+      "id": 6,
+      "name": "language-switch-english",
+      "prompt": "Please setup GitHub issue templates in English for my open source library. Follow low friction best practices.",
+      "expected_output": "All generated template files (`config.yml`, `1-bug-report.yml`, `2-feature-request.yml`), field labels, descriptions, placeholders, and agent responses must be in English, using the English column from `references/config.md`, `references/bug-report.md`, and `references/feature-request.md` (e.g., `Not sure / General` as default area option)."
+    },
+    {
+      "id": 7,
+      "name": "reject-single-issue-creation",
+      "prompt": "幫我在這個 repo 開一個新 issue，標題是登入頁面按鈕沒反應。",
+      "expected_output": "不應建立或修改 `.github/ISSUE_TEMPLATE/`。應說明本 skill 用於配置儲存庫的 Issue 模板（YAML Issue Forms），而非開啟單一 Issue，並改以 `gh issue create` 協助使用者或詢問是否直接開單。"
+    }
+  ]
+}

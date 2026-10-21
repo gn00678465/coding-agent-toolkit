@@ -1,0 +1,25 @@
+name: 📖 文件缺漏與修正 (Documentation)
+description: 回報 README、SKILL.md、研究筆記或安裝說明的錯誤或不清楚之處
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 💡 **快速提示**：若為單純的錯別字或小段範例更新，非常歡迎直接提交 Pull Request！
+
+  - type: textarea
+    id: doc-issue
+    attributes:
+      label: 文件問題描述 (Issue Description)
+      description: 請說明哪一份文件（如 `README.md`、特定插件之 `SKILL.md` 或 `references/`）有錯誤、過時或容易造成誤導之處。
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 建議修正內容 (Suggested Improvement)
+      description: 請提供您認為更正確、更清楚的說明或範例指令。
+    validations:
+      required: false
