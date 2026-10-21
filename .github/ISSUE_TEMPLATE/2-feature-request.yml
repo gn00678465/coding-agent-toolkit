@@ -1,0 +1,50 @@
+name: ✨ 功能與強化提案 (Feature Request)
+description: 提出新插件、Skill 流程改良、外部套件收錄或跨平台支援建議
+title: "[Feat]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 💡 **快速提示**：優秀的功能提案始於清楚的「使用痛點」。若已有類似提案，對該 Issue 按下 👍 (Upvote) 比重複開單更能加速排程！
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 使用情境與目前痛點 (Use Case & Current Friction)
+      description: 請說明這項功能是為了解決什麼實際開發工作流的問題？目前的限制或痛點為何？
+      placeholder: "目前在執行多模型審查時，無法指定排除特定自動生成的目錄，導致 token 消耗過高..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的解決方案或設計 (Proposed Solution)
+      description: 希望新增什麼樣的 Skill、子命令、設定選項，或建議收錄哪一個外部套件？
+      placeholder: |
+        希望能於 `review-forge` 的 `scope` 階段支援讀取 `.reviewignore` 或命令列排除參數。
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 替代方案與現有解法 (Alternatives & Workarounds)
+      description: 目前是否有暫時的繞道解法（Workaround）？其他類似插件或工具有無可參考的設計？
+      placeholder: "目前暫時手動修改 scope.md 清單；可參考某專案的實作方式..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: 貢獻意願 (Willingness to Contribute)
+      description: 若維護團隊認可此提案方向，是否有意願協助提交 Pull Request 實作？
+      options:
+        - 需要維護團隊或社群協助實作
+        - 願意在維護者指引下嘗試提交 PR
+        - 已準備好實作並可立即提交 PR
+      default: 0
+    validations:
+      required: false
