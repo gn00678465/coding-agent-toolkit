@@ -42,6 +42,12 @@
       "name": "reject-single-issue-creation",
       "prompt": "幫我在這個 repo 開一個新 issue，標題是登入頁面按鈕沒反應。",
       "expected_output": "不應建立或修改 `.github/ISSUE_TEMPLATE/`。應說明本 skill 用於配置儲存庫的 Issue 模板（YAML Issue Forms），而非開啟單一 Issue，並改以 `gh issue create` 協助使用者或詢問是否直接開單。"
+    },
+    {
+      "id": 8,
+      "name": "task-template-for-chore-tracking",
+      "prompt": "我們團隊常需要追蹤內部重構與發佈檢查清單，請幫我們新增一個 Task 模板。（此 repo 只有 GitHub 預設的 9 個標籤）",
+      "expected_output": "應讀取 `references/task.md` 產出 `.github/ISSUE_TEMPLATE/4-task.yml`：必填僅 `goal` 與 `acceptance-criteria`（≤ 2），選填 `notes`，`goal`/`acceptance-criteria` 不得設定 `render`；因 repo 無 `chore`/`task` 標籤，頂層 `labels` 應省略或提示先以 `gh label create chore --color FEF2C0` 建立，不得寫入不存在的標籤；並通過 Step 4 Schema 驗證。"
     }
   ]
 }

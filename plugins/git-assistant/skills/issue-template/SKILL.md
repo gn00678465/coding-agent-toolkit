@@ -1,20 +1,20 @@
 ---
 name: issue-template
-description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLATE/*.yml YAML Issue Forms 與 config.yml 入口分流）。觸發情境：(1) 為專案新增或重構 Bug Report、Feature Request、Documentation 等 Issue 表單；(2) 將舊版 ISSUE_TEMPLATE.md 遷移為結構化 YAML Issue Forms；(3) 配置 config.yml 關閉空白 Issue 並導流 Q&A／資安通報；(4) 優化既有表單以降低回報放棄率或檢核 GitHub Form Schema 陷阱。支援繁體中文與英文切換。不適用於開啟、編輯、查詢或關閉單一 GitHub Issue（如 gh issue create / view / edit）或撰寫 Pull Request 模板。
+description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLATE/*.yml YAML Issue Forms 與 config.yml 入口分流）。觸發情境：(1) 為專案新增或重構 Bug Report、Feature Request、Documentation、Task 等 Issue 表單；(2) 將舊版 ISSUE_TEMPLATE.md 遷移為結構化 YAML Issue Forms；(3) 配置 config.yml 關閉空白 Issue 並導流 Q&A／資安通報；(4) 優化既有表單以降低回報放棄率或檢核 GitHub Form Schema 陷阱。支援繁體中文與英文切換。不適用於開啟、編輯、查詢或關閉單一 GitHub Issue（如 gh issue create / view / edit）或撰寫 Pull Request 模板。
 ---
 
 # GitHub Issue 模板與分流配置
 
 為儲存庫建立兼顧**低填寫摩擦（60 秒原則）**與**結構化自動分流**的 `.github/ISSUE_TEMPLATE/` YAML Issue Forms 套件。
 
-> - 各模板之標準 YAML 範本與中英雙語對照按需讀取：[`references/config.md`](references/config.md)、[`references/bug-report.md`](references/bug-report.md)、[`references/feature-request.md`](references/feature-request.md)、[`references/docs.md`](references/docs.md)、[`references/issue-triage.md`](references/issue-triage.md)。
+> - 各模板之標準 YAML 範本與中英雙語對照按需讀取：[`references/config.md`](references/config.md)、[`references/bug-report.md`](references/bug-report.md)、[`references/feature-request.md`](references/feature-request.md)、[`references/docs.md`](references/docs.md)、[`references/task.md`](references/task.md)、[`references/issue-triage.md`](references/issue-triage.md)。
 > - 大型開源專案實證數據與五大專案（Vite、Next.js、Kubernetes、Astral、VS Code）架構分析見 [`references/issue-forms-guide.md`](references/issue-forms-guide.md)——使用者追問設計依據或需針對特殊專案架構裁切欄位時讀取。
 
 ## 貫穿全程的規則
 
 - **語言切換**：使用者訊息含 `english`、`in English`、`用英文`、`英文`、`用英語`、`以英文` 任一字詞時，全程（含產出的 YAML `name`、`description`、`label`、`placeholder`、`options` 與對話回覆）使用英文；否則預設使用**繁體中文 (zh-TW)**。
 - **2 必填預算制**：每張表單中 `validations.required: true` 的欄位數量**上限為 2 個**。Bug 表單必須將「實際現象」與「預期行為」合併為單一 `what-happened` 欄位，不得拆分為兩個獨立必填框。
-- **敘述欄位禁設 `render`**：GitHub Issue Forms 的 `textarea` 一旦加上 `render`，前端會轉為純程式碼區塊並**停用圖片貼上與檔案拖放上傳**。`what-happened`、`repro`、`problem`、`proposal` 嚴禁設定 `render`；僅對純文字日誌（`logs`）或設定檔片段（`config-file`）啟用 `render`。
+- **敘述欄位禁設 `render`**：GitHub Issue Forms 的 `textarea` 一旦加上 `render`，前端會轉為純程式碼區塊並**停用圖片貼上與檔案拖放上傳**。`what-happened`、`repro`、`problem`、`proposal`、`doc-issue`、`goal`、`acceptance-criteria` 嚴禁設定 `render`；僅對純文字日誌（`logs`）或設定檔片段（`config-file`）啟用 `render`。
 - **禁設儀式性核取方塊牆**：不得在表單底部放置「已搜尋重複 Issue」「已閱讀文件」等強制勾選的 `checkboxes`。填表提示一律放在表單頂部的單一 `type: markdown` 區塊（送出後不會渲染至 Issue 內文）。
 - **分類選單必含逃生口**：所有子系統或模組 `dropdown` 的首項（`default: 0`）必須為 `不確定 / 通用 (Not sure)`（英文：`Not sure / General`），且 `options` **嚴禁包含保留字 `None`**。
 - **禁止硬編 `projects` 與 `---` 分隔線**：公開模板頂層不得設定 `projects`（無 Project 寫入權限的開單者會靜默失敗）；YAML Issue Forms 不得使用 Markdown Frontmatter 的 `---` 文件分隔線。
@@ -61,8 +61,9 @@ description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLA
 
 1. `1-bug-report.yml` → 讀取 [`references/bug-report.md`](references/bug-report.md)（通用版或 CLI 內嵌重現版）
 2. `2-feature-request.yml` → 讀取 [`references/feature-request.md`](references/feature-request.md)
-3. `3-docs.yml`（當使用者要求完整套件或專案包含文件網站時產出）→ 讀取 [`references/docs.md`](references/docs.md)
-4. `.github/workflows/issue-triage.yml`（僅在使用者要求自動標籤分流工作流時產出）→ 讀取 [`references/issue-triage.md`](references/issue-triage.md)
+3. `3-docs.yml`（文件缺漏與修正）→ 讀取 [`references/docs.md`](references/docs.md)
+4. `4-task.yml`（工程任務、技術債重構與維護清單）→ 讀取 [`references/task.md`](references/task.md)
+5. `.github/workflows/issue-triage.yml`（僅在使用者要求自動標籤分流工作流時產出）→ 讀取 [`references/issue-triage.md`](references/issue-triage.md)
 
 **標籤與儲存庫權限處置**：
 
@@ -116,7 +117,7 @@ for path in files:
         lbl = attrs.get('label', '')
         assert lbl and lbl not in labels, f'{path}: duplicate or missing label {lbl}'
         labels.add(lbl)
-        if el_id in ('what-happened', 'repro', 'problem', 'proposal'):
+        if el_id in ('what-happened', 'repro', 'problem', 'proposal', 'doc-issue', 'goal', 'acceptance-criteria'):
             assert 'render' not in attrs, f'{path}: {el_id} must not set render (blocks image/file upload)'
         if item.get('validations', {}).get('required') is True:
             req_count += 1
