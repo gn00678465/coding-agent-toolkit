@@ -2,11 +2,11 @@
 
 目標路徑：`.github/ISSUE_TEMPLATE/4-task.yml`
 
-> 頂層 `labels`：GitHub 預設 9 個標籤（`bug`、`documentation`、`duplicate`、`enhancement`、`good first issue`、`help wanted`、`invalid`、`question`、`wontfix`）不含 `chore`／`task`，依 Step 1 的 `gh label list` 結果處理：
+> 頂層 `labels`：GitHub 預設 9 個標籤（`bug`、`documentation`、`duplicate`、`enhancement`、`good first issue`、`help wanted`、`invalid`、`question`、`wontfix`）不含 `chore`／`task`，依 Step 1 取得的標籤清單處理：
 >
 > - 已存在 `chore` 或 `task` → 直接掛載既有標籤（下方範本以 `chore` 為例）。
-> - 兩者皆不存在 → 詢問使用者是否建立。同意則先執行 `gh label create chore --color FEF2C0 --description "工程任務、重構與維護"`（或請使用者於 Issues → Labels 手動新增），確認建立後再寫入 `labels: ["chore"]`；不同意則省略 `labels` 鍵。
-> - 未建立就寫入的標籤會被 GitHub 靜默忽略，表單仍可正常開單，但 Issue 不會帶上該標籤。
+> - 兩者皆不存在 → 依 SKILL.md Step 3「標籤存在性核對」處理：詢問使用者是否建立 `chore`（建議顏色 `FEF2C0`、描述「工程任務、重構與維護」）。同意時由 agent 自行建立（`gh label create chore --color FEF2C0 --description "工程任務、重構與維護"` 或可寫入標籤的 GitHub 工具），確認後寫入 `labels: ["chore"]`；agent 無法建立時仍寫入，並請使用者到 `https://github.com/<OWNER>/<REPO>/labels` 於網頁新增。不同意則省略 `labels` 鍵。
+> - 未建立的標籤會被 GitHub 靜默忽略：表單仍可正常開單，只是 Issue 不會帶上該標籤；標籤建立後立即生效。
 
 ---
 

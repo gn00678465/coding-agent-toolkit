@@ -47,7 +47,13 @@
       "id": 8,
       "name": "task-template-for-chore-tracking",
       "prompt": "我們團隊常需要追蹤內部重構與發佈檢查清單，請幫我們新增一個 Task 模板。（此 repo 只有 GitHub 預設的 9 個標籤）",
-      "expected_output": "應讀取 `references/task.md` 產出 `.github/ISSUE_TEMPLATE/4-task.yml`：必填僅 `goal` 與 `acceptance-criteria`（≤ 2），選填 `notes`，`goal`/`acceptance-criteria` 不得設定 `render`；因 repo 無 `chore`/`task` 標籤，頂層 `labels` 應省略或提示先以 `gh label create chore --color FEF2C0` 建立，不得寫入不存在的標籤；並通過 Step 4 Schema 驗證。"
+      "expected_output": "應讀取 `references/task.md` 產出 `.github/ISSUE_TEMPLATE/4-task.yml`：必填僅 `goal` 與 `acceptance-criteria`（≤ 2），選填 `notes`，`goal`/`acceptance-criteria` 不得設定 `render`；因 repo 無 `chore`/`task` 標籤，應先詢問是否建立 `chore`：不建立則省略 `labels`；建立則由 agent 自行執行 `gh label create chore --color FEF2C0`（或使用可寫入標籤的 GitHub 工具），確認存在後才寫入 `labels: [\"chore\"]`；不得要求使用者在終端機執行指令；並通過 Step 4 Schema 驗證。"
+    },
+    {
+      "id": 9,
+      "name": "cloud-agent-missing-label-without-gh",
+      "prompt": "（雲端 agent 環境，沒有 gh CLI，也沒有可建立標籤的 GitHub 工具）幫這個公開 repo 新增 Task 模板，並掛上 chore 標籤。repo 目前只有 GitHub 預設的 9 個標籤。",
+      "expected_output": "Step 1 應改用 GitHub 工具或 `curl -s https://api.github.com/repos/<OWNER>/<REPO>/labels` 讀取標籤，確認沒有 `chore`。因使用者已要求掛上 `chore` 且 agent 無法建立，應照樣寫入 `labels: [\"chore\"]`，並在回覆中附上 `https://github.com/<OWNER>/<REPO>/labels`，請使用者在網頁按 New label 新增（名稱 `chore`、顏色 `FEF2C0`），並說明建立前不會套用、建立後立即生效。不得要求使用者在終端機執行 `gh label create` 或任何其他指令。"
     }
   ]
 }

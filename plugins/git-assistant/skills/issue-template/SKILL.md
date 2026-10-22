@@ -33,6 +33,7 @@ description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLA
    ```
 
    - **降級處理（離線／非 GitHub 遠端／`gh` 未授權）**：若命令失敗，將儲存庫狀態標記為 `unverified`——後續 `config.yml` 不自動填入依賴儲存庫網址的 `contact_links`（或先詢問使用者 `OWNER/REPO`），模板頂層 `labels` 僅使用 GitHub 預設標籤（`bug`、`enhancement`、`documentation`）。
+   - **無 `gh` 的環境（如雲端 agent）**：改用可用的 GitHub 工具（MCP 等）讀取儲存庫資訊與標籤；公開儲存庫亦可用 `curl -s https://api.github.com/repos/<OWNER>/<REPO>/labels` 讀取標籤。仍無法取得時才進入上述降級處理。
 
 2. **盤點既有模板與專案形態**：
    - 檢查 `.github/ISSUE_TEMPLATE/`、`ISSUE_TEMPLATE.md`、`.github/ISSUE_TEMPLATE.md` 是否存在。
@@ -67,10 +68,12 @@ description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLA
 
 **標籤與儲存庫權限處置**：
 
-- **標籤存在性核對**：GitHub Issue Forms 頂層 `labels` 若引用儲存庫尚不存在的標籤（如 `pending-triage`、`needs-discussion`），開單時會被 GitHub **靜默忽略**。對照 Step 1 的 `gh label list`：
+- **標籤存在性核對**：GitHub Issue Forms 頂層 `labels` 若引用儲存庫尚不存在的標籤（如 `pending-triage`、`needs-discussion`），開單時會被 GitHub **靜默忽略**。對照 Step 1 取得的標籤清單：
   - 若目標標籤已存在 → 寫入 `labels`。
-  - 若目標標籤不存在 → 預設只寫入已存在的標籤（如 `["bug"]`、`["enhancement"]`），並提示使用者可選執行 `gh label create pending-triage --color FBCA04`、`gh label create needs-discussion --color D4C5F9` 後再掛上。
-  - 使用者同意建立缺少的標籤（如 Task 表單的 `chore`）→ 先執行 `gh label create` 或請使用者於 Issues → Labels 手動新增，確認存在後才寫入 `labels`。
+  - 若目標標籤不存在（如 `pending-triage`、`needs-discussion`、Task 表單的 `chore`）→ 詢問使用者是否建立：
+    - **不建立** → 只寫入已存在的標籤（如 `["bug"]`、`["enhancement"]`）。
+    - **建立** → 由 agent 自行建立，**不得要求使用者在終端機執行指令**（雲端 agent 的使用者無法操作 agent 的 shell）。`gh` 可用且已授權時執行 `gh label create pending-triage --color FBCA04`、`gh label create needs-discussion --color D4C5F9`；否則改用可寫入標籤的 GitHub 工具。建立後重新讀取標籤清單，確認存在再寫入 `labels`。
+    - **要建立但 agent 無法建立**（無 `gh`、無可寫入標籤的工具或權限不足）→ 照樣寫入 `labels`，並在回覆中附上標籤頁網址 `https://github.com/<OWNER>/<REPO>/labels`，請使用者在網頁按 **New label** 新增，同時給出建議的名稱、顏色與描述。說明建立前開單不會出錯、只是不會帶上該標籤；建立後立即生效，無須再改 YAML。
 - **私有儲存庫注意**：若 `isPrivate: true`，主動告知使用者 GitHub 在 Private / Internal 儲存庫會將 `validations.required: true` 自動降級為選填，屬平台預期行為。
 - **舊版 Markdown 模板清理**：若專案存在舊版 `ISSUE_TEMPLATE.md`，經使用者確認後移除或搬遷，避免新舊模板並存造成入口混亂。
 
