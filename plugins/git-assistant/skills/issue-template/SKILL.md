@@ -48,13 +48,19 @@ description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLA
 
 ### Step 2 — 配置入口分流 `.github/ISSUE_TEMPLATE/config.yml`
 
-讀取 [`references/config.md`](references/config.md)，設定 `blank_issues_enabled: false` 強制走結構化表單，並依 Step 1 探測結果動態決定 `contact_links`：
+讀取 [`references/config.md`](references/config.md)。先依「本次完成後 `.github/ISSUE_TEMPLATE/` 是否有 Bug Report 或 Feature Request 表單（既有或本次產出）」決定 `blank_issues_enabled`：
+
+- **有** → `blank_issues_enabled: false`，強制走結構化表單。
+- **沒有**（例如只新增 Task 或 Documentation 表單）→ `blank_issues_enabled: true`，保留空白 Issue；否則回報 Bug 或提出需求的人只能硬塞進不相符的表單。在回覆中說明：之後補上 Bug／Feature 表單時再改為 `false`。
+- **已存在 `config.yml`** → 保留既有的 `blank_issues_enabled`，只補上缺少的 `contact_links`。若既有值為 `false` 但依上述判斷應為 `true`，在回覆中指出並詢問是否調整，不要自行修改。
+
+接著依 Step 1 探測結果動態決定 `contact_links`：
 
 - `hasDiscussionsEnabled: true` → 加入 Q&A Discussions 導流連結（`https://github.com/<OWNER>/<REPO>/discussions`）。
 - `isPrivate: false` 或儲存庫存在 `SECURITY.md` → 加入資安漏洞私密通報連結（`https://github.com/<OWNER>/<REPO>/security/advisories/new`）。
 - 使用者有指定外部社群（Discord、Slack、Stack Overflow）→ 加入對應連結。
 
-> **Schema 防呆**：未啟用的管道（如 `hasDiscussionsEnabled: false` 時的 `/discussions`）**不得**寫入 `contact_links`，以免產生 404 死鏈；若無任何有效外部連結，**完全省略 `contact_links` 鍵**（GitHub Schema 不允許 `contact_links: []` 空陣列）。
+> **Schema 防呆**：未啟用的管道（如 `hasDiscussionsEnabled: false` 時的 `/discussions`）**不得**寫入 `contact_links`，以免產生 404 死鏈；若無任何有效外部連結，**完全省略 `contact_links` 鍵**（GitHub Schema 不允許 `contact_links: []` 空陣列）。若 `blank_issues_enabled: true` 且沒有任何有效外部連結，`config.yml` 與 GitHub 預設行為相同，**不建立此檔**。
 
 ### Step 3 — 產製 YAML Issue Forms
 
