@@ -2,6 +2,8 @@
 
 本 skill 實際使用的 GitHub CLI 指令模式。所有指令假設已通過 `gh auth status`。
 
+> 沒有 `gh` 的環境（如雲端 agent）改用 GitHub 工具，對照表見 `SKILL.md`「沒有 gh 的環境」章節。
+
 > **編碼鐵律**：含中文的欄位（title / body）一律以檔案輸入給 gh（`--body-file`、`-F key=@file`），**嚴禁** `--body "$(cat file)"` / `-f body="$(cat file)"` 類 shell 展開寫法。檔案必須是 UTF-8 無 BOM。完整背景見 `SKILL.md` 的「編碼規範」章節。
 >
 > **`-f` vs `-F`**：`@file` 讀檔只有 `-F`（`--field`）支援；`-f`（`--raw-field`）是純字串，`-f body=@pr-body.md` 會把字面值 `@pr-body.md` 寫進 PR。檔案用大 F，字面值用小 f。
