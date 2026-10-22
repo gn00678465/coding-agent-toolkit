@@ -72,6 +72,30 @@
       "name": "zhtw-edit-uses-at-file",
       "prompt": "PR #42 已存在，請把描述改成一段繁體中文的變更說明（約 20 行）。",
       "expected_output": "必須使用 `gh api -X PATCH repos/:owner/:repo/pulls/42 -F body=@pr-body.md`（大寫 -F 才會展開 @file；小寫 -f 會把字面值 @pr-body.md 寫進 PR 描述）；不得使用 `-f body=@pr-body.md`、`-f body=\"$(cat pr-body.md)\"` 或在指令列直接內嵌中文字串。更新後應驗證 body 非字面值。完成後刪除 pr-body.md。"
+    },
+    {
+      "id": 13,
+      "name": "create-repo-pr-template",
+      "prompt": "幫這個 repo 建立 PR 模板，之後大家開 PR 都照這個格式。（repo 目前沒有任何 PR 模板）",
+      "expected_output": "應進入建立 PR 模板流程，不得開 PR，也不得 commit 或 push。先檢查 `.github/pull_request_template.md`、根目錄與 `docs/` 的 `pull_request_template.md`、`.github/PULL_REQUEST_TEMPLATE/` 是否存在；皆不存在時，依 `references/repo-pr-template.md` 繁體中文版寫入 `.github/pull_request_template.md`，包含摘要、修改內容、Why、Testing、風險評估、相關連結、變更類型與備註，並以 HTML 註解標示小型 PR 可刪除的選填段落。回覆需說明模板進到預設分支後才生效。"
+    },
+    {
+      "id": 14,
+      "name": "existing-pr-template-no-overwrite",
+      "prompt": "幫我們建立一份 PR 模板。（repo 已有 `.github/PULL_REQUEST_TEMPLATE.md`，內容只有 `## Summary` 與 `## Test plan` 兩段）",
+      "expected_output": "應偵測到既有的 `.github/PULL_REQUEST_TEMPLATE.md`（檔名不分大小寫），不得直接覆蓋或另建第二份預設模板；應列出既有段落與新範本的差異，詢問使用者要覆蓋、合併還是保留，等待回覆前不寫入檔案。"
+    },
+    {
+      "id": 15,
+      "name": "create-pr-without-gh-cli",
+      "prompt": "（雲端 agent 環境：沒有 gh CLI，可使用 GitHub MCP 的 create_pull_request 等工具；分支已推送，工作區乾淨）幫我把目前分支開成 PR。",
+      "expected_output": "應載入本 skill 並照建立 PR 流程執行：以 `git ls-remote --symref origin HEAD` 等方式偵測預設分支，不得執行 `gh`；用 `create_pull_request` 建立草稿 PR（`draft: true`），標題符合 Conventional Commits，描述直接以參數傳入，不建立 `pr-body.md`；建立後讀回 PR 驗證。不得請使用者在終端機執行任何指令。"
+    },
+    {
+      "id": 16,
+      "name": "create-pr-follows-repo-template",
+      "prompt": "建立 PR。（repo 已有 `.github/pull_request_template.md`，段落為 `## Summary`、`## Test plan`、`## Checklist`；本次 1 個 commit、2 個檔案）",
+      "expected_output": "PR 描述應沿用 repo 模板的段落標題與順序（`## Summary`、`## Test plan`、`## Checklist`）並填入內容，不得改用本 skill 的精簡版或完整版段落；標題仍需符合 Conventional Commits。"
     }
   ]
 }
