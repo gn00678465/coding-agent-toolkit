@@ -5,7 +5,7 @@
       "id": 1,
       "name": "setup-standard-suite-with-preflight",
       "prompt": "幫我的開源專案設定 GitHub Issue 模板。希望能降低填寫負擔，包含 Bug 回報、新功能提案與入口分流。（此 repo 尚未開啟 GitHub Discussions，且只有預設的 9 個 GitHub 標籤）",
-      "expected_output": "應先執行 `gh repo view --json nameWithOwner,hasDiscussionsEnabled,isPrivate,url` 與 `gh label list`。因 `hasDiscussionsEnabled: false`，`config.yml` 不得寫入 `/discussions` 死鏈（僅保留 `security/advisories/new` 或省略無效連結）；`1-bug-report.yml` 與 `2-feature-request.yml` 各自必填欄位 ≤ 2，頂層 `labels` 預設僅使用已存在的 `bug`、`enhancement`（或提示以 `gh label create` 建立新標籤），且 `what-happened`/`repro` 不得設定 `render` 以保留截圖上傳功能。"
+      "expected_output": "應先執行 `gh repo view --json nameWithOwner,hasDiscussionsEnabled,isPrivate,url` 與 `gh label list`。因本次產出 Bug／Feature 表單，`config.yml` 應設 `blank_issues_enabled: false`；因 `hasDiscussionsEnabled: false`，`config.yml` 不得寫入 `/discussions` 死鏈（僅保留 `security/advisories/new` 或省略無效連結）；`1-bug-report.yml` 與 `2-feature-request.yml` 各自必填欄位 ≤ 2，頂層 `labels` 預設僅使用已存在的 `bug`、`enhancement`（若要新增標籤，依 Step 3 詢問使用者後由 agent 自行建立，不得要求使用者執行指令），且 `what-happened`/`repro` 不得設定 `render` 以保留截圖上傳功能。"
     },
     {
       "id": 2,
@@ -42,6 +42,24 @@
       "name": "reject-single-issue-creation",
       "prompt": "幫我在這個 repo 開一個新 issue，標題是登入頁面按鈕沒反應。",
       "expected_output": "不應建立或修改 `.github/ISSUE_TEMPLATE/`。應說明本 skill 用於配置儲存庫的 Issue 模板（YAML Issue Forms），而非開啟單一 Issue，並改以 `gh issue create` 協助使用者或詢問是否直接開單。"
+    },
+    {
+      "id": 8,
+      "name": "task-template-for-chore-tracking",
+      "prompt": "我們團隊常需要追蹤內部重構與發佈檢查清單，請幫我們新增一個 Task 模板。（此 repo 只有 GitHub 預設的 9 個標籤）",
+      "expected_output": "應讀取 `references/task.md` 產出 `.github/ISSUE_TEMPLATE/4-task.yml`：必填僅 `goal` 與 `acceptance-criteria`（≤ 2），選填 `notes`，`goal`/`acceptance-criteria` 不得設定 `render`；因 repo 無 `chore`/`task` 標籤，應先詢問是否建立 `chore`：不建立則省略 `labels`；建立則由 agent 自行執行 `gh label create chore --color FEF2C0`（或使用可寫入標籤的 GitHub 工具），確認存在後才寫入 `labels: [\"chore\"]`；不得要求使用者在終端機執行指令；並通過 Step 4 Schema 驗證。"
+    },
+    {
+      "id": 9,
+      "name": "cloud-agent-missing-label-without-gh",
+      "prompt": "（雲端 agent 環境，沒有 gh CLI，也沒有可建立標籤的 GitHub 工具）幫這個公開 repo 新增 Task 模板，並掛上 chore 標籤。repo 目前只有 GitHub 預設的 9 個標籤。",
+      "expected_output": "Step 1 應改用 GitHub 工具或 `curl -s https://api.github.com/repos/<OWNER>/<REPO>/labels` 讀取標籤，確認沒有 `chore`。因使用者已要求掛上 `chore` 且 agent 無法建立，應照樣寫入 `labels: [\"chore\"]`，並在回覆中附上 `https://github.com/<OWNER>/<REPO>/labels`，請使用者在網頁按 New label 新增（名稱 `chore`、顏色 `FEF2C0`），並說明建立前不會套用、建立後立即生效。不得要求使用者在終端機執行 `gh label create` 或任何其他指令。"
+    },
+    {
+      "id": 10,
+      "name": "task-only-keeps-blank-issues",
+      "prompt": "這個公開 repo 目前沒有任何 Issue 模板，也沒開 Discussions。先幫我們加一個 Task 模板就好，Bug 和 Feature 表單之後再說。（repo 已有 chore 標籤）",
+      "expected_output": "應產出 `.github/ISSUE_TEMPLATE/4-task.yml`（頂層 `labels: [\"chore\"]`），不產出 Bug／Feature 表單。因完成後沒有 Bug Report 或 Feature Request 表單，`config.yml` 必須設 `blank_issues_enabled: true`，不得設為 `false`；因 repo 公開，`contact_links` 只放資安漏洞私密通報連結，不得放 `/discussions`。回覆需說明之後補上 Bug／Feature 表單時再改為 `false`。並通過 Step 4 Schema 驗證。"
     }
   ]
 }
