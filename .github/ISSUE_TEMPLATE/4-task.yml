@@ -1,0 +1,38 @@
+name: 🛠 工程任務與維護 (Task / Chore)
+description: 追蹤插件重構、外部套件上游更新、CI/CD 維護或版本發佈檢查清單
+title: "[Task]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 💡 **快速提示**：用於追蹤工程重構、Marketplace 維護或分階段待辦清單（可使用 `- [ ]` 語法建立子任務）。
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 任務目標與背景 (Task Goal & Context)
+      description: 請說明此工程任務欲達成的目標、影響的插件範圍或背景動機。
+      placeholder: "將 `code-review` 的 review-forge 輸出 schema 升版，並同步更新 evals 與 README..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: 交付項目與驗收條件 (Deliverables & Acceptance Criteria)
+      description: 請列出具體的執行步驟或完成判準（可使用 `- [ ]` 建立核取清單）。
+      placeholder: |
+        - [ ] 完成目標插件的修改
+        - [ ] 通過 `claude plugin validate` 與相關 evals
+        - [ ] 更新 `plugin.json`、`apm.yml` 版本與 README
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 技術備註與相依項目 (Technical Notes & Dependencies)
+      description: 相關聯的 Issue / PR 編號、潛在風險或實作參考資料。
+      placeholder: "前置依賴：#12；注意需同步重新產生兩份 marketplace.json..."
+    validations:
+      required: false
