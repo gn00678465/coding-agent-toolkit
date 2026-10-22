@@ -180,8 +180,8 @@
         "source": "git-subdir",
         "url": "cursor/plugins",
         "path": "pstack",
-        "ref": "a66a8931c2dd71f1ed6abf6a52b1898a9f389ae4",
-        "sha": "a66a8931c2dd71f1ed6abf6a52b1898a9f389ae4",
+        "ref": "9b93e81fb2921b9263d9463c15bafeabfe3903aa",
+        "sha": "9b93e81fb2921b9263d9463c15bafeabfe3903aa",
         "tag_pattern": "v{version}"
       },
       "policy": {
