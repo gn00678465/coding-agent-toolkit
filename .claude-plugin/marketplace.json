@@ -8,7 +8,7 @@
     {
       "name": "git-assistant",
       "description": "Claude Code, GitHub Copilot & Codex plugin bundle for pull request and issue template workflows",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "category": "Productivity",
       "source": "./plugins/git-assistant"
     },
