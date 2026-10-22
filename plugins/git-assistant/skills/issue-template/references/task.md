@@ -2,7 +2,11 @@
 
 目標路徑：`.github/ISSUE_TEMPLATE/4-task.yml`
 
-> 頂層 `labels`：若儲存庫已存在 `chore` 或 `task` 標籤則掛載；若僅有 GitHub 預設 9 個標籤，可省略 `labels` 鍵或先以 `gh label create chore --color FEF2C0` 建立。
+> 頂層 `labels`：GitHub 預設 9 個標籤（`bug`、`documentation`、`duplicate`、`enhancement`、`good first issue`、`help wanted`、`invalid`、`question`、`wontfix`）不含 `chore`／`task`，依 Step 1 的 `gh label list` 結果處理：
+>
+> - 已存在 `chore` 或 `task` → 直接掛載既有標籤（下方範本以 `chore` 為例）。
+> - 兩者皆不存在 → 詢問使用者是否建立。同意則先執行 `gh label create chore --color FEF2C0 --description "工程任務、重構與維護"`（或請使用者於 Issues → Labels 手動新增），確認建立後再寫入 `labels: ["chore"]`；不同意則省略 `labels` 鍵。
+> - 未建立就寫入的標籤會被 GitHub 靜默忽略，表單仍可正常開單，但 Issue 不會帶上該標籤。
 
 ---
 
@@ -12,6 +16,7 @@
 name: 🛠 工程任務與維護 (Task / Chore)
 description: 追蹤內部重構、技術債清理、CI/CD 維護或版本發佈檢查清單
 title: "[Task]: "
+labels: ["chore"]
 body:
   - type: markdown
     attributes:

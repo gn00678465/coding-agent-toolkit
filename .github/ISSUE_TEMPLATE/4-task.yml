@@ -1,6 +1,7 @@
 name: 🛠 工程任務與維護 (Task / Chore)
 description: 追蹤插件重構、外部套件上游更新、CI/CD 維護或版本發佈檢查清單
 title: "[Task]: "
+labels: ["chore"]
 body:
   - type: markdown
     attributes:

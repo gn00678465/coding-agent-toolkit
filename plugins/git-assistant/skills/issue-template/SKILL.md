@@ -70,6 +70,7 @@ description: 建立、重構與驗證 GitHub Issue 模板（.github/ISSUE_TEMPLA
 - **標籤存在性核對**：GitHub Issue Forms 頂層 `labels` 若引用儲存庫尚不存在的標籤（如 `pending-triage`、`needs-discussion`），開單時會被 GitHub **靜默忽略**。對照 Step 1 的 `gh label list`：
   - 若目標標籤已存在 → 寫入 `labels`。
   - 若目標標籤不存在 → 預設只寫入已存在的標籤（如 `["bug"]`、`["enhancement"]`），並提示使用者可選執行 `gh label create pending-triage --color FBCA04`、`gh label create needs-discussion --color D4C5F9` 後再掛上。
+  - 使用者同意建立缺少的標籤（如 Task 表單的 `chore`）→ 先執行 `gh label create` 或請使用者於 Issues → Labels 手動新增，確認存在後才寫入 `labels`。
 - **私有儲存庫注意**：若 `isPrivate: true`，主動告知使用者 GitHub 在 Private / Internal 儲存庫會將 `validations.required: true` 自動降級為選填，屬平台預期行為。
 - **舊版 Markdown 模板清理**：若專案存在舊版 `ISSUE_TEMPLATE.md`，經使用者確認後移除或搬遷，避免新舊模板並存造成入口混亂。
 
