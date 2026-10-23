@@ -1,0 +1,23 @@
+{
+  "name": "ui-design",
+  "version": "0.1.0",
+  "description": "UI design delegation: the ui-design skill routes UI requests to the impeccable-ui-designer subagent, which runs every design decision through the impeccable skill (context loading, visitor modes, craft floor, detector triage, bounded verification)",
+  "author": {
+    "name": "Madao",
+    "url": "https://github.com/gn00678465/coding-agent-toolkit"
+  },
+  "homepage": "https://github.com/gn00678465/coding-agent-toolkit/tree/main/plugins/ui-design",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "design",
+    "ui",
+    "impeccable",
+    "design-system",
+    "frontend"
+  ],
+  "agents": [
+    "./.apm/agents/impeccable-ui-designer.agent.md"
+  ],
+  "skills": "./.apm/skills/"
+}

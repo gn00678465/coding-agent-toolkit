@@ -1,15 +1,16 @@
 # coding-agent-toolkit
 
-本專案收錄多個可重用的 AI 編碼代理插件，支援 Claude Code、Codex 及 OpenCode 等平台。
+本專案收錄多個可重用的 AI 編碼代理插件，支援 Claude Code、Codex 及 Pi 等平台。
 
 ## 插件清單
 
 | 插件 | 版本 | 適用平台 | 說明 |
 |------|------|----------|------|
-| `git-assistant` | 0.1.7 | Claude Code / Codex | PR / Issue 模板工作流插件，包含 `pull-request`、`issue-template` 等技能 |
+| `git-assistant` | 0.1.7 | Claude Code / Codex / Pi | PR / Issue 模板工作流插件，包含 `pull-request`、`issue-template` 等技能 |
 | `advisor` | 0.1.4 | Claude Code / Codex | 架構師模式 model-routing：session 跑在 Claude 最強模型上負責規格與驗證，實作路由給 Grok 4.5（Grok CLI）與 GPT-5.6 Sol（Codex），並提供承諾邊界 advisor |
-| `code-review` | 0.3.0 | Claude Code / Codex / OpenCode | 程式碼審查與驗證：`review-forge` 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`verification-gate` 完工後的驗證關卡與 evidence 報告 |
-| `slim-agents-md` | 0.1.0 | Claude Code / Codex | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
+| `code-review` | 0.3.0 | Claude Code / Codex / Pi | 程式碼審查與驗證：`review-forge` 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`verification-gate` 完工後的驗證關卡與 evidence 報告 |
+| `slim-agents-md` | 0.1.0 | Claude Code / Codex / Pi | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
+| `ui-design` | 0.1.0 | Claude Code / Codex / Pi | `ui-design` skill 自動把 UI 需求委派給 `impeccable-ui-designer` subagent；agent 以 design-ui-designer 角色為基礎，所有設計決策交由 impeccable skill（需另外安裝 `impeccable`） |
 
 ## 外部套件
 
@@ -66,6 +67,7 @@
 /plugin install advisor@coding-agent-toolkit
 /plugin install code-review@coding-agent-toolkit
 /plugin install slim-agents-md@coding-agent-toolkit
+/plugin install ui-design@coding-agent-toolkit
 /reload-plugins
 ```
 
@@ -77,7 +79,8 @@
     "git-assistant@coding-agent-toolkit": true,
     "advisor@coding-agent-toolkit": true,
     "code-review@coding-agent-toolkit": true,
-    "slim-agents-md@coding-agent-toolkit": true
+    "slim-agents-md@coding-agent-toolkit": true,
+    "ui-design@coding-agent-toolkit": true
   }
 }
 ```
@@ -88,6 +91,7 @@
 - `advisor`: `orchestration` skill 與 `claude-advisor`、`grok-implementer`、`codex-implementer` agents
 - `code-review`: `review-forge` skill（`scope` / `review` / `synthesize` / `vote` / `report` / `fix` / `verify` 七階段命令，可透過 Codex / Claude Code CLI 跨廠商審查）與 `verification-gate` skill（`gate` / `evidence` 兩階段命令）
 - `slim-agents-md`: `slim-agents-md` skill（AGENTS.md / CLAUDE.md 等 agent 指令文件的精簡與重構）
+- `ui-design`: `ui-design` skill（自動觸發並轉介 UI 需求）與 `impeccable-ui-designer` agent（以 impeccable skill 進行 UI 設計、design system 建立與審查）
 
 > `advisor` 另需先安裝 [Grok CLI](https://x.ai/cli) 與 Codex CLI，並確認 `grok`、`codex` 可於 `PATH` 中執行。
 
@@ -108,31 +112,35 @@ codex plugin add code-review@coding-agent-toolkit
 codex plugin add slim-agents-md@coding-agent-toolkit
 ```
 
+`ui-design` 的 subagent 無法透過 Codex plugin 載入，請在專案中以 `apm-go install gn00678465/coding-agent-toolkit/plugins/ui-design --target codex` 部署到 `.codex/agents/`，詳見 [`plugins/ui-design`](./plugins/ui-design)。
+
 每個 skill 目錄內含 `agents/openai.yaml` 提供 Codex UI 顯示名稱與預設 prompt。
 
-## OpenCode 安裝方式
+## Pi 安裝方式
 
-**方式一：透過 opencode-market（推薦）**
-
-```bash
-# 註冊 marketplace
-npx opencode-market add gn00678465/coding-agent-toolkit
-
-# 安裝到 .opencode/（OpenCode 專用）
-npx opencode-market install code-review@coding-agent-toolkit --opencode
-
-# 或安裝到 .agents/（跨平台共用）
-npx opencode-market install code-review@coding-agent-toolkit --local
-```
-
-**方式二：手動複製 skill 目錄**
-
-將 skill 複製到專案的 `.opencode/skills/`，OpenCode 會自動發現：
+Pi 沒有 marketplace，安裝單位是整個 repo。repo 根目錄的 `package.json` 用 `pi` 欄位列出可載入的資源。
 
 ```bash
-cp -r plugins/code-review/skills/review-forge .opencode/skills/
-cp -r plugins/code-review/skills/verification-gate .opencode/skills/
+# 使用者層級（專案層級加 -l，需先信任專案）
+pi install git:github.com/gn00678465/coding-agent-toolkit
 ```
+
+| 套件 | Pi 安裝方式 | 說明 |
+|------|-------------|------|
+| `git-assistant` | 隨上面的指令一起安裝 | `pull-request`、`issue-template` 兩個 skill，加上 `/gitignore-generator.prompt` 指令 |
+| `code-review` | 隨上面的指令一起安裝 | 載入 `review-forge` 與 `verification-gate`。Pi 沒有 `host` lane，多模型 review 改用 `claude:` 與 `codex:` CLI lane，需要另外安裝並登入 `claude` 與 `codex` |
+| `slim-agents-md` | 隨上面的指令一起安裝 | Pi 沒有 AskUserQuestion，矛盾裁決會改成在對話中直接詢問 |
+| `ui-design` | 隨上面的指令一起安裝；要用 subagent 再裝 `pi install npm:@tintinweb/pi-subagents` | 有裝 [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) 時，`package.json` 的 `pi.subagents` 會註冊 `impeccable-ui-designer`，`ui-design` 用 Agent tool 委派給它。沒裝時改用 inline 模式，在主 session 讀取 agent 定義並照著執行，遇到需要決定的地方直接問你。Pi 上模型不一定會自動載入 skill，建議用 `/skill:ui-design <需求>` 呼叫 |
+| `impeccable` | 隨上面的指令一起安裝 | package 內的 extension（`pi/extensions/upstream-skills.ts`）在 Pi 啟動時，依 `.claude-plugin/marketplace.json` 鎖定的 commit，只下載上游的 `.pi/skills`（約 4 MB）到 `~/.pi/agent/cache/coding-agent-toolkit/`。第一次需要網路與 git。也可以改用官方安裝程式 `npx impeccable install --providers=pi` |
+| `advisor` | 不支援 | skill 名稱 `orchestration` 容易和其他同名 skill 衝突；三個 agent 的 `tools` 使用 Claude Code 的工具名稱（`Read`、`Grep`、`Glob`），`pi-subagents` 不認得；設計以 Claude Code 的 model routing 為前提 |
+
+其他外部套件目前不提供 Pi 安裝方式。
+
+`impeccable-ui-designer` 只有在本 package 裝在使用者層級，或專案已儲存信任決定後，才會出現在 Agent tool 的可用清單。以 `-l` 裝在專案、且還沒儲存信任時，`pi-subagents` 第一個 session 不會把它告訴模型，`ui-design` 會改走 inline 模式。另一個同名套件 `pi-subagents`（nicobailon）也讀同一個 `pi.subagents` 欄位，但未經測試。
+
+extension 是會執行的程式碼，Pi 會在信任 package 後才載入。要加入其他外部套件，在 `pi/upstreams.json` 加上套件名稱與 skill 目錄即可，版本跟著 `apm.yml` 的鎖定走。
+
+裝完在 session 內執行 `/reload`。可以在 git 來源後加 `@<tag>` 鎖定版本。調查過程與限制見 [`docs/research/pi-package-install.md`](./docs/research/pi-package-install.md)。
 
 ## 目錄
 
@@ -140,10 +148,10 @@ cp -r plugins/code-review/skills/verification-gate .opencode/skills/
 - [`plugins/git-assistant`](./plugins/git-assistant)
 - [`plugins/code-review`](./plugins/code-review)
 - [`plugins/slim-agents-md`](./plugins/slim-agents-md)
+- [`plugins/ui-design`](./plugins/ui-design)
 
 ## 參考
 
 - [Claude Code Plugins](https://docs.anthropic.com/en/docs/claude-code/plugins)
 - [Codex Agent Skills](https://github.com/openai/skills)
-- [OpenCode Plugins](https://opencode.ai/docs/plugins/)
-- [OpenCode Skills](https://opencode.ai/docs/skills/)
+- [Pi Packages](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md)

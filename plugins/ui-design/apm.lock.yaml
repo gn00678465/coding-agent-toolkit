@@ -1,0 +1,91 @@
+lockfile_version: '1'
+dependencies: []
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/agents/impeccable-ui-designer.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:652de8b170fe4d9cd5cb9a4744f57feb7869611f91e00dbd24f5a0a11798fe3b
+- kind: project-relative
+  target: claude
+  value: .claude/skills/ui-design
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/ui-design/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:555ea79f5356de7b287942c6331dca65bfe41b29a99e077f0e97136140cc5660
+- kind: project-relative
+  target: claude
+  value: .claude/skills/ui-design/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:aea4eaf83e0ab74b92eae3143ff70e2b681673cd288544e2ac83e39f6bc96d27
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ui-design
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ui-design/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:555ea79f5356de7b287942c6331dca65bfe41b29a99e077f0e97136140cc5660
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ui-design/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:aea4eaf83e0ab74b92eae3143ff70e2b681673cd288544e2ac83e39f6bc96d27
+- kind: project-relative
+  target: codex
+  value: .codex/agents/impeccable-ui-designer.toml
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:2537476ff752ba66dd3883f3c28cd42e2320312a23d6ca8eb4c6154c21a4368a
+local_deployed_files:
+- .agents/skills/ui-design
+- .agents/skills/ui-design/SKILL.md
+- .agents/skills/ui-design/agents/openai.yaml
+- .claude/agents/impeccable-ui-designer.md
+- .claude/skills/ui-design
+- .claude/skills/ui-design/SKILL.md
+- .claude/skills/ui-design/agents/openai.yaml
+- .codex/agents/impeccable-ui-designer.toml
+local_deployed_file_hashes:
+  .agents/skills/ui-design/SKILL.md: sha256:555ea79f5356de7b287942c6331dca65bfe41b29a99e077f0e97136140cc5660
+  .agents/skills/ui-design/agents/openai.yaml: sha256:aea4eaf83e0ab74b92eae3143ff70e2b681673cd288544e2ac83e39f6bc96d27
+  .claude/agents/impeccable-ui-designer.md: sha256:652de8b170fe4d9cd5cb9a4744f57feb7869611f91e00dbd24f5a0a11798fe3b
+  .claude/skills/ui-design/SKILL.md: sha256:555ea79f5356de7b287942c6331dca65bfe41b29a99e077f0e97136140cc5660
+  .claude/skills/ui-design/agents/openai.yaml: sha256:aea4eaf83e0ab74b92eae3143ff70e2b681673cd288544e2ac83e39f6bc96d27
+  .codex/agents/impeccable-ui-designer.toml: sha256:2537476ff752ba66dd3883f3c28cd42e2320312a23d6ca8eb4c6154c21a4368a
