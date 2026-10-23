@@ -110,30 +110,6 @@ codex plugin add slim-agents-md@coding-agent-toolkit
 
 每個 skill 目錄內含 `agents/openai.yaml` 提供 Codex UI 顯示名稱與預設 prompt。
 
-## OpenCode 安裝方式
-
-**方式一：透過 opencode-market（推薦）**
-
-```bash
-# 註冊 marketplace
-npx opencode-market add gn00678465/coding-agent-toolkit
-
-# 安裝到 .opencode/（OpenCode 專用）
-npx opencode-market install code-review@coding-agent-toolkit --opencode
-
-# 或安裝到 .agents/（跨平台共用）
-npx opencode-market install code-review@coding-agent-toolkit --local
-```
-
-**方式二：手動複製 skill 目錄**
-
-將 skill 複製到專案的 `.opencode/skills/`，OpenCode 會自動發現：
-
-```bash
-cp -r plugins/code-review/skills/review-forge .opencode/skills/
-cp -r plugins/code-review/skills/verification-gate .opencode/skills/
-```
-
 ## 目錄
 
 - [`plugins/advisor`](./plugins/advisor)
