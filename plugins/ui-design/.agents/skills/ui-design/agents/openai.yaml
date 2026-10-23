@@ -1,0 +1,7 @@
+interface:
+  display_name: "UI Design"
+  short_description: "Delegate UI design work to the impeccable-ui-designer subagent"
+  default_prompt: "Use $ui-design to design the settings page."
+
+policy:
+  allow_implicit_invocation: true

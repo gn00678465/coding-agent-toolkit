@@ -10,6 +10,7 @@
 | `advisor` | 0.1.4 | Claude Code / Codex | 架構師模式 model-routing：session 跑在 Claude 最強模型上負責規格與驗證，實作路由給 Grok 4.5（Grok CLI）與 GPT-5.6 Sol（Codex），並提供承諾邊界 advisor |
 | `code-review` | 0.3.0 | Claude Code / Codex / OpenCode | 程式碼審查與驗證：`review-forge` 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`verification-gate` 完工後的驗證關卡與 evidence 報告 |
 | `slim-agents-md` | 0.1.0 | Claude Code / Codex | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
+| `ui-design` | 0.1.0 | Claude Code / Codex / Pi | `ui-design` skill 自動把 UI 需求委派給 `impeccable-ui-designer` subagent；agent 以 design-ui-designer 角色為基礎，所有設計決策交由 impeccable skill（需另外安裝 `impeccable`） |
 
 ## 外部套件
 
@@ -66,6 +67,7 @@
 /plugin install advisor@coding-agent-toolkit
 /plugin install code-review@coding-agent-toolkit
 /plugin install slim-agents-md@coding-agent-toolkit
+/plugin install ui-design@coding-agent-toolkit
 /reload-plugins
 ```
 
@@ -77,7 +79,8 @@
     "git-assistant@coding-agent-toolkit": true,
     "advisor@coding-agent-toolkit": true,
     "code-review@coding-agent-toolkit": true,
-    "slim-agents-md@coding-agent-toolkit": true
+    "slim-agents-md@coding-agent-toolkit": true,
+    "ui-design@coding-agent-toolkit": true
   }
 }
 ```
@@ -88,6 +91,7 @@
 - `advisor`: `orchestration` skill 與 `claude-advisor`、`grok-implementer`、`codex-implementer` agents
 - `code-review`: `review-forge` skill（`scope` / `review` / `synthesize` / `vote` / `report` / `fix` / `verify` 七階段命令，可透過 Codex / Claude Code CLI 跨廠商審查）與 `verification-gate` skill（`gate` / `evidence` 兩階段命令）
 - `slim-agents-md`: `slim-agents-md` skill（AGENTS.md / CLAUDE.md 等 agent 指令文件的精簡與重構）
+- `ui-design`: `ui-design` skill（自動觸發並轉介 UI 需求）與 `impeccable-ui-designer` agent（以 impeccable skill 進行 UI 設計、design system 建立與審查）
 
 > `advisor` 另需先安裝 [Grok CLI](https://x.ai/cli) 與 Codex CLI，並確認 `grok`、`codex` 可於 `PATH` 中執行。
 
@@ -108,6 +112,8 @@ codex plugin add code-review@coding-agent-toolkit
 codex plugin add slim-agents-md@coding-agent-toolkit
 ```
 
+`ui-design` 的 subagent 無法透過 Codex plugin 載入，請在專案中以 `apm-go install gn00678465/coding-agent-toolkit/plugins/ui-design --target codex` 部署到 `.codex/agents/`，詳見 [`plugins/ui-design`](./plugins/ui-design)。
+
 每個 skill 目錄內含 `agents/openai.yaml` 提供 Codex UI 顯示名稱與預設 prompt。
 
 ## 目錄
@@ -116,6 +122,7 @@ codex plugin add slim-agents-md@coding-agent-toolkit
 - [`plugins/git-assistant`](./plugins/git-assistant)
 - [`plugins/code-review`](./plugins/code-review)
 - [`plugins/slim-agents-md`](./plugins/slim-agents-md)
+- [`plugins/ui-design`](./plugins/ui-design)
 
 ## 參考
 

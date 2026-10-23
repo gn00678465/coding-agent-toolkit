@@ -46,6 +46,11 @@ marketplace:
       description: "Curate and slim bloated AGENTS.md / CLAUDE.md files with progressive disclosure: minimal root, on-demand category docs, contradiction and redundancy cleanup"
       version: 0.1.0
       category: Productivity
+    - name: ui-design
+      source: ./plugins/ui-design
+      description: "UI design delegation for Claude Code and Codex: a ui-design skill that routes UI requests to the impeccable-ui-designer subagent, which runs every design decision through the impeccable skill"
+      version: 0.1.0
+      category: design
     # - name: example-package
     #   description: Human-readable description of the package
     #   source: acme-org/example-package

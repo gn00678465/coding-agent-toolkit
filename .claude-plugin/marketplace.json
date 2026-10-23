@@ -34,6 +34,13 @@
       "source": "./plugins/slim-agents-md"
     },
     {
+      "name": "ui-design",
+      "description": "UI design delegation for Claude Code and Codex: a ui-design skill that routes UI requests to the impeccable-ui-designer subagent, which runs every design decision through the impeccable skill",
+      "version": "0.1.0",
+      "category": "design",
+      "source": "./plugins/ui-design"
+    },
+    {
       "name": "web-quality-skills",
       "category": "Productivity",
       "source": {
