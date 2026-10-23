@@ -20,6 +20,7 @@ When the user asks for a multi-model review without naming lanes, use one lane p
 
 - Claude Code host: `host:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh`
 - Codex host: `host:gpt-6.1-sol@xhigh, claude:claude-opus-5-5@xhigh`
+- Pi, or any other host: `claude:claude-opus-5-5@xhigh, codex:gpt-6.1-sol@xhigh`. The `host` kind is defined only for Claude Code and Codex, so use the CLI lanes.
 
 ### Model and effort per mechanism
 
