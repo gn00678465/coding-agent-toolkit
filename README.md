@@ -1,6 +1,6 @@
 # coding-agent-toolkit
 
-本專案收錄多個可重用的 AI 編碼代理插件，支援 Claude Code、Codex 及 OpenCode 等平台。
+本專案收錄多個可重用的 AI 編碼代理插件，支援 Claude Code、Codex 及 Pi 等平台。
 
 ## 插件清單
 
@@ -8,8 +8,8 @@
 |------|------|----------|------|
 | `git-assistant` | 0.1.7 | Claude Code / Codex / Pi | PR / Issue 模板工作流插件，包含 `pull-request`、`issue-template` 等技能 |
 | `advisor` | 0.1.4 | Claude Code / Codex | 架構師模式 model-routing：session 跑在 Claude 最強模型上負責規格與驗證，實作路由給 Grok 4.5（Grok CLI）與 GPT-5.6 Sol（Codex），並提供承諾邊界 advisor |
-| `code-review` | 0.3.0 | Claude Code / Codex / OpenCode | 程式碼審查與驗證：`review-forge` 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`verification-gate` 完工後的驗證關卡與 evidence 報告 |
-| `slim-agents-md` | 0.1.0 | Claude Code / Codex | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
+| `code-review` | 0.3.0 | Claude Code / Codex / Pi | 程式碼審查與驗證：`review-forge` 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`verification-gate` 完工後的驗證關卡與 evidence 報告 |
+| `slim-agents-md` | 0.1.0 | Claude Code / Codex / Pi | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
 | `ui-design` | 0.1.0 | Claude Code / Codex / Pi | `ui-design` skill 自動把 UI 需求委派給 `impeccable-ui-designer` subagent；agent 以 design-ui-designer 角色為基礎，所有設計決策交由 impeccable skill（需另外安裝 `impeccable`） |
 
 ## 外部套件
@@ -166,5 +166,4 @@ extension 是會執行的程式碼，Pi 會在信任 package 後才載入。要�
 
 - [Claude Code Plugins](https://docs.anthropic.com/en/docs/claude-code/plugins)
 - [Codex Agent Skills](https://github.com/openai/skills)
-- [OpenCode Plugins](https://opencode.ai/docs/plugins/)
-- [OpenCode Skills](https://opencode.ai/docs/skills/)
+- [Pi Packages](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md)
