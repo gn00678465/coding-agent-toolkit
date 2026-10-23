@@ -132,21 +132,9 @@ pi install git:github.com/gn00678465/coding-agent-toolkit
 | `slim-agents-md` | 隨上面的指令一起安裝 | Pi 沒有 AskUserQuestion，矛盾裁決會改成在對話中直接詢問 |
 | `ui-design` | 隨上面的指令一起安裝；要用 subagent 再裝 `pi install npm:@tintinweb/pi-subagents` | 有裝 [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) 時，`package.json` 的 `pi.subagents` 會註冊 `impeccable-ui-designer`，`ui-design` 用 Agent tool 委派給它。沒裝時改用 inline 模式，在主 session 讀取 agent 定義並照著執行，遇到需要決定的地方直接問你。Pi 上模型不一定會自動載入 skill，建議用 `/skill:ui-design <需求>` 呼叫 |
 | `impeccable` | 隨上面的指令一起安裝 | package 內的 extension（`pi/extensions/upstream-skills.ts`）在 Pi 啟動時，依 `.claude-plugin/marketplace.json` 鎖定的 commit，只下載上游的 `.pi/skills`（約 4 MB）到 `~/.pi/agent/cache/coding-agent-toolkit/`。第一次需要網路與 git。也可以改用官方安裝程式 `npx impeccable install --providers=pi` |
-| `pstack` | 兩步驟，見下方 | 上游放在 `cursor/plugins` 的子目錄，Pi 的 git 來源不能指定子目錄 |
+| `advisor` | 不支援 | skill 名稱 `orchestration` 容易和其他同名 skill 衝突；三個 agent 的 `tools` 使用 Claude Code 的工具名稱（`Read`、`Grep`、`Glob`），`pi-subagents` 不認得；設計以 Claude Code 的 model routing 為前提 |
 
-`pstack`：先安裝整個 `cursor/plugins` repo（不會載入任何資源），再在 `~/.pi/agent/settings.json` 指定 skill 路徑：
-
-```bash
-pi install git:github.com/cursor/plugins@9b93e81fb2921b9263d9463c15bafeabfe3903aa
-```
-
-```json
-{
-  "skills": ["git/github.com/cursor/plugins/pstack/skills"]
-}
-```
-
-使用者層級 settings 的相對路徑以 `~/.pi/agent/` 為基準。pstack 大多數 skill 設了 `disable-model-invocation: true`，要用 `/skill:<name>` 手動呼叫。它的 `recall` skill 會和同名 skill 衝突，Pi 只保留先找到的那一個。
+其他外部套件目前不提供 Pi 安裝方式。
 
 `impeccable-ui-designer` 只有在本 package 裝在使用者層級，或專案已儲存信任決定後，才會出現在 Agent tool 的可用清單。以 `-l` 裝在專案、且還沒儲存信任時，`pi-subagents` 第一個 session 不會把它告訴模型，`ui-design` 會改走 inline 模式。另一個同名套件 `pi-subagents`（nicobailon）也讀同一個 `pi.subagents` 欄位，但未經測試。
 

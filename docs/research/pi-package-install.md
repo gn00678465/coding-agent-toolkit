@@ -235,3 +235,42 @@ Antigravity ACP provider（Gemini）會把工作交給自己的代理執行，�
 - 設計前提是主 session 跑 Claude Fable／Opus 當架構師，`model: fable` 也是 Claude Code 的別名。
 
 已在隔離的 `PI_CODING_AGENT_DIR` 確認 `review-forge`、`verification-gate`、`slim-agents-md` 都出現在 available skills，路徑指向 repo 內的 `plugins/<name>/skills/`。
+
+## 11. SKILL.md 是否符合 Pi 的要求
+
+Pi 的規則（`docs/skills.md`「Write portable frontmatter」）：
+
+- `name` 只能用小寫字母、數字與連字號，不能以連字號開頭或結尾，也不能連續兩個連字號，最多 64 字元。
+- `description` 必填，最多 1024 字元。
+- 名稱和上層目錄不同時，Pi 不報錯；但其他 Agent Skills 實作可能要求一致。
+- frontmatter 格式錯誤或沒有 description 的 skill 不會載入。同名 skill 只保留先找到的那一個，並發出警告。
+
+用腳本逐一解析 frontmatter，結果：
+
+| skill | name 合規 | 與目錄同名 | description 長度 | 規格外欄位 |
+|---|---|---|---|---|
+| `git-assistant/pull-request` | ✅ | ✅ | 616 | — |
+| `git-assistant/issue-template` | ✅ | ✅ | 396 | — |
+| `code-review/review-forge` | ✅ | ✅ | 353 | — |
+| `code-review/verification-gate` | ✅ | ✅ | 656 | — |
+| `slim-agents-md/slim-agents-md` | ✅ | ✅ | 296 | — |
+| `ui-design/ui-design`（`.apm/skills`） | ✅ | ✅ | 642 | — |
+| `advisor/orchestration` | ✅ | ✅ | 337 | `argument-hint`（Claude Code 用，Pi 忽略） |
+| `impeccable`（上游 `.pi/skills`，`aeeb3d8`） | ✅ | ✅ | 約 580 | `version`（Pi 忽略） |
+
+全部符合。實際載入也確認過：在隔離的 `PI_CODING_AGENT_DIR` 執行 `pi install <repo>`，並在 settings 的 `skills` 暫時加入 `plugins/advisor/skills`。上表 8 個 skill 都出現在 available skills，stderr 沒有任何 skill 警告。
+
+advisor 的 `orchestration` 在這次測試中蓋過了使用者 `~/.agents/skills/` 裡的同名 skill：settings 的 `skills` 路徑先被找到。第 10 節的測試中，advisor 不在 package 裡，由使用者層級的那一個勝出。不論哪一個勝出，名稱衝突都存在，所以 advisor 仍列為不支援。
+
+## 12. 對照 issue #33 的「需要調查的問題」
+
+| 問題 | 結論 | 依據 |
+|---|---|---|
+| pi 如何安裝套件，套件如何宣告資源 | 來源有 npm、git、本機路徑三種。`package.json` 的 `pi` 欄位列出 `extensions`、`skills`、`prompts`、`themes`；沒有這個欄位時讀根目錄的慣例目錄 | 第 1、2 節 |
+| 一個 git repo 能否提供多個可分別安裝的 pi 套件 | 不能。git 來源不能指定子目錄，整個 repo 是一個 package。使用者可以用 settings 的篩選只啟用部分資源 | 第 1 節第 2、4 點 |
+| 外部套件如何讓 pi 使用者安裝，如何對待「不散布」與授權 | package 內的 extension 在使用者端依鎖定的 commit 從 upstream 下載 skill 目錄，本 repo 不含外部檔案。目前只對 impeccable 啟用 | 第 6、8 節 |
+| 版本鎖定（sha、subdir）能否維持 | 能。extension 讀 `.claude-plugin/marketplace.json` 的 `url`、`sha`、`path`，快取目錄以 sha 命名，sha 改變就重新下載 | 第 8 節 |
+| 各套件能否在 pi 使用 | git-assistant、code-review、slim-agents-md、ui-design、impeccable 支援。advisor 不支援（第 10、11 節）。其餘外部套件不在這次範圍 | 第 4、8、9、10 節 |
+| 各套件的 SKILL.md 是否符合 pi 的要求 | 全部符合 | 第 11 節 |
+
+issue 的「已決定的事項」要求用腳本從 `apm.yml` 產生 pi 的宣告檔。這次沒有做：`package.json` 的 `pi` 欄位與 `pi/upstreams.json` 是手寫的，留給後續 PR。
