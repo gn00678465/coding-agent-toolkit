@@ -99,8 +99,8 @@
       "source": {
         "source": "url",
         "url": "Leonxlnx/taste-skill",
-        "ref": "6010f91a9935f1c167dfc500fb1a475681892e6b",
-        "sha": "6010f91a9935f1c167dfc500fb1a475681892e6b",
+        "ref": "12af471f627f866411b4bd785b19646d3672784c",
+        "sha": "12af471f627f866411b4bd785b19646d3672784c",
         "tag_pattern": "v{version}"
       },
       "policy": {
