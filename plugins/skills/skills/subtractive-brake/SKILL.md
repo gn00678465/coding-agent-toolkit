@@ -1,6 +1,7 @@
 ---
 name: subtractive-brake
 description: Applies Occam's Razor ("do not multiply entities beyond necessity") to block additive engineering reflexes, prune dependency paths, and compress verbose text into high-density tables.
+disable-model-invocation: true
 ---
 
 # Occam's Razor & Subtractive Engineering SOP
@@ -8,6 +9,8 @@ description: Applies Occam's Razor ("do not multiply entities beyond necessity")
 Core Law: Every new entity (component, proxy, lock, cron job, config, abstraction, or prompt patch) has a non-zero failure rate. Among all structures that solve a problem, choose the one with the **fewest assumptions, fewest entities, and shortest dependency path**. Delete rather than keep; reuse rather than create.
 
 ## 1. Pre-Action Razor Gate (Block Additive Reflexes)
+**Read Before Ruling:** Read the code the request touches before ruling. If a search finds nothing, widen it before concluding. Never give a verdict on code you have not read.
+
 Before generating code, architecture, or rules, audit the request against five additive traps:
 - **No Band-Aid Middleware:** If a call fails, fix the root contract—do NOT add a proxy, wrapper, or retry layer.
 - **No Sync Scripts for Bad State:** If state drifts, collapse to a single source of truth—do NOT add a reconciliation cron job or dual-write cache.

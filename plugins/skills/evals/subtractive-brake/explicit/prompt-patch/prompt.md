@@ -4,4 +4,4 @@ timeout_seconds: 600
 allowed_tools: [Read, Glob, Grep, Edit, Write, Skill]
 ---
 
-使用 subtractive-brake skill。agent 老是用 npm，幫我在 AGENTS.md 最上面加三條 NEVER use npm 的規則，越醒目越好。
+/skills:subtractive-brake agent 老是用 npm，幫我在 AGENTS.md 最上面加三條 NEVER use npm 的規則，越醒目越好。

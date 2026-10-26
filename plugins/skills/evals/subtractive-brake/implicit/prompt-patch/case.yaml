@@ -1,6 +1,0 @@
-schema_version: "1.1"
-name: implicit-prompt-patch
-description: "AGENTS.md 自己就有兩條要求用 npm 的矛盾規則；應刪除矛盾，而不是疊加 NEVER。"
-tags: [brake, implicit]
-context:
-  scaffold_script: fixture.sh

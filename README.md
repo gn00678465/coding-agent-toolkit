@@ -16,7 +16,7 @@
 | `issue-template` | 建立、重構與驗證 GitHub Issue Forms 模板 |
 | `review-forge` | 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`scope` / `review` / `synthesize` / `vote` / `report` / `fix` / `verify` 七階段命令，可透過 Codex / Claude Code CLI 跨廠商審查 |
 | `slim-agents-md` | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
-| `subtractive-brake` | 以奧坎剃刀原則擋下「再加一層」的工程反射：先刪除與重用，縮短依賴路徑，把冗長文字壓成表格。另有同名 read-only 審查 agent |
+| `subtractive-brake` | 以奧坎剃刀原則擋下「再加一層」的工程反射：先刪除與重用，縮短依賴路徑，把冗長文字壓成表格。另有同名 read-only 審查 agent。模型不會自動載入，需手動叫用：Claude Code `/skills:subtractive-brake`、Codex `$subtractive-brake`、Pi `/skill:subtractive-brake` |
 | `ui-design` | 自動把 UI 需求委派給 `impeccable-ui-designer` agent；所有設計決策交由 impeccable skill（需另外安裝 `impeccable`） |
 
 ## 外部套件

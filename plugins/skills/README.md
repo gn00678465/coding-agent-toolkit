@@ -14,7 +14,7 @@ Codex 與 Pi 的安裝方式見根目錄 [README](../../README.md)。
 | `issue-template` | 建立、重構與驗證 GitHub Issue Forms 模板 |
 | `review-forge` | 多模型程式碼審查：獨立審查 → 交叉投票 → 信心排序 → 核准修復 |
 | `slim-agents-md` | 精簡與重構 AGENTS.md / CLAUDE.md |
-| `subtractive-brake` | 以奧坎剃刀原則擋下多餘的元件、抽象與 prompt 規則，先刪除再新增 |
+| `subtractive-brake` | 以奧坎剃刀原則擋下多餘的元件、抽象與 prompt 規則，先刪除再新增。設定了 `disable-model-invocation`，只能手動叫用（`/skills:subtractive-brake <需求>`） |
 | `ui-design` | 把 UI 需求委派給 `impeccable-ui-designer` agent |
 
 ## Agents

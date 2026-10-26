@@ -4,4 +4,4 @@ interface:
   default_prompt: "Use $subtractive-brake to audit this design before we add anything."
 
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
