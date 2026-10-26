@@ -1,8 +1,8 @@
 {
   "name": "coding-agent-toolkit",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
-  "description": "Pi package entry for the coding-agent-toolkit plugins. Install with: pi install git:github.com/gn00678465/coding-agent-toolkit",
+  "description": "Pi package entry for the coding-agent-toolkit skills plugin. Install with: pi install git:github.com/gn00678465/coding-agent-toolkit",
   "license": "MIT",
   "repository": "https://github.com/gn00678465/coding-agent-toolkit",
   "pi": {
@@ -10,17 +10,14 @@
       "./pi/extensions/upstream-skills.ts"
     ],
     "skills": [
-      "./plugins/git-assistant/skills",
-      "./plugins/code-review/skills",
-      "./plugins/slim-agents-md/skills",
-      "./plugins/ui-design/.apm/skills"
+      "./plugins/skills/skills"
     ],
     "prompts": [
-      "./plugins/git-assistant/prompts/*.prompt.md"
+      "./plugins/skills/prompts/*.prompt.md"
     ],
     "subagents": {
       "agents": [
-        "./plugins/ui-design/.apm/agents/impeccable-ui-designer.agent.md"
+        "./plugins/skills/agents/impeccable-ui-designer.md"
       ]
     }
   }

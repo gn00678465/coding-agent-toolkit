@@ -6,39 +6,11 @@
   },
   "plugins": [
     {
-      "name": "git-assistant",
-      "description": "Claude Code, GitHub Copilot & Codex plugin bundle for pull request and issue template workflows",
-      "version": "0.1.7",
-      "category": "Productivity",
-      "source": "./plugins/git-assistant"
-    },
-    {
-      "name": "advisor",
-      "description": "Architect-as-orchestrator: your session runs Claude's most capable model, routing implementation to Grok 4.5 (Grok CLI) and GPT-5.6 Sol at high reasoning (Codex) — with a commitment-boundary advisor",
-      "version": "0.1.4",
-      "category": "Productivity",
-      "source": "./plugins/advisor"
-    },
-    {
-      "name": "code-review",
-      "description": "Code review and verification: multi-model review with cross-voting and confidence-ranked reports, plus a fail-closed verification gate that turns a finished change into an evidence report",
-      "version": "0.2.0",
-      "category": "Productivity",
-      "source": "./plugins/code-review"
-    },
-    {
-      "name": "slim-agents-md",
-      "description": "Curate and slim bloated AGENTS.md / CLAUDE.md files with progressive disclosure: minimal root, on-demand category docs, contradiction and redundancy cleanup",
+      "name": "skills",
+      "description": "Coding agent skills: pull request and issue template workflows, multi-model code review (review-forge), AGENTS.md slimming, and impeccable-driven UI design delegation",
       "version": "0.1.0",
       "category": "Productivity",
-      "source": "./plugins/slim-agents-md"
-    },
-    {
-      "name": "ui-design",
-      "description": "UI design delegation for Claude Code and Codex: a ui-design skill that routes UI requests to the impeccable-ui-designer subagent, which runs every design decision through the impeccable skill",
-      "version": "0.1.0",
-      "category": "design",
-      "source": "./plugins/ui-design"
+      "source": "./plugins/skills"
     },
     {
       "name": "web-quality-skills",
