@@ -26,7 +26,7 @@ Codex 與 Pi 的安裝方式見根目錄 [README](../../README.md)。
 
 - **Claude Code**：plugin 會自動載入 `agents/`，agent 名稱為 `skills:impeccable-ui-designer`、`skills:subtractive-brake`。
 - **Codex**：plugin 不會載入 subagent，請把 `.codex/agents/` 底下需要的 `.toml` 複製到專案的 `.codex/agents/`。
-- **Pi**：只註冊 `impeccable-ui-designer`（需 `@tintinweb/pi-subagents`；沒裝時 `ui-design` 走 inline 模式，直接讀取 agent 定義執行）。`subtractive-brake` agent 的 `tools` 是 Claude Code 的工具名稱，Pi 上請改用同名 skill。
+- **Pi**：裝了 `@tintinweb/pi-subagents` 時，兩個 agent 都透過 `pi.subagents` 註冊。沒裝時 `ui-design` 走 inline 模式，直接讀取 agent 定義執行。`subtractive-brake` agent 的 `tools` 寫的是 Claude Code 的工具名稱（`Read`、`Grep`、`Glob`、`Bash`），在 Pi 上的行為尚未驗證。
 
 `impeccable-ui-designer` 需要 impeccable skill：`npx impeccable install --providers=claude,codex`，或 `/plugin install impeccable@coding-agent-toolkit`。
 

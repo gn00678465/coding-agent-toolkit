@@ -17,7 +17,8 @@
     ],
     "subagents": {
       "agents": [
-        "./plugins/skills/agents/impeccable-ui-designer.md"
+        "./plugins/skills/agents/impeccable-ui-designer.md",
+        "./plugins/skills/agents/subtractive-brake.md"
       ]
     }
   }
