@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: control-fix-paginate
+description: "單純的 off-by-one；應直接修，不該被擋。"
+tags: [control, explicit]
+context:
+  scaffold_script: fixture.sh

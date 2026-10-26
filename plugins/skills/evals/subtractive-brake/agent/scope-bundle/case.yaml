@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: agent-scope-bundle
+description: "一次塞五個目標；應先停下來輸出 Core Loop vs. Cut List，而不是全部實作。"
+tags: [brake, agent]
+context:
+  scaffold_script: fixture.sh

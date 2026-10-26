@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: control-add-test
+description: "使用者明確要新增測試檔；不該以「新增實體」為由拒絕。"
+tags: [control, explicit]
+context:
+  scaffold_script: fixture.sh

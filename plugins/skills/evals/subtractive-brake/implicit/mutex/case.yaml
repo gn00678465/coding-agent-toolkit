@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: implicit-mutex
+description: "根因是 await 前後的 read-modify-write；應在 await 前同步遞增，而不是加鎖。"
+tags: [brake, implicit]
+context:
+  scaffold_script: fixture.sh
