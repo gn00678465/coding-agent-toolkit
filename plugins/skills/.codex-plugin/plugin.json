@@ -1,6 +1,6 @@
 {
     "name": "skills",
     "version": "0.1.0",
-    "description": "Coding agent skills: pull request and issue template workflows, multi-model code review (review-forge), AGENTS.md slimming, and impeccable-driven UI design delegation",
+    "description": "Coding agent skills: pull request and issue template workflows, multi-model code review (review-forge), AGENTS.md slimming, Occam's Razor design auditing (subtractive-brake), and impeccable-driven UI design delegation",
     "skills": "./skills/"
 }

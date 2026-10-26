@@ -8,7 +8,7 @@
 
 | 插件 | 版本 | 適用平台 | 說明 |
 |------|------|----------|------|
-| `skills` | 0.1.0 | Claude Code / Codex / Pi | 包含 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`ui-design` 五個 skill，以及 `impeccable-ui-designer` agent |
+| `skills` | 0.1.0 | Claude Code / Codex / Pi | 包含 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-brake`、`ui-design` 六個 skill，以及 `impeccable-ui-designer`、`subtractive-brake` 兩個 agent |
 
 | Skill | 說明 |
 |-------|------|
@@ -16,6 +16,7 @@
 | `issue-template` | 建立、重構與驗證 GitHub Issue Forms 模板 |
 | `review-forge` | 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`scope` / `review` / `synthesize` / `vote` / `report` / `fix` / `verify` 七階段命令，可透過 Codex / Claude Code CLI 跨廠商審查 |
 | `slim-agents-md` | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
+| `subtractive-brake` | 以奧坎剃刀原則擋下「再加一層」的工程反射：先刪除與重用，縮短依賴路徑，把冗長文字壓成表格。另有同名 read-only 審查 agent |
 | `ui-design` | 自動把 UI 需求委派給 `impeccable-ui-designer` agent；所有設計決策交由 impeccable skill（需另外安裝 `impeccable`） |
 
 ## 外部套件
@@ -83,7 +84,7 @@
 }
 ```
 
-安裝完成後可使用 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`ui-design` 五個 skill，以及 `skills:impeccable-ui-designer` agent。
+安裝完成後可使用 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-brake`、`ui-design` 六個 skill，以及 `skills:impeccable-ui-designer`、`skills:subtractive-brake` 兩個 agent。
 
 ## Codex 安裝方式
 
@@ -99,7 +100,7 @@ codex plugin marketplace add gn00678465/coding-agent-toolkit
 codex plugin add skills@coding-agent-toolkit
 ```
 
-Codex plugin 不會載入 subagent。要讓 `ui-design` 委派給 `impeccable-ui-designer`，請把 [`plugins/skills/.codex/agents/impeccable-ui-designer.toml`](./plugins/skills/.codex/agents/impeccable-ui-designer.toml) 複製到專案的 `.codex/agents/`。
+Codex plugin 不會載入 subagent。要使用 agent，請把 [`plugins/skills/.codex/agents/`](./plugins/skills/.codex/agents/) 底下需要的 `.toml`（`impeccable-ui-designer`、`subtractive-brake`）複製到專案的 `.codex/agents/`。
 
 每個 skill 目錄內含 `agents/openai.yaml` 提供 Codex UI 顯示名稱與預設 prompt。
 
@@ -114,7 +115,7 @@ pi install git:github.com/gn00678465/coding-agent-toolkit
 
 | 套件 | Pi 安裝方式 | 說明 |
 |------|-------------|------|
-| `skills` | 隨上面的指令一起安裝 | 載入 `plugins/skills/skills` 底下的五個 skill，加上 `/gitignore-generator.prompt` 指令。`review-forge` 在 Pi 沒有 `host` lane，多模型 review 改用 `claude:` 與 `codex:` CLI lane，需要另外安裝並登入 `claude` 與 `codex`。`slim-agents-md` 在 Pi 沒有 AskUserQuestion，矛盾裁決會改成在對話中直接詢問 |
+| `skills` | 隨上面的指令一起安裝 | 載入 `plugins/skills/skills` 底下的六個 skill，加上 `/gitignore-generator.prompt` 指令。`review-forge` 在 Pi 沒有 `host` lane，多模型 review 改用 `claude:` 與 `codex:` CLI lane，需要另外安裝並登入 `claude` 與 `codex`。`slim-agents-md` 在 Pi 沒有 AskUserQuestion，矛盾裁決會改成在對話中直接詢問 |
 | `ui-design` 的 subagent | 要用 subagent 再裝 `pi install npm:@tintinweb/pi-subagents` | 有裝 [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) 時，`package.json` 的 `pi.subagents` 會註冊 `impeccable-ui-designer`，`ui-design` 用 Agent tool 委派給它。沒裝時改用 inline 模式，在主 session 讀取 agent 定義並照著執行，遇到需要決定的地方直接問你。Pi 上模型不一定會自動載入 skill，建議用 `/skill:ui-design <需求>` 呼叫 |
 | `impeccable` | 隨上面的指令一起安裝 | package 內的 extension（`pi/extensions/upstream-skills.ts`）在 Pi 啟動時，依 `.claude-plugin/marketplace.json` 鎖定的 commit，只下載上游的 `.pi/skills`（約 4 MB）到 `~/.pi/agent/cache/coding-agent-toolkit/`。第一次需要網路與 git。也可以改用官方安裝程式 `npx impeccable install --providers=pi` |
 
@@ -132,20 +133,23 @@ extension 是會執行的程式碼，Pi 會在信任 package 後才載入。要�
 plugins/skills/
 ├── .claude-plugin/plugin.json                 # Claude Code manifest
 ├── .codex-plugin/plugin.json                  # Codex manifest
-├── .codex/agents/impeccable-ui-designer.toml  # Codex 版 agent（手動複製到專案）
-├── agents/impeccable-ui-designer.md           # agent 原始檔（Claude Code / Pi）
+├── .codex/agents/*.toml                       # Codex 版 agent（apm-go 產生，手動複製到專案）
+├── agents/                                    # agent 原始檔（Claude Code / Pi）
+│   ├── impeccable-ui-designer.md
+│   └── subtractive-brake.md
 ├── prompts/gitignore-generator.prompt.md
 ├── skills/
 │   ├── issue-template/
 │   ├── pull-request/
 │   ├── review-forge/
 │   ├── slim-agents-md/
+│   ├── subtractive-brake/
 │   └── ui-design/
 ├── package.json                               # Pi 本機路徑安裝
 └── plugin.json
 ```
 
-修改 `agents/impeccable-ui-designer.md` 後，Codex 版的 `.toml` 要用 apm-go 重新產生，步驟見 [`plugins/skills/README.md`](./plugins/skills/README.md#impeccable-ui-designer)。
+修改 `agents/` 底下的 agent 後，Codex 版的 `.toml` 要用 apm-go 重新產生，步驟見 [`plugins/skills/README.md`](./plugins/skills/README.md#agents)。
 
 ## 參考
 

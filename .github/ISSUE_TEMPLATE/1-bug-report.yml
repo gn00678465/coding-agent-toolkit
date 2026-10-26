@@ -61,6 +61,7 @@ body:
         - skills / issue-template
         - skills / review-forge
         - skills / slim-agents-md
+        - skills / subtractive-brake
         - skills / ui-design
         - Marketplace 與上游同步 (apm.yml / workflows)
       default: 0

@@ -14,19 +14,25 @@ Codex 與 Pi 的安裝方式見根目錄 [README](../../README.md)。
 | `issue-template` | 建立、重構與驗證 GitHub Issue Forms 模板 |
 | `review-forge` | 多模型程式碼審查：獨立審查 → 交叉投票 → 信心排序 → 核准修復 |
 | `slim-agents-md` | 精簡與重構 AGENTS.md / CLAUDE.md |
+| `subtractive-brake` | 以奧坎剃刀原則擋下多餘的元件、抽象與 prompt 規則，先刪除再新增 |
 | `ui-design` | 把 UI 需求委派給 `impeccable-ui-designer` agent |
 
-## impeccable-ui-designer
+## Agents
 
-`ui-design` skill 本身不做設計，而是交給 `agents/impeccable-ui-designer.md`：
+| Agent | 說明 |
+|-------|------|
+| `impeccable-ui-designer` | `ui-design` skill 的設計執行者，所有設計決策交給 impeccable skill |
+| `subtractive-brake` | 奧坎剃刀審查員：在新增元件、middleware、lock、cron、設定或 prompt 規則前審查，輸出 Razor Verdict |
 
-- **Claude Code**：plugin 會自動載入 `agents/`，agent 名稱為 `skills:impeccable-ui-designer`。
-- **Codex**：plugin 不會載入 subagent，請把 `.codex/agents/impeccable-ui-designer.toml` 複製到專案的 `.codex/agents/`。
-- **Pi**：裝了 `@tintinweb/pi-subagents` 時透過 `pi.subagents` 註冊；否則 `ui-design` 走 inline 模式，直接讀取 `agents/impeccable-ui-designer.md` 執行。
+- **Claude Code**：plugin 會自動載入 `agents/`，agent 名稱為 `skills:impeccable-ui-designer`、`skills:subtractive-brake`。
+- **Codex**：plugin 不會載入 subagent，請把 `.codex/agents/` 底下需要的 `.toml` 複製到專案的 `.codex/agents/`。
+- **Pi**：只註冊 `impeccable-ui-designer`（需 `@tintinweb/pi-subagents`；沒裝時 `ui-design` 走 inline 模式，直接讀取 agent 定義執行）。`subtractive-brake` agent 的 `tools` 是 Claude Code 的工具名稱，Pi 上請改用同名 skill。
 
-agent 需要 impeccable skill：`npx impeccable install --providers=claude,codex`，或 `/plugin install impeccable@coding-agent-toolkit`。
+`impeccable-ui-designer` 需要 impeccable skill：`npx impeccable install --providers=claude,codex`，或 `/plugin install impeccable@coding-agent-toolkit`。
 
-`.codex/agents/impeccable-ui-designer.toml` 是 `agents/impeccable-ui-designer.md` 的 Codex 版。修改 agent 後，用 [apm-go](https://github.com/gn00678465/apm-go) 重新產生：
+`subtractive-brake` 的 frontmatter 有 `readonly: true`，但 Claude Code 與 Codex 都不會依這個欄位限制寫入（agent 仍有 `Bash`），read-only 只靠 agent 指示本身。
+
+`.codex/agents/*.toml` 是 `agents/*.md` 的 Codex 版（只保留 `name`、`description` 與 `developer_instructions`）。修改 agent 後，用 [apm-go](https://github.com/gn00678465/apm-go) 重新產生：
 
 ```bash
 # 安裝 apm-go
@@ -35,10 +41,12 @@ curl -fsSL https://raw.githubusercontent.com/gn00678465/apm-go/main/install.sh |
 # 在暫存目錄把 agent 轉成 Codex TOML，再複製回來
 tmp=$(mktemp -d)
 mkdir -p "$tmp/.apm/agents"
-cp plugins/skills/agents/impeccable-ui-designer.md "$tmp/.apm/agents/impeccable-ui-designer.agent.md"
+for f in plugins/skills/agents/*.md; do
+  cp "$f" "$tmp/.apm/agents/$(basename "$f" .md).agent.md"
+done
 printf 'name: tmp\nversion: 0.0.1\ntargets:\n- codex\n' > "$tmp/apm.yml"
 (cd "$tmp" && apm-go install)
-cp "$tmp/.codex/agents/impeccable-ui-designer.toml" plugins/skills/.codex/agents/
+cp "$tmp"/.codex/agents/*.toml plugins/skills/.codex/agents/
 ```
 
 ## 授權
