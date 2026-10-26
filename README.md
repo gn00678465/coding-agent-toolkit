@@ -145,7 +145,7 @@ plugins/skills/
 └── plugin.json
 ```
 
-修改 `agents/impeccable-ui-designer.md` 時，請同步更新 `.codex/agents/impeccable-ui-designer.toml` 的 `developer_instructions`。
+修改 `agents/impeccable-ui-designer.md` 後，Codex 版的 `.toml` 要用 apm-go 重新產生，步驟見 [`plugins/skills/README.md`](./plugins/skills/README.md#impeccable-ui-designer)。
 
 ## 參考
 

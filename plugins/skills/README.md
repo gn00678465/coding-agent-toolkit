@@ -26,7 +26,20 @@ Codex 與 Pi 的安裝方式見根目錄 [README](../../README.md)。
 
 agent 需要 impeccable skill：`npx impeccable install --providers=claude,codex`，或 `/plugin install impeccable@coding-agent-toolkit`。
 
-`.codex/agents/impeccable-ui-designer.toml` 是 `agents/impeccable-ui-designer.md` 的 Codex 版，修改 agent 時兩份要一起更新。
+`.codex/agents/impeccable-ui-designer.toml` 是 `agents/impeccable-ui-designer.md` 的 Codex 版。修改 agent 後，用 [apm-go](https://github.com/gn00678465/apm-go) 重新產生：
+
+```bash
+# 安裝 apm-go
+curl -fsSL https://raw.githubusercontent.com/gn00678465/apm-go/main/install.sh | sh
+
+# 在暫存目錄把 agent 轉成 Codex TOML，再複製回來
+tmp=$(mktemp -d)
+mkdir -p "$tmp/.apm/agents"
+cp plugins/skills/agents/impeccable-ui-designer.md "$tmp/.apm/agents/impeccable-ui-designer.agent.md"
+printf 'name: tmp\nversion: 0.0.1\ntargets:\n- codex\n' > "$tmp/apm.yml"
+(cd "$tmp" && apm-go install)
+cp "$tmp/.codex/agents/impeccable-ui-designer.toml" plugins/skills/.codex/agents/
+```
 
 ## 授權
 
