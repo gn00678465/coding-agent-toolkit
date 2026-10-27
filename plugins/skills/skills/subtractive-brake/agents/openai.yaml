@@ -1,7 +1,0 @@
-interface:
-  display_name: "Subtractive Brake"
-  short_description: "Apply Occam's Razor before adding new entities"
-  default_prompt: "Use $subtractive-brake to audit this design before we add anything."
-
-policy:
-  allow_implicit_invocation: false

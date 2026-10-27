@@ -8,7 +8,7 @@
 
 | 插件 | 版本 | 適用平台 | 說明 |
 |------|------|----------|------|
-| `skills` | 0.1.0 | Claude Code / Codex / Pi | 包含 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-brake`、`ui-design` 六個 skill，以及 `impeccable-ui-designer`、`subtractive-brake` 兩個 agent |
+| `skills` | 0.1.0 | Claude Code / Codex / Pi | 包含 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-engineering`、`ui-design` 六個 skill，以及 `impeccable-ui-designer`、`subtractive-brake` 兩個 agent |
 
 | Skill | 說明 |
 |-------|------|
@@ -16,7 +16,7 @@
 | `issue-template` | 建立、重構與驗證 GitHub Issue Forms 模板 |
 | `review-forge` | 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`scope` / `review` / `synthesize` / `vote` / `report` / `fix` / `verify` 七階段命令，可透過 Codex / Claude Code CLI 跨廠商審查 |
 | `slim-agents-md` | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
-| `subtractive-brake` | 以奧坎剃刀原則擋下「再加一層」的工程反射：先刪除與重用，縮短依賴路徑，把冗長文字壓成表格。另有同名 read-only 審查 agent。模型不會自動載入，需手動叫用：Claude Code `/skills:subtractive-brake`、Codex `$subtractive-brake`、Pi `/skill:subtractive-brake` |
+| `subtractive-engineering` | 減法工程：以奧坎剃刀原則擋下「再加一層」的工程反射，先刪除與重用，縮短依賴路徑，把冗長文字壓成表格。搭配 read-only 審查 agent `subtractive-brake`。模型不會自動載入，需手動叫用：Claude Code `/skills:subtractive-engineering`、Codex `$subtractive-engineering`、Pi `/skill:subtractive-engineering` |
 | `ui-design` | 自動把 UI 需求委派給 `impeccable-ui-designer` agent；所有設計決策交由 impeccable skill（需另外安裝 `impeccable`） |
 
 ## 外部套件
@@ -84,7 +84,7 @@
 }
 ```
 
-安裝完成後可使用 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-brake`、`ui-design` 六個 skill，以及 `skills:impeccable-ui-designer`、`skills:subtractive-brake` 兩個 agent。
+安裝完成後可使用 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-engineering`、`ui-design` 六個 skill，以及 `skills:impeccable-ui-designer`、`skills:subtractive-brake` 兩個 agent。
 
 ## Codex 安裝方式
 
@@ -143,7 +143,7 @@ plugins/skills/
 │   ├── pull-request/
 │   ├── review-forge/
 │   ├── slim-agents-md/
-│   ├── subtractive-brake/
+│   ├── subtractive-engineering/
 │   └── ui-design/
 ├── package.json                               # Pi 本機路徑安裝
 └── plugin.json

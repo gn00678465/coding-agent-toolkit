@@ -1,5 +1,5 @@
 ---
-name: subtractive-brake
+name: subtractive-engineering
 description: Applies Occam's Razor ("do not multiply entities beyond necessity") to block additive engineering reflexes, prune dependency paths, and compress verbose text into high-density tables.
 disable-model-invocation: true
 ---
