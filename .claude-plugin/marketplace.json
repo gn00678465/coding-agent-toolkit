@@ -25,13 +25,13 @@
     },
     {
       "name": "impeccable",
-      "version": "4.7.0",
+      "version": "4.8.0",
       "category": "design",
       "source": {
         "source": "url",
         "url": "https://github.com/pbakaus/impeccable",
-        "ref": "aeeb3d8c30b5f95aeeb3e893b0f1a308af8fdb8f",
-        "sha": "aeeb3d8c30b5f95aeeb3e893b0f1a308af8fdb8f",
+        "ref": "414603bf14c7a344edb466bb1f85690c77ce8b7d",
+        "sha": "414603bf14c7a344edb466bb1f85690c77ce8b7d",
         "tag_pattern": "skill-v{version}"
       }
     },
@@ -113,8 +113,8 @@
         "source": "git-subdir",
         "url": "https://github.com/cursor/plugins",
         "path": "pstack",
-        "ref": "9580c23696ac8d7abed0c166f2f9918800afb819",
-        "sha": "9580c23696ac8d7abed0c166f2f9918800afb819",
+        "ref": "ab1f702ce8e8b6557edb56b09f52cde8bfb83f17",
+        "sha": "ab1f702ce8e8b6557edb56b09f52cde8bfb83f17",
         "tag_pattern": "v{version}"
       }
     }
