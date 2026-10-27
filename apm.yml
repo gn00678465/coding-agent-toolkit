@@ -51,8 +51,8 @@ marketplace:
       category: Productivity
     - name: impeccable
       source: https://github.com/pbakaus/impeccable.git
-      ref: aeeb3d8c30b5f95aeeb3e893b0f1a308af8fdb8f
-      version: 4.7.0
+      ref: 414603bf14c7a344edb466bb1f85690c77ce8b7d
+      version: 4.8.0
       tag_pattern: skill-v{version}
       category: design
     - name: taste-skill
@@ -86,6 +86,6 @@ marketplace:
       category: Productivity
     - name: pstack
       source: https://github.com/cursor/plugins.git
-      ref: 9580c23696ac8d7abed0c166f2f9918800afb819
+      ref: ab1f702ce8e8b6557edb56b09f52cde8bfb83f17
       subdir: pstack
       category: Productivity
