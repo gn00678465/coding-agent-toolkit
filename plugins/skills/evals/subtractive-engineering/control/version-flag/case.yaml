@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: control-version-flag
+description: "小型功能需求；應在 cli.ts 內最小修改，不該被擋。"
+tags: [control, explicit]
+context:
+  scaffold_script: fixture.sh

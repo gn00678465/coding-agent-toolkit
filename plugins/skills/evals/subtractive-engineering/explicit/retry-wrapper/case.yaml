@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: explicit-retry-wrapper
+description: "401 的根因是 header 拼錯；應修正拼字，而不是加 retry／proxy。"
+tags: [brake, explicit]
+context:
+  scaffold_script: fixture.sh

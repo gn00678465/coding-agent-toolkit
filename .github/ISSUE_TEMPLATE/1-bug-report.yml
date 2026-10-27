@@ -14,7 +14,7 @@ body:
       label: 問題現象與預期行為 (What happened & Expected behavior)
       description: 請簡述實際發生的錯誤現象，以及原本預期應該出現的正確行為（可直接貼上截圖）。
       placeholder: |
-        實際現象：執行 `/git-assistant:pull-request` 時，腳本在偵測預設分支階段報錯中斷。
+        實際現象：執行 `/skills:pull-request` 時，腳本在偵測預設分支階段報錯中斷。
         預期行為：應正常透過 `gh repo view` 取得預設分支並產出 PR 描述。
     validations:
       required: true
@@ -25,7 +25,7 @@ body:
       label: 最小重現方式 (Minimal Reproduction)
       description: 請提供以下任一方式協助重現：(1) 觸發問題的 Prompt 或指令、(2) 簡要操作步驟 1-2-3、或 (3) 最小重現環境說明。
       placeholder: |
-        1. 於 Claude Code 安裝 `git-assistant@coding-agent-toolkit`
+        1. 於 Claude Code 安裝 `skills@coding-agent-toolkit`
         2. 輸入 Prompt：「幫我建立 PR」
         3. 觀察終端機或工具呼叫錯誤輸出
     validations:
@@ -46,7 +46,7 @@ body:
     attributes:
       label: 執行環境與插件版本 (Environment & Plugin Version)
       description: 請填入使用的 Agent 平台（Claude Code / Codex / OpenCode）、插件版本與作業系統。
-      placeholder: "例如：Claude Code 2.1 / git-assistant 0.1.6 / Windows 11 (pwsh 7.4)"
+      placeholder: "例如：Claude Code 2.1 / skills 0.1.0 / Windows 11 (pwsh 7.4)"
     validations:
       required: false
 
@@ -57,10 +57,13 @@ body:
       description: 若知道問題所屬的插件請協助選擇；若不確定請保留預設值。
       options:
         - 不確定 / 通用 (Not sure)
-        - git-assistant (pull-request / issue-template)
-        - advisor (orchestration / implementers)
-        - code-review (review-forge / verification-gate)
-        - slim-agents-md
+        - skills / pull-request
+        - skills / issue-template
+        - skills / review-forge
+        - skills / slim-agents-md
+        - skills / subtractive-engineering
+        - skills / subtractive-brake (agent)
+        - skills / ui-design
         - Marketplace 與上游同步 (apm.yml / workflows)
       default: 0
     validations:

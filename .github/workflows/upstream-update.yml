@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  APM_GO_VERSION: 0.4.0-rc.1
+  APM_GO_VERSION: 0.4.3
   BRANCH: bot/upstream-update
 
 jobs:

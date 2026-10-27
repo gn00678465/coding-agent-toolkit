@@ -1,6 +1,0 @@
-{
-  "name": "git-assistant",
-  "version": "0.1.7",
-  "description": "Claude Code, GitHub Copilot & Codex plugin bundle for pull request and issue template workflows",
-  "skills": "./skills/"
-}

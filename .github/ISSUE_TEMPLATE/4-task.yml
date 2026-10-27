@@ -13,7 +13,7 @@ body:
     attributes:
       label: 任務目標與背景 (Task Goal & Context)
       description: 請說明此工程任務欲達成的目標、影響的插件範圍或背景動機。
-      placeholder: "將 `code-review` 的 review-forge 輸出 schema 升版，並同步更新 evals 與 README..."
+      placeholder: "將 `skills` 插件的 review-forge 輸出 schema 升版，並同步更新 evals 與 README..."
     validations:
       required: true
 
