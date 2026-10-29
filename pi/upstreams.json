@@ -3,6 +3,9 @@
   "packages": {
     "impeccable": {
       "skills": [".pi/skills"]
+    },
+    "pstack": {
+      "skills": ["skills"]
     }
   }
 }

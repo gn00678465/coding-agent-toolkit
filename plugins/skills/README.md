@@ -15,6 +15,7 @@ Codex 與 Pi 的安裝方式見根目錄 [README](../../README.md)。
 | `review-forge` | 多模型程式碼審查：獨立審查 → 交叉投票 → 信心排序 → 核准修復 |
 | `slim-agents-md` | 精簡與重構 AGENTS.md / CLAUDE.md |
 | `subtractive-engineering` | 減法工程：以奧坎剃刀原則擋下多餘的元件、抽象與 prompt 規則，先刪除再新增。設定了 `disable-model-invocation`，只能手動叫用（`/skills:subtractive-engineering <需求>`） |
+| `done-or-not` | 成果白話判定與實證規範：融合 open-steps 白話判決（Verdict）、ste-zht 受控語言與 Gemini 雙層架構。設定了 `disable-model-invocation`，手動叫用（`/skills:done-or-not`） |
 | `ui-design` | 把 UI 需求委派給 `impeccable-ui-designer` agent |
 
 ## Agents
