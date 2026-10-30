@@ -8,7 +8,7 @@
     {
       "name": "skills",
       "description": "Coding agent skills: pull request and issue template workflows, multi-model code review (review-forge), AGENTS.md slimming, subtractive engineering with Occam's Razor, and impeccable-driven UI design delegation",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "Productivity",
       "source": "./plugins/skills"
     },
