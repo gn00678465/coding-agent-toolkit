@@ -57,7 +57,7 @@ marketplace:
       category: design
     - name: taste-skill
       source: https://github.com/Leonxlnx/taste-skill.git
-      ref: 12af471f627f866411b4bd785b19646d3672784c
+      ref: 9b4bf937a1f69348126959c15d2f99a73e65699b
       category: design
     - name: beautify-github-readme
       source: https://github.com/oil-oil/beautify-github-readme.git

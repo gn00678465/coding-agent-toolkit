@@ -51,8 +51,8 @@
       "source": {
         "source": "url",
         "url": "Leonxlnx/taste-skill",
-        "ref": "12af471f627f866411b4bd785b19646d3672784c",
-        "sha": "12af471f627f866411b4bd785b19646d3672784c",
+        "ref": "9b4bf937a1f69348126959c15d2f99a73e65699b",
+        "sha": "9b4bf937a1f69348126959c15d2f99a73e65699b",
         "tag_pattern": "v{version}"
       },
       "policy": {
