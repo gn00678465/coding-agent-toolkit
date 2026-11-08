@@ -36,8 +36,8 @@
       "source": {
         "source": "url",
         "url": "pbakaus/impeccable",
-        "ref": "414603bf14c7a344edb466bb1f85690c77ce8b7d",
-        "sha": "414603bf14c7a344edb466bb1f85690c77ce8b7d",
+        "ref": "924bbd194d02e5e15a227e75b5901fb0d7a4ecad",
+        "sha": "924bbd194d02e5e15a227e75b5901fb0d7a4ecad",
         "tag_pattern": "skill-v{version}"
       },
       "policy": {
