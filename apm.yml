@@ -51,8 +51,8 @@ marketplace:
       category: Productivity
     - name: impeccable
       source: https://github.com/pbakaus/impeccable.git
-      ref: 035c8f319edd019936525a062fe99e83ca8d12c6
-      version: 4.8.2
+      ref: c4cd1924c389f68d37c687d9c2bbf13f12547c41
+      version: 4.9.0
       tag_pattern: skill-v{version}
       category: design
     - name: taste-skill
@@ -61,7 +61,7 @@ marketplace:
       category: design
     - name: beautify-github-readme
       source: https://github.com/oil-oil/beautify-github-readme.git
-      ref: d6562a5f5c484d069f8560b39c215c9cda4b5a55
+      ref: e2a8e3898d1ab84c9ea75df68e1ff916b370cbac
       category: design
     - name: show-me
       source: https://github.com/humanlayer/skills.git

@@ -36,8 +36,8 @@
       "source": {
         "source": "url",
         "url": "pbakaus/impeccable",
-        "ref": "035c8f319edd019936525a062fe99e83ca8d12c6",
-        "sha": "035c8f319edd019936525a062fe99e83ca8d12c6",
+        "ref": "c4cd1924c389f68d37c687d9c2bbf13f12547c41",
+        "sha": "c4cd1924c389f68d37c687d9c2bbf13f12547c41",
         "tag_pattern": "skill-v{version}"
       },
       "policy": {
@@ -66,8 +66,8 @@
       "source": {
         "source": "url",
         "url": "oil-oil/beautify-github-readme",
-        "ref": "d6562a5f5c484d069f8560b39c215c9cda4b5a55",
-        "sha": "d6562a5f5c484d069f8560b39c215c9cda4b5a55",
+        "ref": "e2a8e3898d1ab84c9ea75df68e1ff916b370cbac",
+        "sha": "e2a8e3898d1ab84c9ea75df68e1ff916b370cbac",
         "tag_pattern": "v{version}"
       },
       "policy": {
