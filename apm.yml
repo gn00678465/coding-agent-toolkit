@@ -86,6 +86,6 @@ marketplace:
       category: Productivity
     - name: pstack
       source: https://github.com/cursor/plugins.git
-      ref: b1695c2019b650ca5d4a66a6a6d805233c806d6d
+      ref: bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7
       subdir: pstack
       category: Productivity
