@@ -25,13 +25,13 @@
     },
     {
       "name": "impeccable",
-      "version": "4.9.1",
+      "version": "4.10.0",
       "category": "design",
       "source": {
         "source": "url",
         "url": "https://github.com/pbakaus/impeccable",
-        "ref": "acb4cfe14470b1fdf51e855431af618d936b7db8",
-        "sha": "acb4cfe14470b1fdf51e855431af618d936b7db8",
+        "ref": "b49177d32788f2dc585c42831d845dacf1ebed2c",
+        "sha": "b49177d32788f2dc585c42831d845dacf1ebed2c",
         "tag_pattern": "skill-v{version}"
       }
     },
@@ -52,8 +52,8 @@
       "source": {
         "source": "url",
         "url": "https://github.com/oil-oil/beautify-github-readme",
-        "ref": "e2a8e3898d1ab84c9ea75df68e1ff916b370cbac",
-        "sha": "e2a8e3898d1ab84c9ea75df68e1ff916b370cbac",
+        "ref": "cee51546f17542d547973e5292ae2e70855424d9",
+        "sha": "cee51546f17542d547973e5292ae2e70855424d9",
         "tag_pattern": "v{version}"
       }
     },
@@ -113,8 +113,8 @@
         "source": "git-subdir",
         "url": "https://github.com/cursor/plugins",
         "path": "pstack",
-        "ref": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
-        "sha": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
+        "ref": "35a90942a7f02e1ebbc2443643179815f2147954",
+        "sha": "35a90942a7f02e1ebbc2443643179815f2147954",
         "tag_pattern": "v{version}"
       }
     }
