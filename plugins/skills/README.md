@@ -16,6 +16,7 @@ Codex 與 Pi 的安裝方式見根目錄 [README](../../README.md)。
 | `slim-agents-md` | 精簡與重構 AGENTS.md / CLAUDE.md |
 | `subtractive-engineering` | 減法工程：以奧坎剃刀原則擋下多餘的元件、抽象與 prompt 規則，先刪除再新增。設定了 `disable-model-invocation`，只能手動叫用（`/skills:subtractive-engineering <需求>`） |
 | `done-or-not` | 成果白話判定與實證規範：融合 open-steps 白話判決（Verdict）、ste-zht 受控語言與 Gemini 雙層架構。設定了 `disable-model-invocation`，手動叫用（`/skills:done-or-not`） |
+| `superagent` | 跨 CLI 的 Router-Worker 交付流程：Claude Code 寫 brief／實作、Codex 審查、雙層卡死監控；專案內 `.workflow/config.json` 釘住各角色的 cli／model／effort，同一階段重做超過上限即停機交 Owner。需要 `uv`、`herdr-core`（或 Orca）與對應的 `claude`／`codex`／`agy` CLI |
 | `ui-design` | 把 UI 需求委派給 `impeccable-ui-designer` agent |
 
 ## Agents
