@@ -2,22 +2,9 @@
 
 本專案收錄多個可重用的 AI 編碼代理插件，支援 Claude Code、Codex 及 Pi 等平台。
 
-## 插件清單
+## 自有 skills
 
-本專案自行維護的 skill 全部收在 [`plugins/skills`](./plugins/skills) 這一個插件中：
-
-| 插件 | 版本 | 適用平台 | 說明 |
-|------|------|----------|------|
-| `skills` | 0.1.0 | Claude Code / Codex / Pi | 包含 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-engineering`、`done-or-not`、`superagent`、`ui-design` 八個 skill，以及 `impeccable-ui-designer`、`subtractive-brake` 兩個 agent |
-
-| Skill | 說明 |
-|-------|------|
-| `pull-request` | 建立與修改 GitHub PR，產生符合 Conventional Commits 的標題與 PR 模板 |
-| `issue-template` | 建立、重構與驗證 GitHub Issue Forms 模板 |
-| `review-forge` | 多模型審查工作流（獨立審查 → 交叉投票 → 信心排序 → 核准修復），`scope` / `review` / `synthesize` / `vote` / `report` / `fix` / `verify` 七階段命令，可透過 Codex / Claude Code CLI 跨廠商審查 |
-| `slim-agents-md` | 以 progressive disclosure 原則精簡肥大的 AGENTS.md / CLAUDE.md：矛盾裁決 → root 本質萃取 → 分類拆檔 → 標記刪除 → 確認後落地 |
-| `subtractive-engineering` | 減法工程：以奧坎剃刀原則擋下「再加一層」的工程反射，先刪除與重用，縮短依賴路徑，把冗長文字壓成表格。搭配 read-only 審查 agent `subtractive-brake`。模型不會自動載入，需手動叫用：Claude Code `/skills:subtractive-engineering`、Codex `$subtractive-engineering`、Pi `/skill:subtractive-engineering` |
-| `ui-design` | 自動把 UI 需求委派給 `impeccable-ui-designer` agent；所有設計決策交由 impeccable skill（需另外安裝 `impeccable`） |
+自有 skills 與 agents 已搬到 [agent-home](https://github.com/gn00678465/agent-home)，本專案只轉發外部套件。
 
 ## 外部套件
 
@@ -70,7 +57,7 @@
 
 **option1**
 ```text
-/plugin install skills@coding-agent-toolkit
+/plugin install <套件名稱>@coding-agent-toolkit
 /reload-plugins
 ```
 
@@ -79,12 +66,11 @@
 ```
 {
   "enabledPlugins": {
-    "skills@coding-agent-toolkit": true
+    "<套件名稱>@coding-agent-toolkit": true
   }
 }
 ```
 
-安裝完成後可使用 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-engineering`、`done-or-not`、`superagent`、`ui-design` 八個 skill，以及 `skills:impeccable-ui-designer`、`skills:subtractive-brake` 兩個 agent。
 
 ## Codex 安裝方式
 
@@ -97,12 +83,8 @@ codex plugin marketplace add gn00678465/coding-agent-toolkit
 再安裝插件：
 
 ```text
-codex plugin add skills@coding-agent-toolkit
+codex plugin add <套件名稱>@coding-agent-toolkit
 ```
-
-Codex plugin 不會載入 subagent。要使用 agent，請把 [`plugins/skills/.codex/agents/`](./plugins/skills/.codex/agents/) 底下需要的 `.toml`（`impeccable-ui-designer`、`subtractive-brake`）複製到專案的 `.codex/agents/`。
-
-每個 skill 目錄內含 `agents/openai.yaml` 提供 Codex UI 顯示名稱與預設 prompt。
 
 ## Pi 安裝方式
 
@@ -115,44 +97,14 @@ pi install git:github.com/gn00678465/coding-agent-toolkit
 
 | 套件 | Pi 安裝方式 | 說明 |
 |------|-------------|------|
-| `skills` | 隨上面的指令一起安裝 | 載入 `plugins/skills/skills` 底下的八個 skill，加上 `/gitignore-generator.prompt` 指令。`review-forge` 在 Pi 沒有 `host` lane，多模型 review 改用 `claude:` 與 `codex:` CLI lane，需要另外安裝並登入 `claude` 與 `codex`。`slim-agents-md` 在 Pi 沒有 AskUserQuestion，矛盾裁決會改成在對話中直接詢問 |
-| `ui-design` 的 subagent | 要用 subagent 再裝 `pi install npm:@tintinweb/pi-subagents` | 有裝 [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) 時，`package.json` 的 `pi.subagents` 會註冊 `impeccable-ui-designer`，`ui-design` 用 Agent tool 委派給它。沒裝時改用 inline 模式，在主 session 讀取 agent 定義並照著執行，遇到需要決定的地方直接問你。Pi 上模型不一定會自動載入 skill，建議用 `/skill:ui-design <需求>` 呼叫 |
 | `impeccable` | 隨上面的指令一起安裝 | package 內的 extension（`pi/extensions/upstream-skills.ts`）在 Pi 啟動時，依 `.claude-plugin/marketplace.json` 鎖定的 commit，只下載上游的 `.pi/skills`（約 4 MB）到 `~/.pi/agent/cache/coding-agent-toolkit/`。第一次需要網路與 git。也可以改用官方安裝程式 `npx impeccable install --providers=pi` |
 | `pstack` | 隨上面的指令一起安裝 | package 內的 extension 在 Pi 啟動時，依 `.claude-plugin/marketplace.json` 鎖定的 commit，只下載上游的 `pstack/skills`（約 2 MB）到快取目錄。載入 58 個 skill（57 個設有 `disable-model-invocation: true`，需以 `/skill:<name>` 呼叫，例如 `/skill:architect`、`/skill:poteto-mode` 等） |
 
 其他外部套件目前尚未加入 `pi/upstreams.json`。
 
-`impeccable-ui-designer` 只有在本 package 裝在使用者層級，或專案已儲存信任決定後，才會出現在 Agent tool 的可用清單。以 `-l` 裝在專案、且還沒儲存信任時，`pi-subagents` 第一個 session 不會把它告訴模型，`ui-design` 會改走 inline 模式。另一個同名套件 `pi-subagents`（nicobailon）也讀同一個 `pi.subagents` 欄位，但未經測試。
-
 extension 是會執行的程式碼，Pi 會在信任 package 後才載入。要加入其他外部套件，在 `pi/upstreams.json` 加上套件名稱與 skill 目錄即可，版本跟著 `apm.yml` 的鎖定走。
 
 裝完在 session 內執行 `/reload`。可以在 git 來源後加 `@<tag>` 鎖定版本。調查過程與限制見 [`docs/research/pi-package-install.md`](./docs/research/pi-package-install.md)。
-
-## 目錄
-
-```text
-plugins/skills/
-├── .claude-plugin/plugin.json                 # Claude Code manifest
-├── .codex-plugin/plugin.json                  # Codex manifest
-├── .codex/agents/*.toml                       # Codex 版 agent（apm-go 產生，手動複製到專案）
-├── agents/                                    # agent 原始檔（Claude Code / Pi）
-│   ├── impeccable-ui-designer.md
-│   └── subtractive-brake.md
-├── prompts/gitignore-generator.prompt.md
-├── skills/
-│   ├── done-or-not/
-│   ├── issue-template/
-│   ├── pull-request/
-│   ├── review-forge/
-│   ├── slim-agents-md/
-│   ├── subtractive-engineering/
-│   ├── superagent/
-│   └── ui-design/
-├── package.json                               # Pi 本機路徑安裝
-└── plugin.json
-```
-
-修改 `agents/` 底下的 agent 後，Codex 版的 `.toml` 要用 apm-go 重新產生，步驟見 [`plugins/skills/README.md`](./plugins/skills/README.md#agents)。
 
 ## 參考
 

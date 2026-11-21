@@ -25,12 +25,6 @@ marketplace:
   #   apm-go pack --marketplace=claude,codex --json | jq -r '.marketplace.outputs[].path'
 
   packages:
-    # Local-path entry: ship a package shipped alongside this repo.
-    - name: skills
-      source: ./plugins/skills
-      description: "Coding agent skills: pull request and issue template workflows, multi-model code review (review-forge), AGENTS.md slimming, subtractive engineering with Occam's Razor, and impeccable-driven UI design delegation"
-      version: 0.1.0
-      category: Productivity
     # - name: example-package
     #   description: Human-readable description of the package
     #   source: acme-org/example-package
