@@ -51,8 +51,8 @@
       "source": {
         "source": "url",
         "url": "Leonxlnx/taste-skill",
-        "ref": "f6b76575f949707b4e3c37cd86cb44b0b98643e8",
-        "sha": "f6b76575f949707b4e3c37cd86cb44b0b98643e8",
+        "ref": "6c0b5c78f5d31776e2210305abaa210cdc0030bf",
+        "sha": "6c0b5c78f5d31776e2210305abaa210cdc0030bf",
         "tag_pattern": "v{version}"
       },
       "policy": {
@@ -113,8 +113,8 @@
         "source": "git-subdir",
         "url": "tt-a1i/archify",
         "path": "archify",
-        "ref": "208acba8d412335185b2056fedf54b3405df43fb",
-        "sha": "208acba8d412335185b2056fedf54b3405df43fb",
+        "ref": "af3aaf3c36762f2afb62a4a09533f6c7273b07e5",
+        "sha": "af3aaf3c36762f2afb62a4a09533f6c7273b07e5",
         "tag_pattern": "v{version}"
       },
       "policy": {
