@@ -57,7 +57,7 @@ marketplace:
       category: design
     - name: taste-skill
       source: https://github.com/Leonxlnx/taste-skill.git
-      ref: f6b76575f949707b4e3c37cd86cb44b0b98643e8
+      ref: 6c0b5c78f5d31776e2210305abaa210cdc0030bf
       category: design
     - name: beautify-github-readme
       source: https://github.com/oil-oil/beautify-github-readme.git
@@ -75,8 +75,8 @@ marketplace:
       category: Productivity
     - name: archify
       source: https://github.com/tt-a1i/archify.git
-      ref: 208acba8d412335185b2056fedf54b3405df43fb
-      version: 3.2.0
+      ref: af3aaf3c36762f2afb62a4a09533f6c7273b07e5
+      version: 3.3.0
       subdir: archify
       category: Productivity
     - name: open-steps
