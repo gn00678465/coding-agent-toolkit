@@ -75,8 +75,8 @@ marketplace:
       category: Productivity
     - name: archify
       source: https://github.com/tt-a1i/archify.git
-      ref: 894225cca657d181e03f332e716b63782ba6b4da
-      version: 3.3.1
+      ref: a0199aab7bc1e87821c286f9b297afb8f98894ec
+      version: 3.3.2
       subdir: archify
       category: Productivity
     - name: open-steps
