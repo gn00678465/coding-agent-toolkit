@@ -8,7 +8,7 @@
 
 | 插件 | 版本 | 適用平台 | 說明 |
 |------|------|----------|------|
-| `skills` | 0.1.0 | Claude Code / Codex / Pi | 包含 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-engineering`、`ui-design` 六個 skill，以及 `impeccable-ui-designer`、`subtractive-brake` 兩個 agent |
+| `skills` | 0.1.0 | Claude Code / Codex / Pi | 包含 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-engineering`、`done-or-not`、`superagent`、`ui-design` 八個 skill，以及 `impeccable-ui-designer`、`subtractive-brake` 兩個 agent |
 
 | Skill | 說明 |
 |-------|------|
@@ -84,7 +84,7 @@
 }
 ```
 
-安裝完成後可使用 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-engineering`、`ui-design` 六個 skill，以及 `skills:impeccable-ui-designer`、`skills:subtractive-brake` 兩個 agent。
+安裝完成後可使用 `pull-request`、`issue-template`、`review-forge`、`slim-agents-md`、`subtractive-engineering`、`done-or-not`、`superagent`、`ui-design` 八個 skill，以及 `skills:impeccable-ui-designer`、`skills:subtractive-brake` 兩個 agent。
 
 ## Codex 安裝方式
 
@@ -115,7 +115,7 @@ pi install git:github.com/gn00678465/coding-agent-toolkit
 
 | 套件 | Pi 安裝方式 | 說明 |
 |------|-------------|------|
-| `skills` | 隨上面的指令一起安裝 | 載入 `plugins/skills/skills` 底下的七個 skill，加上 `/gitignore-generator.prompt` 指令。`review-forge` 在 Pi 沒有 `host` lane，多模型 review 改用 `claude:` 與 `codex:` CLI lane，需要另外安裝並登入 `claude` 與 `codex`。`slim-agents-md` 在 Pi 沒有 AskUserQuestion，矛盾裁決會改成在對話中直接詢問 |
+| `skills` | 隨上面的指令一起安裝 | 載入 `plugins/skills/skills` 底下的八個 skill，加上 `/gitignore-generator.prompt` 指令。`review-forge` 在 Pi 沒有 `host` lane，多模型 review 改用 `claude:` 與 `codex:` CLI lane，需要另外安裝並登入 `claude` 與 `codex`。`slim-agents-md` 在 Pi 沒有 AskUserQuestion，矛盾裁決會改成在對話中直接詢問 |
 | `ui-design` 的 subagent | 要用 subagent 再裝 `pi install npm:@tintinweb/pi-subagents` | 有裝 [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) 時，`package.json` 的 `pi.subagents` 會註冊 `impeccable-ui-designer`，`ui-design` 用 Agent tool 委派給它。沒裝時改用 inline 模式，在主 session 讀取 agent 定義並照著執行，遇到需要決定的地方直接問你。Pi 上模型不一定會自動載入 skill，建議用 `/skill:ui-design <需求>` 呼叫 |
 | `impeccable` | 隨上面的指令一起安裝 | package 內的 extension（`pi/extensions/upstream-skills.ts`）在 Pi 啟動時，依 `.claude-plugin/marketplace.json` 鎖定的 commit，只下載上游的 `.pi/skills`（約 4 MB）到 `~/.pi/agent/cache/coding-agent-toolkit/`。第一次需要網路與 git。也可以改用官方安裝程式 `npx impeccable install --providers=pi` |
 | `pstack` | 隨上面的指令一起安裝 | package 內的 extension 在 Pi 啟動時，依 `.claude-plugin/marketplace.json` 鎖定的 commit，只下載上游的 `pstack/skills`（約 2 MB）到快取目錄。載入 58 個 skill（57 個設有 `disable-model-invocation: true`，需以 `/skill:<name>` 呼叫，例如 `/skill:architect`、`/skill:poteto-mode` 等） |
@@ -140,11 +140,13 @@ plugins/skills/
 │   └── subtractive-brake.md
 ├── prompts/gitignore-generator.prompt.md
 ├── skills/
+│   ├── done-or-not/
 │   ├── issue-template/
 │   ├── pull-request/
 │   ├── review-forge/
 │   ├── slim-agents-md/
 │   ├── subtractive-engineering/
+│   ├── superagent/
 │   └── ui-design/
 ├── package.json                               # Pi 本機路徑安裝
 └── plugin.json
